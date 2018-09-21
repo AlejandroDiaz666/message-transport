@@ -1,0 +1,41 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+%Gummi|065|=)
+\title{\textbf{DHM Key Derivation}}
+\author{Pratyush Bhatt}
+\date{}
+\begin{document}
+For two endpoints, Max and Ned,\\
+
+let:\\
+\(p\) be a prime number\\
+\(g\) be a primitve root, modulo \(p\)\\
+\(s_{m}\) be Max's secret\\
+\(s_{n}\) be Ned's secret\\
+\(f_{m}\) be Max's secret, obfuscated by the one-way function.\\
+\(f_{n}\) be Ned's secret, obfuscated by the one-way function.\\
+\(k_{m}\) be the shared key computed by the Max\\
+\(k_{n}\) be the shared key computed by the Ned\\
+
+then:\\
+\begin{equation}
+\begin{aligned}
+k_{m} &= f( f_{n}, s_{m}, p)\\
+ & = f( f(g, s_{n}, p), s_{m}, p)\\
+ & = (g^{s_{n}} \bmod p) ^ {s_{m}} \bmod p 
+\end{aligned}
+\end{equation}
+\begin{equation}
+\begin{aligned}
+k_{n} &= f( f_{m}, s_{n}, p)\\
+ & = f( f(g, s_{m}, p), s_{n}, p)\\
+ & = (g^{s_{m}} \bmod p) ^ {s_{n}} \bmod p 
+\end{aligned}
+\end{equation}
+Recall that the number \(g\) was specially chosen for the number \(p\). It was chosen as a "primitive root, modulo \(p\)" which really just means that it was chosen such that:
+\begin{equation}
+ (g ^ {s_{m}} \bmod p) ^ {s_{n}} \bmod p = (g ^ {s_{n}} \bmod p) ^ {s_{m}} \bmod p
+\end{equation}
+holds true for all values of \(s_{m}\) and \(s_{n}\)\\
+so \(k_{m} = k_{n}\)
+\end{document}

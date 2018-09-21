@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ethereum Message Transport</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto:300i" rel="stylesheet">
+    <script type="text/javascript" src="bundle/index_TIMESTAMP_1537160473_.js"></script>
+    <script type="text/javascript" src="bundle/common_TIMESTAMP_1537160473_.js"></script>
+    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1537160473_.js"></script>
+
+
+    <!--
+	little bit of javascript for modal
+      -->
+    <script>
+      window.onload = function() {
+        var modal = document.getElementById('infoModal');
+        var importantInfobtn = document.getElementById('importantInfoButton');
+        var span = document.getElementsByClassName("close")[0];
+        // When the user clicks on the info button, open the modal
+        importantInfobtn.onclick = function() {  modal.style.display = "block"; }
+        // When the user clicks on close, close the modal
+        span.onclick = function() { modal.style.display = "none"; }
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+        if (event.target == modal)
+          modal.style.display = "none";
+        }
+      };
+    </script>
+  </head>
+
+  <body>
+
+
+    <!--
+	modal for important information
+      -->
+    <div id="infoModal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+	<span class="close">&times;</span>
+	<p>
+	  <h2>Notes:</h2>
+	  <ul style="list-style-type: circle;">
+	    <li>
+	      <h3>Important blather here...</h3>
+	    </li>
+	    <li>
+	      <h3>Important blather here...</h3>
+	    </li>
+	    <li>
+	      <h3>Important blather here...
+		<br/>another important point.
+		<br/>another important point.
+	    </li>
+	    <li>
+	      <h3>Important blather here...</h3>
+	    </li>
+	  </ul>
+	</p>
+      </div>
+    </div>
+
+    <div id="topSection">
+      <div style="float:left;">
+	<img src="images/logo.png" alt="Logo goes here " width="40px" height="40px"/>
+      </div>
+      <span id="mainTitleSpan">
+	<h3>Secret Society of Mysterious Ethereum Programmers.</h3>
+      </span>
+      <div style="float:right;">
+	<div id="networkAreaDiv">
+	  <textarea id="networkArea" rows="1" cols="55" readonly="readonly">&nbsp;</textarea>
+	</div>
+	<div id="accountDiv">
+	  <textarea id="accountArea" rows="1" cols="55" readonly="readonly">&nbsp;</textarea>
+	</div>
+	<div id="balanceAreaDiv">
+	  <textarea id="balanceArea" rows="1" cols="55" readonly="readonly">&nbsp;</textarea>
+	</div>
+	<div id="totalReceivedAreaDiv">
+	  <textarea id="totalReceivedArea" rows="1" cols="55" readonly="readonly">&nbsp;</textarea>
+	</div>
+	<div id="feeBalanceAreaDiv">
+	  <textarea id="feeBalanceArea" rows="1" cols="55" readonly="readonly">&nbsp;</textarea>
+	</div>
+      </div>
+      <table style="height:180px;width:100%;">
+	<tbody>
+	  <tr>
+	    <td>
+	      <h1 style="text-align: left;">Ethereum Message Transport</h1>
+	    </td>
+	    <td>
+	      <div style="float:right;">
+		<img src="images/download-metamask.png" alt="Download MetaMask" width="300px" height="90px">
+	      </div>
+	      <h2>The Ethereum Message Transport:</h2>
+	      <ol style="list-style-type: upper-roman;">
+		<li>
+		  <h2>Is completely decentralized. It runs on the Ethereum blockchain.
+		    <!--
+		    <br/>SSoMEP does not even host the DApp (it is hosted on IPFS).</h2>
+		  -->
+		    <br/>This DApp executes completely on your computer.</h2>
+		</li>
+		<li>
+		  <h2>All messages are peer-to-peer encrypted using a computed key.
+		    <br/>Only the sender and receiver can compute their pairwise-unique key.
+		    <br/>Your half of the computed key is re-computed each time you execute
+		    <br/>this DApp -- it&apos;s never shared, or even stored on your computer.</h2>
+		</li>
+	      </ol>
+	    </td>
+	  </tr>
+	  <tr>
+	    <td colspan="2">
+	      <div id="menuBarDiv">
+		<button id="importantInfoButton" class="menuBarButton" type="button">Click here for important information</button>
+		<button id="registerButton" class="menuBarButton" type="button">Register Account</button>
+		<button id="viewRecvButton" class="menuBarButton" type="button">View Received</button>
+		<button id="composeButton" class="menuBarButton" type="button">Compose</button>
+		<button id="viewSentButton" class="menuBarButton" type="button">View Sent</button>
+		<button id="withdrawButton" class="menuBarButton" type="button">Withdraw Fees</button>
+	      </div>
+	    </td>
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+
+    <!-- for important information modal -->
+    <div id="msgAreaDiv">
+      <form action="javascript:void(0);">
+	<div id="msgInfoAreaDiv">
+	  <span>
+	    <textarea id="msgPromptArea" rows="1" readonly="readonly" disabled="disabled">&nbsp;</textarea>
+	    <textarea id="msgAddrArea" rows="1">&nbsp;</textarea>
+	    <textarea id="msgDateArea" rows="1" class="hidden">&nbsp;</textarea>
+	    <button id="validateAddrButton" type="button" class="hidden">Validate</button>
+	    <button id="replyButton" type="button" class="hidden">Reply</button>
+	    <textarea id="msgFeeArea" rows="1" readonly="readonly" disabled="disabled" class="hidden">&nbsp;</textarea>
+	    <span>
+	</div>
+	<div id="msgTextAreaDiv">
+	  <textarea id="msgTextArea" rows="14" class="hidden">&nbsp;</textarea>
+	  <div id="registerDiv" class="hidden">
+	    <table>
+	      <tbody>
+		<tr>
+		  <td>Message fee (Wei):</td><td><input id="messageFeeInput" type="text"></td>
+		</tr>
+		<tr>
+		  <td>Spam fee (Wei):</td><td><input id="spamFeeInput" type="text"></td>
+		</tr>
+		<tr>
+		  <td></td><td><input id="registerSubmitButton" type="submit" value="Submit"></td>
+		</tr>
+	      </tbody>
+	    </table>
+	  </div>
+	</div>
+      </form>
+    </div>
+    <button id="prevMsgButton"  type="button" class="navButton">prev</button>
+    <button id="msgNoNotButton" type="button" class="navButton" disabled="true">&nbsp;</button>
+    <button id="nextMsgButton"  type="button" class="navButton">next</button>
+    <p>&nbsp;</p>
+    <div id="statusDiv" class="finalresultstable" style="display: none;"></div>
+  </body>
+</html>
