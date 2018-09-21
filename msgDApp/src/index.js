@@ -27,6 +27,9 @@ var index = module.exports = {
 	setReplyButtonHandlers();
 	setValidateButtonHandler();
 	setPrevNextButtonHandlers();
+	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')
+	if (!!msgNo)
+	    index['recvMessageNo'] = parseInt(msgNo);
 	beginTheBeguine();
     },
 };
@@ -602,6 +605,8 @@ function showMsgLoop(acctInfo) {
     var msgNoCounter     = (viewRecvButton.className == 'menuBarButtonSelected') ? 'recvMessageNo'                 : 'sentMessageNo';
     var acctInfoCountIdx = (viewRecvButton.className == 'menuBarButtonSelected') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
     var maxMsgNo = parseInt(acctInfo[acctInfoCountIdx], 10);
+    if (index[msgNoCounter] == 0 && maxMsgNo > 0)
+	index[msgNoCounter] = 1;
     if (index[msgNoCounter] > maxMsgNo)
 	index[msgNoCounter] = maxMsgNo;
     prevButton.disabled = (index[msgNoCounter] > 1)        ? false : true;

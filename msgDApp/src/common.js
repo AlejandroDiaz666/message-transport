@@ -72,6 +72,28 @@ var common = module.exports = {
     },
 
 
+    //
+    // query string: ?foo=lorem&bar=&baz
+    // var foo = getUrlParameterByName('foo'); // "lorem"
+    // var bar = getUrlParameterByName('bar'); // "" (present with empty value)
+    // var baz = getUrlParameterByName('baz'); // "" (present with no value)
+    // var qux = getUrlParameterByName('qux'); // null (absent)
+    //
+    getUrlParameterByName: function(url, name) {
+	url = url.toLowerCase();
+        name = name.replace(/[\[\]]/g, "\\$&");
+	name = name.toLowerCase();
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+        var results = regex.exec(url);
+        if (!results)
+            return null;
+        if (!results[2])
+            return '';
+        var value = decodeURIComponent(results[2].replace(/\+/g, " "));
+        return value;
+    },
+
+
     fetch: function(url, callback) {
 	var timeout = false;
 	var complete = false;
@@ -141,24 +163,6 @@ var common = module.exports = {
 		});
 	    }
 	}, 1000);
-    },
-
-
-    hideDiv: function(div) {
-	div.className = (div.className).replace('smwVisible', 'smwHidden');
-	return(div);
-    },
-
-    showDiv: function(div) {
-	div.className = (div.className).replace('smwHidden', 'smwVisible');
-	return(div);
-    },
-
-    clearDivChildren: function(div) {
-	while (div.hasChildNodes()) {
-            div.removeChild(div.lastChild);
-	}
-	return(div);
     },
 
 };
