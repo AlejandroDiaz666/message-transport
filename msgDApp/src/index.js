@@ -1,10 +1,10 @@
 
 var common = require('./common');
 var ether = require('./ether');
+var dhcrypt = require('./dhcrypt');
 var ethUtils = require('ethereumjs-util');
 var Buffer = require('buffer/').Buffer;
 var BN = require("bn.js");
-const keccak = require('keccakjs');
 
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -176,6 +176,8 @@ function setPrevNextButtonHandlers() {
     });
 }
 
+
+
 function beginTheBeguine() {
     if (!index.acctCheckTimer) {
 	console.log('init acctCheckTimer');
@@ -197,7 +199,9 @@ function beginTheBeguine() {
 	if (!!err) {
 	    handleLockedMetaMask(err);
 	} else {
-	    handleUnlockedMetaMask();
+	    dhcrypt.initDH(function() {
+		handleUnlockedMetaMask();
+	    });
 	}
     });
 }
@@ -283,9 +287,12 @@ function handleUnlockedMetaMask() {
     ether.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
 	index.acctInfo = _acctInfo;
 	console.log('acctInfo: ' + JSON.stringify(index.acctInfo));
-	var obfuscatedSecret = index.acctInfo[ether.ACCTINFO_OBFUSCATEDSECRET];
-	console.log('obfuscatedSecret: X' + obfuscatedSecret + 'X');
-	if (obfuscatedSecret == '0') {
+	var publicKeyHex = index.acctInfo[ether.ACCTINFO_PUBLICKEY];
+	var publicKey = common.hexToAscii(publicKeyHex);
+	console.log('publicKey: ' + publicKey.toString(16));
+	if (publicKey == '0x' || publicKey !== dhcrypt.publicKey()) {
+	    if (publicKey !== dhcrypt.publicKey())
+		console.log('publicKey has changed! was: ' + dhcrypt.publicKey());
 	    handleUnregisteredAcct(index.acctInfo);
 	} else {
 	    handleRegisteredAcct(index.acctInfo);
@@ -544,16 +551,15 @@ function handleRegister() {
 
 
 function handleRegisterSubmit() {
+    console.log('handleRegisterSubmit');
     var registerDiv = document.getElementById('registerDiv');
     var messageFeeInput = document.getElementById('messageFeeInput');
     var spamFeeInput = document.getElementById('spamFeeInput');
     var messageFee = parseInt(messageFeeInput.value, 10);
     var spamFee = parseInt(spamFeeInput.value, 10);
     console.log('message fee = ' + messageFee + ', spam fee = ' + spamFee);
-    var obfuscatedSecret = 1;
-    var g = 2;
-    var p = 3;
-    ether.register(common.web3, messageFee, spamFee, obfuscatedSecret, g, p, function(err, txid) {
+    var publicKey = dhcrypt.publicKey();
+    ether.register(common.web3, messageFee, spamFee, publicKey, function(err, txid) {
 	console.log('txid = ' + txid);
 	var statusDiv = document.getElementById('statusDiv');
 	waitForTXID(txid, 'Register', statusDiv, function() {

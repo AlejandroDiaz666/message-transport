@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 // ---------------------------------------------------------------------------
 //  Message_Transport
 // ---------------------------------------------------------------------------
-contract D_Message_Transport {
+contract F_Message_Transport {
 
   // -------------------------------------------------------------------------
   // events
@@ -32,9 +32,7 @@ contract D_Message_Transport {
     uint feeBalance;           // includes spam and non-spam fees
     uint recvMessageCount;     // total messages received
     uint sentMessageCount;     // total messages sent
-    uint obfuscatedSecret;     // encryption parameter
-    uint p;                    // encryption parameter
-    uint g;                    // encryption parameter
+    bytes publicKey;           // encryption parameter
     mapping (address => uint256) peerRecvMessageCount;
   }
 
@@ -88,13 +86,11 @@ contract D_Message_Transport {
   // -------------------------------------------------------------------------
   // register a simple message account
   // -------------------------------------------------------------------------
-  function register(uint256 _messageFee, uint256 _spamFee, uint256 _obfuscatedSecret, uint256 _g, uint256 _p) public {
+  function register(uint256 _messageFee, uint256 _spamFee, bytes _publicKey) public {
     Account storage _account = accounts[msg.sender];
     _account.messageFee = _messageFee;
     _account.spamFee = _spamFee;
-    _account.obfuscatedSecret = _obfuscatedSecret;
-    _account.g = _g;
-    _account.p = _p;
+    _account.publicKey = _publicKey;
   }
 
 
@@ -135,8 +131,8 @@ contract D_Message_Transport {
   function sendMessage(address _toAddr, uint mimeType, bytes message) public payable returns (uint _recvMessageCount) {
     Account storage _sendAccount = accounts[msg.sender];
     Account storage _recvAccount = accounts[_toAddr];
-    require(_sendAccount.g != 0);
-    require(_recvAccount.g != 0);
+    //require(_sendAccount.publicKey != 0);
+    //require(_recvAccount.publicKey != 0);
     //if message text is empty then no fees are necessary, and we don't create a log entry.
     //after you introduce yourself to someone this way their subsequent message to you won't
     //incur your spamFee.
@@ -163,8 +159,8 @@ contract D_Message_Transport {
   function sendMessage(address _fromAddr, address _toAddr, uint mimeType, bytes message) public payable trustedOnly returns (uint _recvMessageCount) {
     Account storage _sendAccount = accounts[_fromAddr];
     Account storage _recvAccount = accounts[_toAddr];
-    require(_sendAccount.g != 0);
-    require(_recvAccount.g != 0);
+    //require(_sendAccount.publicKey != 0);
+    //require(_recvAccount.publicKey != 0);
     //if message text is empty then no fees are necessary, and we don't create a log entry.
     //after you introduce yourself to someone this way their subsequent message to you won't
     //incur your spamFee.

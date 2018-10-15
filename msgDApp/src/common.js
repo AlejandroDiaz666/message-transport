@@ -42,7 +42,6 @@ var common = module.exports = {
 	return str;
     },
 
-
     leftPadTo: function(str, desiredLen, ch) {
 	var padChar = (typeof ch !== 'undefined') ? ch : ' ';
 	var pad = new Array(1 + desiredLen).join(padChar);
