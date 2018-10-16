@@ -217,10 +217,7 @@ function beginTheBeguine() {
 	    setMenuButtonState('composeButton',       'Disabled');
 	    setMenuButtonState('viewSentButton',      'Disabled');
 	    setMenuButtonState('withdrawButton',      'Disabled');
-	    //
-	    dhcrypt.initDH(function() {
-		handleUnlockedMetaMask();
-	    });
+	    handleUnlockedMetaMask();
 	}
     });
 }
@@ -313,9 +310,7 @@ function handleUnlockedMetaMask() {
 	console.log('acctInfo: ' + JSON.stringify(index.acctInfo));
 	index.publicKey = index.acctInfo[ether.ACCTINFO_PUBLICKEY];
 	console.log('publicKey: ' + index.publicKey);
-	if (index.publicKey !== dhcrypt.publicKey()) {
-	    if (index.publicKey !== dhcrypt.publicKey())
-		console.log('publicKey should be: ' + dhcrypt.publicKey());
+	if (index.publicKey == '0x') {
 	    handleUnregisteredAcct(index.acctInfo);
 	} else {
 	    handleRegisteredAcct(index.acctInfo);
@@ -331,11 +326,14 @@ function handleUnregisteredAcct(acctInfo) {
     var registerButton = document.getElementById('registerButton');
     registerButton.textContent = 'Register Account';
     setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Enabled');
+    setMenuButtonState('registerButton',      'Disabled');
     setMenuButtonState('viewRecvButton',      'Disabled');
     setMenuButtonState('composeButton',       'Disabled');
     setMenuButtonState('viewSentButton',      'Disabled');
     setMenuButtonState('withdrawButton',      'Disabled');
+    dhcrypt.initDH(function() {
+	setMenuButtonState('registerButton',   'Enabled');
+    });
     //
     var totalReceivedArea = document.getElementById('totalReceivedArea');
     totalReceivedArea.value = 'This Ethereum address is not registered';
@@ -384,7 +382,9 @@ function handleRegisteredAcct(acctInfo) {
     var feebalanceWei = index.acctInfo[ether.ACCTINFO_FEEBALANCE];
     //console.log('feeBalanceWei = ' + feebalanceWei);
     feeBalanceArea.value = 'Unclaimed message fees: ' + ether.convertWeiToComfort(common.web3, feebalanceWei);
-    handleViewRecv(index.acctInfo);
+    dhcrypt.initDH(function() {
+	handleViewRecv(index.acctInfo);
+    });
 }
 
 

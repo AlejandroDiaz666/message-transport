@@ -170,7 +170,7 @@ var ether = module.exports = {
 	if (toAddr.startsWith('0x'))
 	    toAddr = toAddr.substring(2);
 	var bytes = common.hexToBytes(message);
-	console.log('abiEncodeSendMessageParms: message (length = ' + bytes.length + '): ' + bytes.toString(16));
+	//console.log('abiEncodeSendMessageParms: message (length = ' + bytes.length + '): ' + bytes.toString(16));
 	encoded = ethabi.rawEncode([ 'address', 'uint256', 'bytes' ], [ new BN(toAddr, 16), new BN(mimeType, 16), bytes ] ).toString('hex');
 	return(encoded);
     },
@@ -187,7 +187,7 @@ var ether = module.exports = {
 	if (publicKey.startsWith('0x'))
 	    publicKey = publicKey.substring(2);
 	var bytes = common.hexToBytes(publicKey);
-	console.log('publicKeyBuffer: publicKey (length = ' + bytes.length + '): ' + bytes.toString(16));
+	//console.log('publicKeyBuffer: publicKey (length = ' + bytes.length + '): ' + bytes.toString(16));
 	encoded = ethabi.rawEncode([ 'uint256', 'uint256', 'bytes'],
 				   [ new BN(messageFee, 16), new BN(spamFee, 16), bytes ] ).toString('hex');
 	return(encoded);
