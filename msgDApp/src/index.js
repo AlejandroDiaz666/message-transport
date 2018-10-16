@@ -33,6 +33,7 @@ var index = module.exports = {
 	    index['recvMessageNo'] = parseInt(msgNo);
 	beginTheBeguine();
     },
+
 };
 
 
@@ -107,7 +108,7 @@ function setReplyButtonHandlers() {
 		    ether.sendMessage(common.web3, toAddr, mimeType, encrypted, fee, function(err, txid) {
 			console.log('txid = ' + txid);
 			var statusDiv = document.getElementById('statusDiv');
-			waitForTXID(txid, 'Send-Message', statusDiv, function() {
+			waitForTXID(txid, 'Send-Message', statusDiv, 'send', function() {
 			});
 		    });
 		});
@@ -217,7 +218,7 @@ function beginTheBeguine() {
 	    setMenuButtonState('composeButton',       'Disabled');
 	    setMenuButtonState('viewSentButton',      'Disabled');
 	    setMenuButtonState('withdrawButton',      'Disabled');
-	    handleUnlockedMetaMask();
+	    handleUnlockedMetaMask(null);
 	}
     });
 }
@@ -283,7 +284,11 @@ function handleLockedMetaMask(err) {
 // displays the users's eth account info; retreives the users DH public key (will be set if the user is
 // registered); then continues on to handleRegistered or handleUnregistered.
 //
-function handleUnlockedMetaMask() {
+// note: after a transaction is completed we come back to this fcn. the mode parm provides a hint so that
+// we can continue with a relevant part of the display.
+//
+function handleUnlockedMetaMask(mode) {
+    console.log('handleUnlockedMetaMask: mode = ' + mode);
     var accountArea = document.getElementById('accountArea');
     accountArea.value = 'Your account: ' + common.web3.eth.accounts[0];
     ether.getNetwork(common.web3, function(err, network) {
@@ -311,9 +316,9 @@ function handleUnlockedMetaMask() {
 	index.publicKey = index.acctInfo[ether.ACCTINFO_PUBLICKEY];
 	console.log('publicKey: ' + index.publicKey);
 	if (index.publicKey == '0x') {
-	    handleUnregisteredAcct(index.acctInfo);
+	    handleUnregisteredAcct();
 	} else {
-	    handleRegisteredAcct(index.acctInfo);
+	    handleRegisteredAcct(mode);
 	}
     });
 }
@@ -322,7 +327,7 @@ function handleUnlockedMetaMask() {
 //
 // handle unregistered account
 //
-function handleUnregisteredAcct(acctInfo) {
+function handleUnregisteredAcct() {
     var registerButton = document.getElementById('registerButton');
     registerButton.textContent = 'Register Account';
     setMenuButtonState('importantInfoButton', 'Enabled');
@@ -373,7 +378,7 @@ function handleUnregisteredAcct(acctInfo) {
 //
 // handle registered account
 //
-function handleRegisteredAcct(acctInfo) {
+function handleRegisteredAcct(mode) {
     var registerButton = document.getElementById('registerButton');
     registerButton.textContent = 'Modify Account';
     var totalReceivedArea = document.getElementById('totalReceivedArea');
@@ -382,9 +387,16 @@ function handleRegisteredAcct(acctInfo) {
     var feebalanceWei = index.acctInfo[ether.ACCTINFO_FEEBALANCE];
     //console.log('feeBalanceWei = ' + feebalanceWei);
     feeBalanceArea.value = 'Unclaimed message fees: ' + ether.convertWeiToComfort(common.web3, feebalanceWei);
-    dhcrypt.initDH(function() {
-	handleViewRecv(index.acctInfo);
-    });
+    if (!!mode && !!dhcrypt.dh && index.publicKey == dhcrypt.publicKey()) {
+	if (mode == 'recv')
+	    handleViewRecv(index.acctInfo);
+	else
+	    handleViewSent(index.acctInfo);
+    } else {
+	dhcrypt.initDH(function() {
+	    handleViewRecv(index.acctInfo);
+	});
+    }
 }
 
 
@@ -585,7 +597,7 @@ function handleRegisterSubmit() {
     ether.register(common.web3, messageFee, spamFee, publicKey, function(err, txid) {
 	console.log('txid = ' + txid);
 	var statusDiv = document.getElementById('statusDiv');
-	waitForTXID(txid, 'Register', statusDiv, function() {
+	waitForTXID(txid, 'Register', statusDiv, 'recv', function() {
 	});
     });
 }
@@ -617,7 +629,7 @@ function handleWithdraw() {
     ether.withdraw(common.web3, function(err, txid) {
 	console.log('txid = ' + txid);
 	var statusDiv = document.getElementById('statusDiv');
-	waitForTXID(txid, 'Withdraw', statusDiv, function() {
+	waitForTXID(txid, 'Withdraw', statusDiv, 'recv', function() {
 	});
     });
 }
@@ -896,7 +908,7 @@ function getRecvMsg(toAddr, recvMsgNo, cb) {
 }
 
 
-function waitForTXID(txid, desc, statusDiv, callback) {
+function waitForTXID(txid, desc, statusDiv, continuationMode, callback) {
     //
     setMenuButtonState('importantInfoButton', 'Enabled');
     setMenuButtonState('registerButton',      'Disabled');
@@ -939,7 +951,10 @@ function waitForTXID(txid, desc, statusDiv, callback) {
 		    clearInterval(timer);
 		    //
 		    var reloadLink = document.createElement('a');
-		    reloadLink.href = 'javascript:location.reload();';
+		    reloadLink.addEventListener('click', function() {
+			handleUnlockedMetaMask(continuationMode);
+		    });
+		    reloadLink.href = 'javascript:null;';
 		    reloadLink.innerHTML = "<h2>Continue</h2>";
 		    reloadLink.disabled = false;
 		    rightDiv.appendChild(reloadLink);
