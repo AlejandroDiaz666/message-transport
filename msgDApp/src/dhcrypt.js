@@ -45,7 +45,57 @@ C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FF
     publicKey: function() {
 	var publicKey = dhcrypt.dh.getPublicKey('hex');
 	//console.log('dhcrypt:publicKey: ' + publicKey);
+	if (!publicKey.startsWith('0x'))
+	    publicKey = '0x' + publicKey;
 	return(publicKey);
+    },
+
+    //compute pairwise transient key
+    ptk: function(otherPublicKey, toAddr, fromAddr, sentMsgCtr) {
+	if (otherPublicKey.startsWith('0x'))
+	    otherPublicKey = otherPublicKey.substring(2);
+    	var pmk = dhcrypt.dh.computeSecret(otherPublicKey);
+	console.log('dhcrypt:ptk: myPublicKey = ' + dhcrypt.dh.getPublicKey('hex'));
+	console.log('dhcrypt:ptk: otherPublicKey = ' + otherPublicKey);
+	console.log('dhcrypt:ptk: pmk = ' + pmk.toString('hex'));
+	var sentMsgCtrBN = new BN(sentMsgCtr);
+	var sentMsgCtrBuffer = sentMsgCtrBN.toArrayLike(Buffer, 'be');
+	var sentMsgCtrHex = ethUtils.bufferToHex(sentMsgCtrBuffer);
+	console.log('dhcrypt:ptk: sentMsgCtrHex = ' + sentMsgCtrHex);
+	const hash = crypto.createHash('sha256');
+	hash.update(pmk);
+	hash.update(toAddr);
+	hash.update(fromAddr);
+	hash.update(sentMsgCtrHex);
+	var ptk = hash.digest('hex');
+	console.log('dhcrypt:ptk: ptk = ' + ptk.toString('hex'));
+	return(ptk);
+    },
+
+    encrypt: function(ptk, message) {
+	const cipher = crypto.createCipher('aes256', ptk);
+	var encrypted = cipher.update(message, 'utf8', 'hex');
+	encrypted += cipher.final('hex');
+	console.log('encyrpt: message = ' + message);
+	console.log('encyrpt: encrypted = ' + encrypted);
+	return(encrypted);
+    },
+
+    decrypt: function(ptk, encrypted) {
+	if (encrypted.startsWith('0x'))
+	    encrypted = encrypted.substring(2);
+	var message = 'Unable to decrypt message';
+	try {
+	    console.log('decyrpt: encrypted = ' + encrypted);
+	    const decipher = crypto.createDecipher('aes256', ptk);
+	    var message = decipher.update(encrypted, 'hex', 'utf8');
+	    message += decipher.final('utf8');
+	    console.log('decyrpt: message = ' + message);
+	} catch (err) {
+	    message = err + '\n' + encrypted;
+	    console.log('decyrpt: err = ' + err);
+	}
+	return(message);
     },
 
 };

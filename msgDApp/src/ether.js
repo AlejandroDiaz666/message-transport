@@ -17,16 +17,21 @@ var ether = module.exports = {
     WEI_PER_SZABO:     1000000000000,
     WEI_PER_FINNEY:    1000000000000000,
     WEI_PER_ETH:       1000000000000000000,
-    EMT_CONTRACT_ADDR: '0xD66689fEef1f41318CA1873b0B708DCB8639572F',
-    EMT_CONTRACT_ABI:  '[{"constant":true,"inputs":[],"name":"communityAddr","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"killContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"withdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"accounts","outputs":[{"name":"messageFee","type":"uint256"},{"name":"spamFee","type":"uint256"},{"name":"feeBalance","type":"uint256"},{"name":"recvMessageCount","type":"uint256"},{"name":"sentMessageCount","type":"uint256"},{"name":"publicKey","type":"bytes"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"trusted","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_toAddr","type":"address"},{"name":"mimeType","type":"uint256"},{"name":"message","type":"bytes"}],"name":"sendMessage","outputs":[{"name":"_recvMessageCount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_messageFee","type":"uint256"},{"name":"_spamFee","type":"uint256"},{"name":"_publicKey","type":"bytes"}],"name":"register","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"isLocked","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"}],"name":"getPeerMessageCount","outputs":[{"name":"_messageCount","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"withdrawCommunityFunds","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_fromAddr","type":"address"},{"name":"_toAddr","type":"address"},{"name":"mimeType","type":"uint256"},{"name":"message","type":"bytes"}],"name":"sendMessage","outputs":[{"name":"_recvMessageCount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"_toAddr","type":"address"}],"name":"getFee","outputs":[{"name":"_fee","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_contractSendGas","type":"uint256"}],"name":"tune","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_trustedAddr","type":"address"},{"name":"_trust","type":"bool"}],"name":"setTrust","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"lock","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_fromAddr","type":"address"},{"name":"_toAddr","type":"address"}],"name":"getFee","outputs":[{"name":"_fee","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_toAddr","type":"address"},{"indexed":true,"name":"_fromAddr","type":"address"}],"name":"InviteEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_fromAddr","type":"address"},{"indexed":true,"name":"_count","type":"uint256"},{"indexed":false,"name":"_toAddr","type":"address"},{"indexed":false,"name":"_toCount","type":"uint256"}],"name":"MessageTxEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_toAddr","type":"address"},{"indexed":true,"name":"_count","type":"uint256"},{"indexed":false,"name":"_fromAddr","type":"address"},{"indexed":false,"name":"_mimeType","type":"uint256"},{"indexed":false,"name":"message","type":"bytes"}],"name":"MessageRxEvent","type":"event"}]',
-    //sha3('MessageRxEvent(address,uint256,address,uint256,bytes)')
-    MESSAGERX_EVENT_TOPIC0: '0xecbf93eba23c37ac255588b396b9ecfee507481a7c472a8fdeaabb6eab802456',
+    //ropsten
+    //EMT_CONTRACT_ADDR: '0xD66689fEef1f41318CA1873b0B708DCB8639572F',
+    //kovan
+    EMT_CONTRACT_ADDR: '0x05251e4537c2cE7cD0142Ae03cbD5BAe2fa411E2',
+    EMT_CONTRACT_ABI:  '[{"constant":true,"inputs":[],"name":"communityAddr","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"killContract","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"withdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"accounts","outputs":[{"name":"messageFee","type":"uint256"},{"name":"spamFee","type":"uint256"},{"name":"feeBalance","type":"uint256"},{"name":"recvMessageCount","type":"uint256"},{"name":"sentMessageCount","type":"uint256"},{"name":"publicKey","type":"bytes"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"trusted","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_toAddr","type":"address"},{"name":"mimeType","type":"uint256"},{"name":"message","type":"bytes"}],"name":"sendMessage","outputs":[{"name":"_recvMessageCount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"name":"_messageFee","type":"uint256"},{"name":"_spamFee","type":"uint256"},{"name":"_publicKey","type":"bytes"}],"name":"register","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"isLocked","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"}],"name":"getPeerMessageCount","outputs":[{"name":"_messageCount","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"withdrawCommunityFunds","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_fromAddr","type":"address"},{"name":"_toAddr","type":"address"},{"name":"mimeType","type":"uint256"},{"name":"message","type":"bytes"}],"name":"sendMessage","outputs":[{"name":"_recvMessageCount","type":"uint256"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"_toAddr","type":"address"}],"name":"getFee","outputs":[{"name":"_fee","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_contractSendGas","type":"uint256"}],"name":"tune","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_trustedAddr","type":"address"},{"name":"_trust","type":"bool"}],"name":"setTrust","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"lock","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_fromAddr","type":"address"},{"name":"_toAddr","type":"address"}],"name":"getFee","outputs":[{"name":"_fee","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_toAddr","type":"address"},{"indexed":true,"name":"_fromAddr","type":"address"}],"name":"InviteEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_fromAddr","type":"address"},{"indexed":true,"name":"_count","type":"uint256"},{"indexed":false,"name":"_toAddr","type":"address"},{"indexed":false,"name":"_toCount","type":"uint256"}],"name":"MessageTxEvent","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_toAddr","type":"address"},{"indexed":true,"name":"_count","type":"uint256"},{"indexed":false,"name":"_fromAddr","type":"address"},{"indexed":false,"name":"_mimeType","type":"uint256"},{"indexed":false,"name":"_sentMsgCtr","type":"uint256"},{"indexed":false,"name":"message","type":"bytes"}],"name":"MessageRxEvent","type":"event"}]',
+    //sha3('MessageRxEvent(address,uint256,address,uint256,uint256,bytes)')
+    MESSAGERX_EVENT_TOPIC0: '0xc0426bfb7648d886d73dae8cf5dd9668d2308269b7dbe22f483cef229a56ea3d',
     //sha3('MessageTxEvent(address,uint256,address,uint256)');
     MESSAGETX_EVENT_TOPIC0: '0xbd6eec70c65c378858289ddb15fba6b7a1f247614a57b602623822fa40def19a',
-    etherscanioHost: 'api-ropsten.etherscan.io',
-    etherscanioTxStatusHost: 'ropsten.etherscan.io',
-    //etherscanioHost: 'api.etherscan.io',
-    //etherscanioTxStatusHost: 'etherscan.io',
+    etherscanioHost_kovan: 'api-kovan.etherscan.io',
+    etherscanioTxStatusHost_kovan: 'kovan.etherscan.io',
+    etherscanioHost_ropsten: 'api-ropsten.etherscan.io',
+    etherscanioTxStatusHost_ropsten: 'ropsten.etherscan.io',
+    etherscanioHost_main: 'api.etherscan.io',
+    etherscanioTxStatusHost_main: 'etherscan.io',
 
     //cb(err, network)
     getNetwork: function(web3, cb) {
@@ -36,6 +41,8 @@ var ether = module.exports = {
 	    case "1":
 		network = 'Mainnet';
 		console.log('This is mainnet')
+		ether.etherscanioHost = ether.etherscanioHost_main;
+		ether.etherscanioTxStatusHost = ether.etherscanioTxStatusHost_main;
 		break
 	    case "2":
 		network = 'Morden test network';
@@ -44,6 +51,8 @@ var ether = module.exports = {
 	    case "3":
 		network = 'Ropsten test network';
 		console.log('This is the ropsten test network.')
+		ether.etherscanioHost = ether.etherscanioHost_ropsten;
+		ether.etherscanioTxStatusHost = ether.etherscanioTxStatusHost_ropsten;
 		break
 	    case "4":
 		network = 'Rinkeby test network';
@@ -52,6 +61,8 @@ var ether = module.exports = {
 	    case "42":
 		network = 'Kovan test network';
 		console.log('This is the Kovan test network.')
+		ether.etherscanioHost = ether.etherscanioHost_kovan;
+		ether.etherscanioTxStatusHost = ether.etherscanioTxStatusHost_kovan;
 		break
 	    default:
 		console.log('This is an unknown network.')
@@ -158,7 +169,8 @@ var ether = module.exports = {
     abiEncodeSendMessageParms: function(toAddr, mimeType, message) {
 	if (toAddr.startsWith('0x'))
 	    toAddr = toAddr.substring(2);
-	var bytes = ethUtils.toBuffer(message);
+	var bytes = common.hexToBytes(message);
+	console.log('abiEncodeSendMessageParms: message (length = ' + bytes.length + '): ' + bytes.toString(16));
 	encoded = ethabi.rawEncode([ 'address', 'uint256', 'bytes' ], [ new BN(toAddr, 16), new BN(mimeType, 16), bytes ] ).toString('hex');
 	return(encoded);
     },
@@ -172,11 +184,12 @@ var ether = module.exports = {
     abiEncodeRegisterParms: function(messageFee, spamFee, publicKey) {
 	console.log('publicKey: ' + publicKey);
 	console.log('publicKey.length = ' + publicKey.length);
-	//if (publicKey.startsWith('0x'))
-	//    publicKey = publicKey.substring(2);
-	var publicKeyBuffer = new BN(publicKey).toArrayLike(Buffer, 'be');
+	if (publicKey.startsWith('0x'))
+	    publicKey = publicKey.substring(2);
+	var bytes = common.hexToBytes(publicKey);
+	console.log('publicKeyBuffer: publicKey (length = ' + bytes.length + '): ' + bytes.toString(16));
 	encoded = ethabi.rawEncode([ 'uint256', 'uint256', 'bytes'],
-				   [ new BN(messageFee, 16), new BN(spamFee, 16), publicKeyBuffer ] ).toString('hex');
+				   [ new BN(messageFee, 16), new BN(spamFee, 16), bytes ] ).toString('hex');
 	return(encoded);
     },
 

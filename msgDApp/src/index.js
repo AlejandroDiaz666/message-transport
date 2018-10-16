@@ -20,6 +20,7 @@ var index = module.exports = {
     account: null,
     acctInfo: null,
     acctCheckTimer: null,
+    publicKey: null,
 
     main: function() {
 	console.log('index.main');
@@ -69,6 +70,9 @@ function setMainButtonHandlers() {
 }
 
 
+//
+// the "reply" button is also the "send" button, depending on the context
+//
 function setReplyButtonHandlers() {
     var replyButton = document.getElementById('replyButton');
     replyButton.addEventListener('click', function() {
@@ -83,16 +87,24 @@ function setReplyButtonHandlers() {
 	    //handle send
 	    console.log('send');
 	    var mimeType = 1;
-	    var messageHex = ethUtils.bufferToHex(message);
 	    var toAddr = msgAddrArea.value;
 	    //the toAddr has already been validated. really.
 	    ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
-		//see how many messages have been sent from the proposed recipient to me
+		//encrypt the message...
+		var toPublicKey = toAcctInfo[ether.ACCTINFO_PUBLICKEY];
+		var sentMsgCtr = parseInt(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT], 16);
+		console.log('setReplyButtonHandlers: toPublicKey = ' + toPublicKey);
+		console.log('setReplyButtonHandlers: sentMsgCtr = ' + sentMsgCtr);
+		var ptk = dhcrypt.ptk(toPublicKey, toAddr, common.web3.eth.accounts[0], sentMsgCtr + 1);
+		console.log('setReplyButtonHandlers: ptk = ' + ptk);
+		var encrypted = dhcrypt.encrypt(ptk, message);
+		console.log('setReplyButtonHandlers: encrypted (length = ' + encrypted.length + ') = ' + encrypted);
+		//in order to figure the message fee we need to see how many messages have been sent from the proposed recipient to me
 		ether.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
 		    console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
 		    var fee = (msgCount > 0) ? toAcctInfo[ether.ACCTINFO_MESSAGEFEE] : toAcctInfo[ether.ACCTINFO_SPAMFEE];
 		    console.log('fee is ' + fee + ' wei');
-		    ether.sendMessage(common.web3, toAddr, mimeType, messageHex, fee, function(err, txid) {
+		    ether.sendMessage(common.web3, toAddr, mimeType, encrypted, fee, function(err, txid) {
 			console.log('txid = ' + txid);
 			var statusDiv = document.getElementById('statusDiv');
 			waitForTXID(txid, 'Send-Message', statusDiv, function() {
@@ -199,6 +211,13 @@ function beginTheBeguine() {
 	if (!!err) {
 	    handleLockedMetaMask(err);
 	} else {
+	    setMenuButtonState('importantInfoButton', 'Disabled');
+	    setMenuButtonState('registerButton',      'Disabled');
+	    setMenuButtonState('viewRecvButton',      'Disabled');
+	    setMenuButtonState('composeButton',       'Disabled');
+	    setMenuButtonState('viewSentButton',      'Disabled');
+	    setMenuButtonState('withdrawButton',      'Disabled');
+	    //
 	    dhcrypt.initDH(function() {
 		handleUnlockedMetaMask();
 	    });
@@ -262,6 +281,11 @@ function handleLockedMetaMask(err) {
 }
 
 
+//
+// handle unlocked metamask
+// displays the users's eth account info; retreives the users DH public key (will be set if the user is
+// registered); then continues on to handleRegistered or handleUnregistered.
+//
 function handleUnlockedMetaMask() {
     var accountArea = document.getElementById('accountArea');
     accountArea.value = 'Your account: ' + common.web3.eth.accounts[0];
@@ -287,12 +311,11 @@ function handleUnlockedMetaMask() {
     ether.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
 	index.acctInfo = _acctInfo;
 	console.log('acctInfo: ' + JSON.stringify(index.acctInfo));
-	var publicKeyHex = index.acctInfo[ether.ACCTINFO_PUBLICKEY];
-	var publicKey = common.hexToAscii(publicKeyHex);
-	console.log('publicKey: ' + publicKey.toString(16));
-	if (publicKey == '0x' || publicKey !== dhcrypt.publicKey()) {
-	    if (publicKey !== dhcrypt.publicKey())
-		console.log('publicKey has changed! was: ' + dhcrypt.publicKey());
+	index.publicKey = index.acctInfo[ether.ACCTINFO_PUBLICKEY];
+	console.log('publicKey: ' + index.publicKey);
+	if (index.publicKey !== dhcrypt.publicKey()) {
+	    if (index.publicKey !== dhcrypt.publicKey())
+		console.log('publicKey should be: ' + dhcrypt.publicKey());
 	    handleUnregisteredAcct(index.acctInfo);
 	} else {
 	    handleRegisteredAcct(index.acctInfo);
@@ -359,7 +382,7 @@ function handleRegisteredAcct(acctInfo) {
     totalReceivedArea.value = 'Messages sent: ' + index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT] + '; Messages received: ' + index.acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT];
     var feeBalanceArea = document.getElementById('feeBalanceArea');
     var feebalanceWei = index.acctInfo[ether.ACCTINFO_FEEBALANCE];
-    console.log('feeBalanceWei = ' + feebalanceWei);
+    //console.log('feeBalanceWei = ' + feebalanceWei);
     feeBalanceArea.value = 'Unclaimed message fees: ' + ether.convertWeiToComfort(common.web3, feebalanceWei);
     handleViewRecv(index.acctInfo);
 }
@@ -645,18 +668,29 @@ function showRecvMsg(msgNo) {
     //msgAddrArea.cols = 80;
     //msgTextArea.cols = 80;
     //msgTextArea.rows = 10;
-    getRecvMsg(common.web3.eth.accounts[0], msgNo, function(err, fromAddr, toAddr, date, msg) {
+    getRecvMsg(common.web3.eth.accounts[0], msgNo, function(err, fromAddr, toAddr, date, sentMsgCtr, msgHex) {
 	if (!!err) {
 	    msgTextArea.value = 'Error: ' + err;
 	} else {
 	    msgNoNotButton.textContent = msgNo.toString(10);
 	    msgAddrArea.value = fromAddr;
 	    msgDateArea.value = date;
-	    console.log('showRecvMsg: msg = ' + msg);
-	    msgTextArea.value = msg;
+	    //console.log('showRecvMsg: msg = ' + msgHex);
+	    //console.log('showRecvMsg: sentMsgCtr = ' + sentMsgCtr);
 	    if (fromAddr != '') {
-		var replyButton = document.getElementById('replyButton');
-		replyButton.disabled = false;
+		ether.accountQuery(common.web3, fromAddr, function(err, fromAcctInfo) {
+		    if (!!fromAcctInfo) {
+			var fromPublicKey = fromAcctInfo[ether.ACCTINFO_PUBLICKEY];
+			console.log('showRecvMsg: fromPublicKey = ' + fromPublicKey);
+			var ptk = dhcrypt.ptk(fromPublicKey, common.web3.eth.accounts[0], fromAddr, sentMsgCtr);
+			//console.log('showRecvMsg: ptk = ' + ptk);
+			var decrypted = dhcrypt.decrypt(ptk, msgHex);
+			//console.log('showRecvMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted);
+			msgTextArea.value = decrypted;
+			var replyButton = document.getElementById('replyButton');
+			replyButton.disabled = false;
+		    }
+		});
 	    }
 	}
     });
@@ -674,25 +708,34 @@ function showSentMsg(msgNo) {
     var msgNoNotButton = document.getElementById('msgNoNotButton');
     msgAddrArea.disabled = true;
     msgTextArea.disabled = true;
-    getSentMsg(common.web3.eth.accounts[0], msgNo, function(err, fromAddr, toAddr, date, msg) {
+    getSentMsg(common.web3.eth.accounts[0], msgNo, function(err, fromAddr, toAddr, date, sentMsgCtr, msgHex) {
 	if (!!err) {
 	    msgTextArea.value = 'Error: ' + err;
 	} else {
 	    msgNoNotButton.textContent = msgNo.toString(10);
 	    msgAddrArea.value = toAddr;
 	    msgDateArea.value = date;
-	    console.log('showSentMsg: addr = ' + toAddr + ', msg = ' + msg);
-	    msgTextArea.value = msg;
 	    if (toAddr != '') {
-		var replyButton = document.getElementById('replyButton');
-		replyButton.disabled = false;
+		ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
+		    if (!!toAcctInfo) {
+			var toPublicKey = toAcctInfo[ether.ACCTINFO_PUBLICKEY];
+			console.log('showSentMsg: toPublicKey = ' + toPublicKey);
+			var ptk = dhcrypt.ptk(toPublicKey, toAddr, fromAddr, sentMsgCtr);
+			//console.log('showRecvMsg: ptk = ' + ptk);
+			var decrypted = dhcrypt.decrypt(ptk, msgHex);
+			//console.log('showRecvMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted);
+			msgTextArea.value = decrypted;
+			var replyButton = document.getElementById('replyButton');
+			replyButton.disabled = false;
+		    }
+		});
 	    }
 	}
     });
 }
 
 
-//cb(err, fromAddr, toAddr, date, msg)
+//cb(err, fromAddr, toAddr, date, sentMsgCtr, msgHex)
 function getSentMsg(fromAddr, sentMsgNo, cb) {
     var url = 'https://' + ether.etherscanioHost   +
 	'/api?module=logs&action=getLogs'          +
@@ -758,15 +801,15 @@ function getSentMsg(fromAddr, sentMsgNo, cb) {
 	    toCount = parseInt(toCountHex, 16);
 	    console.log('getSentMsg: toAddr = ' + toAddr + ', toCount = ' + toCount);
 	    //get the n'th messages received by the toAddr
-	    getRecvMsg(toAddr, toCount, function(err, fromAddr, toAddr, date, msg) {
-		cb(err, fromAddr, toAddr, sentDate, msg);
+	    getRecvMsg(toAddr, toCount, function(err, fromAddr, toAddr, date, sentMsgCtr, msgHex) {
+		cb(err, fromAddr, toAddr, sentDate, sentMsgCtr, msgHex);
 	    });
 	}
     });
 }
 
 
-//cb(err, fromAddr, toAddr, date, msg)
+//cb(err, fromAddr, toAddr, date, sentMsgCtr, msgHex)
 function getRecvMsg(toAddr, recvMsgNo, cb) {
     var url = 'https://' + ether.etherscanioHost   +
 	'/api?module=logs&action=getLogs'          +
@@ -779,7 +822,7 @@ function getRecvMsg(toAddr, recvMsgNo, cb) {
 	if (!str || !!err) {
 	    var err = "error retreiving events: " + err;
 	    console.log('getRecvMsg: ' + err);
-	    cb(err, '', '', '', '');
+	    cb(err, '', '', '', '', '');
 	    return;
 	}
 	//typical
@@ -794,6 +837,7 @@ function getRecvMsg(toAddr, recvMsgNo, cb) {
 	//                                ],
 	//                    "data"    : "0x000000000000000000000000f48ae436e4813c7dcd5cdeb305131d07ca022469     -- _fromAddr
 	//                                   0000000000000000000000000000000000000000000000000000000000000001     -- _mimeType
+	//                                   0000000000000000000000000000000000000000000000000000000000000005     -- _sentMsgCtr
 	//                                   0000000000000000000000000000000000000000000000000000000000000060     -- offset to message
 	//                                   000000000000000000000000000000000000000000000000000000000000000d     -- message (length)
 	//                                   4669727374206d65737361676500000000000000000000000000000000000000",   -- message text
@@ -810,41 +854,44 @@ function getRecvMsg(toAddr, recvMsgNo, cb) {
 	var eventsResp = JSON.parse(str);
 	if (eventsResp.status == 0 && eventsResp.message == 'No records found') {
 	    //this is not an err... just no events
-	    cb(err, '', '', '');
+	    cb(err, '', '', '', '', '');
 	    return;
 	}
 	if (eventsResp.status != 1 || eventsResp.message != 'OK') {
 	    var err = "error retreiving events: bad status (" + eventsResp.status + ", " + eventsResp.message + ")";
 	    console.log('getRecvMsg: ' + err);
-	    cb(err, '', '', '', '');
+	    cb(err, '', '', '', '', '');
 	    return;
 	}
-	var msg = '';
+	var msgHex = '';
 	var fromAddr = '';
 	var mimeType = 0;
+	var sentMsgCtr = 0;
 	var i = 0;
 	{
 	    console.log(eventsResp.result[i]);
 	    //var blockNumber = parseInt(eventsResp.result[i].blockNumber, 16);
 	    var timeStamp = parseInt(eventsResp.result[i].timeStamp, 16);
 	    var date = (new Date(timeStamp * 1000)).toUTCString();
-	    console.log('date = ' + date);
+	    console.log('getRecvMsg: date = ' + date);
 	    //first 2 chars are '0x'
 	    fromAddr = eventsResp.result[i].data.slice(0+2, 64+2);
 	    fromAddr = '0x' + fromAddr.substring(12*2);
 	    var mimeTypeHex = eventsResp.result[i].data.slice(64+2, 128+2);
 	    mimeType = parseInt(mimeTypeHex, 16);
 	    console.log('getRecvMsg: mimeType = ' + mimeType.toString(10));
-	    var msgOffsetHex = eventsResp.result[i].data.slice(128+2, 192+2);
+	    var sentMsgCtrHex = eventsResp.result[i].data.slice(128+2, 192+2);
+	    sentMsgCtr = parseInt(sentMsgCtrHex, 16);
+	    console.log('getRecvMsg: sentMsgCtr = ' + sentMsgCtr.toString(10));
+	    var msgOffsetHex = eventsResp.result[i].data.slice(192+2, 256+2);
 	    var msgOffset = parseInt(msgOffsetHex, 16);
 	    var msgLenHex = eventsResp.result[i].data.slice((2*msgOffset)+2, (2*msgOffset)+64+2);
 	    var msgLen = parseInt(msgLenHex, 16);
-	    console.log('getRecvMsg: msgLen = ' + msgLen.toString(16));
-	    var msgHex = eventsResp.result[i].data.slice((2*msgOffset)+64+2, (2*msgOffset)+64+2+(msgLen*2));
-	    console.log('msg = 0x' + msgHex);
-	    msg = common.hexToAscii(msgHex);
+	    console.log('getRecvMsg: msgLen = 0x' + msgLen.toString(16));
+	    msgHex = '0x' + eventsResp.result[i].data.slice((2*msgOffset)+64+2, (2*msgOffset)+64+2+(msgLen*2));
+	    console.log('getRecvMsg: msgHex = ' + msgHex);
 	}
-	cb(null, fromAddr, toAddr, date, msg);
+	cb(null, fromAddr, toAddr, date, sentMsgCtr, msgHex);
     });
 }
 

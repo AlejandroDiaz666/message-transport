@@ -32,6 +32,7 @@ var common = module.exports = {
 
 
     hexToAscii: function(hexStr) {
+	console.log('hexToAscii');
 	//first ensure passed parm is a string
 	var hex = hexStr.toString();
 	if (hex.startsWith('0x'))
@@ -41,6 +42,33 @@ var common = module.exports = {
 	    str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
 	return str;
     },
+
+
+    hexToBytes: function(hexStr) {
+	console.log('hexToAscii');
+	//first ensure passed parm is a string
+	var hex = hexStr.toString();
+	if (hex.startsWith('0x'))
+	    hex = hex.substring(2);
+	var bytes = new Uint8Array(hex.length / 2);
+	for (var i = 0, j = 0; i < hex.length; i += 2)
+	    bytes[j++] = parseInt(hex.substr(i, 2), 16);
+	return bytes;
+    },
+
+
+    bytesToHex: function(bytesStr) {
+	console.log('bytesToHex');
+	//first ensure passed parm is a string
+	var hex = hexStr.toString();
+	if (hex.startsWith('0x'))
+	    hex = hex.substring(2);
+	var bytes = new Uint8Array(hex.length / 2);
+	for (var i = 0, j = 0; i < hex.length; i += 2)
+	    bytes[j++] = parseInt(hex.substr(i, 2), 16);
+	return bytes;
+    },
+
 
     leftPadTo: function(str, desiredLen, ch) {
 	var padChar = (typeof ch !== 'undefined') ? ch : ' ';
