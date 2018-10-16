@@ -25,7 +25,7 @@ C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FF
 	//transmitted over an insecure channel. The generator is a small integer and typically has the value 2 or 5.
 	//we use a known safe prime and generator.
 	var primeBN = new BN(dhcrypt.PRIME_2048, 16);
-	var dh = crypto.createDiffieHellman(primeBN.toString(16), 'hex');
+	var dh = crypto.createDiffieHellman(primeBN.toString(16), 'hex', '02', 'hex');
 	console.log('dhcrypt:prime: ' + dh.getPrime('hex'));
 	console.log('dhcrypt:generator: ' + dh.getGenerator('hex'));
 	privateKeyFromAcct(function(privateKey) {
@@ -52,9 +52,8 @@ C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FF
 
     //compute pairwise transient key
     ptk: function(otherPublicKey, toAddr, fromAddr, sentMsgCtr) {
-	if (otherPublicKey.startsWith('0x'))
-	    otherPublicKey = otherPublicKey.substring(2);
-    	var pmk = dhcrypt.dh.computeSecret(otherPublicKey);
+	var otherPublicKeyBytes = common.hexToBytes(otherPublicKey);
+    	var pmk = dhcrypt.dh.computeSecret(otherPublicKeyBytes, 'hex');
 	console.log('dhcrypt:ptk: myPublicKey = ' + dhcrypt.dh.getPublicKey('hex'));
 	console.log('dhcrypt:ptk: otherPublicKey = ' + otherPublicKey);
 	console.log('dhcrypt:ptk: pmk = ' + pmk.toString('hex'));
