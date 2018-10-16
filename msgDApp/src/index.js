@@ -105,8 +105,12 @@ function setReplyButtonHandlers() {
 		    console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
 		    var fee = (msgCount > 0) ? toAcctInfo[ether.ACCTINFO_MESSAGEFEE] : toAcctInfo[ether.ACCTINFO_SPAMFEE];
 		    console.log('fee is ' + fee + ' wei');
+		    //display "waiting for metamask" in case metamask dialog is hidden
+		    var metaMaskModal = document.getElementById('metaMaskModal');
+		    metaMaskModal.style.display = 'block';
 		    ether.sendMessage(common.web3, toAddr, mimeType, encrypted, fee, function(err, txid) {
 			console.log('txid = ' + txid);
+			metaMaskModal.style.display = 'none';
 			var statusDiv = document.getElementById('statusDiv');
 			waitForTXID(txid, 'Send-Message', statusDiv, 'send', function() {
 			});
@@ -336,7 +340,11 @@ function handleUnregisteredAcct() {
     setMenuButtonState('composeButton',       'Disabled');
     setMenuButtonState('viewSentButton',      'Disabled');
     setMenuButtonState('withdrawButton',      'Disabled');
+    //display "waiting for metamask" in case metamask dialog is hidden
+    var metaMaskModal = document.getElementById('metaMaskModal');
+    metaMaskModal.style.display = 'block';
     dhcrypt.initDH(function() {
+	metaMaskModal.style.display = 'none';
 	setMenuButtonState('registerButton',   'Enabled');
     });
     //
@@ -393,7 +401,11 @@ function handleRegisteredAcct(mode) {
 	else
 	    handleViewSent(index.acctInfo);
     } else {
+	//display "waiting for metamask" in case metamask dialog is hidden
+	var metaMaskModal = document.getElementById('metaMaskModal');
+	metaMaskModal.style.display = 'block';
 	dhcrypt.initDH(function() {
+	    metaMaskModal.style.display = 'none';
 	    handleViewRecv(index.acctInfo);
 	});
     }
@@ -594,8 +606,12 @@ function handleRegisterSubmit() {
     var spamFee = parseInt(spamFeeInput.value, 10);
     console.log('message fee = ' + messageFee + ', spam fee = ' + spamFee);
     var publicKey = dhcrypt.publicKey();
+    //display "waiting for metamask" in case metamask dialog is hidden
+    var metaMaskModal = document.getElementById('metaMaskModal');
+    metaMaskModal.style.display = 'block';
     ether.register(common.web3, messageFee, spamFee, publicKey, function(err, txid) {
 	console.log('txid = ' + txid);
+	metaMaskModal.style.display = 'none';
 	var statusDiv = document.getElementById('statusDiv');
 	waitForTXID(txid, 'Register', statusDiv, 'recv', function() {
 	});
@@ -626,8 +642,12 @@ function handleWithdraw() {
     msgTextArea.disabled = true;
     msgTextArea.value = '';
     //
+    //display "waiting for metamask" in case metamask dialog is hidden
+    var metaMaskModal = document.getElementById('metaMaskModal');
+    metaMaskModal.style.display = 'block';
     ether.withdraw(common.web3, function(err, txid) {
 	console.log('txid = ' + txid);
+	metaMaskModal.style.display = 'none';
 	var statusDiv = document.getElementById('statusDiv');
 	waitForTXID(txid, 'Withdraw', statusDiv, 'recv', function() {
 	});

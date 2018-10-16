@@ -50,6 +50,25 @@ h3 { font-size:18px; }
     cursor: pointer;
 }
 
+
+/* this modal has a message telling the user that we are waiting
+   for metamask
+*/
+#metaMaskModal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 40%;
+    top: 10%;
+    width: 300px;
+    height: 50px;
+    padding: 10px;
+    overflow: none;
+    border: 1px solid #888;
+    background-color: #60ff60;
+}
+
+
 #importantInfoButton {
     float: left;
     margin-left:10px;
