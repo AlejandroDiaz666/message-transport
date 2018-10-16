@@ -93,7 +93,7 @@ function setReplyButtonHandlers() {
 	    ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
 		//encrypt the message...
 		var toPublicKey = toAcctInfo[ether.ACCTINFO_PUBLICKEY];
-		var sentMsgCtr = parseInt(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT], 16);
+		var sentMsgCtr = parseInt(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
 		console.log('setReplyButtonHandlers: toPublicKey = ' + toPublicKey);
 		console.log('setReplyButtonHandlers: sentMsgCtr = ' + sentMsgCtr);
 		var ptk = dhcrypt.ptk(toPublicKey, toAddr, common.web3.eth.accounts[0], sentMsgCtr + 1);
@@ -645,7 +645,7 @@ function showMsgLoop(acctInfo) {
     var viewRecvButton = document.getElementById('viewRecvButton');
     var msgNoCounter     = (viewRecvButton.className == 'menuBarButtonSelected') ? 'recvMessageNo'                 : 'sentMessageNo';
     var acctInfoCountIdx = (viewRecvButton.className == 'menuBarButtonSelected') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
-    var maxMsgNo = parseInt(acctInfo[acctInfoCountIdx], 10);
+    var maxMsgNo = parseInt(acctInfo[acctInfoCountIdx]);
     if (index[msgNoCounter] == 0 && maxMsgNo > 0)
 	index[msgNoCounter] = 1;
     if (index[msgNoCounter] > maxMsgNo)
