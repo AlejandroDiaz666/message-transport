@@ -343,9 +343,10 @@ function handleUnregisteredAcct() {
     //display "waiting for metamask" in case metamask dialog is hidden
     var metaMaskModal = document.getElementById('metaMaskModal');
     metaMaskModal.style.display = 'block';
-    dhcrypt.initDH(function() {
+    dhcrypt.initDH(function(err) {
 	metaMaskModal.style.display = 'none';
-	setMenuButtonState('registerButton',   'Enabled');
+	if (!err)
+	    setMenuButtonState('registerButton',   'Enabled');
     });
     //
     var totalReceivedArea = document.getElementById('totalReceivedArea');
@@ -404,9 +405,10 @@ function handleRegisteredAcct(mode) {
 	//display "waiting for metamask" in case metamask dialog is hidden
 	var metaMaskModal = document.getElementById('metaMaskModal');
 	metaMaskModal.style.display = 'block';
-	dhcrypt.initDH(function() {
+	dhcrypt.initDH(function(err) {
 	    metaMaskModal.style.display = 'none';
-	    handleViewRecv(index.acctInfo);
+	    if (!err)
+		handleViewRecv(index.acctInfo);
 	});
     }
 }

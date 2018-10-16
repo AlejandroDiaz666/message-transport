@@ -20,6 +20,9 @@ var dhcrypt = module.exports = {
 2F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5\
 C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF',
 
+    //
+    // cb(err)
+    //
     initDH: function(cb) {
 	//The DH algorithm begins with a large prime, P, and a generator, G. These don't have to be secret, and they may be
 	//transmitted over an insecure channel. The generator is a small integer and typically has the value 2 or 5.
@@ -28,17 +31,21 @@ C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FF
 	var dh = crypto.createDiffieHellman(primeBN.toString(16), 'hex', '02', 'hex');
 	console.log('dhcrypt:prime: ' + dh.getPrime('hex'));
 	console.log('dhcrypt:generator: ' + dh.getGenerator('hex'));
-	privateKeyFromAcct(function(privateKey) {
-	    //console.log('privateKey: ' + privateKey);
-	    if (privateKey.startsWith('0x'))
-		privateKey = privateKey.substring(2);
-	    dh.setPrivateKey(privateKey, 'hex');
-	    dh.generateKeys('hex');
-	    console.log('dhcrypt:private (' + dh.getPrivateKey('hex').length + '): ' + dh.getPrivateKey('hex'));
-	    var publicKey = dh.getPublicKey('hex');
-	    console.log('dhcrypt:public: (' + publicKey.length + '): ' + publicKey);
-	    dhcrypt.dh = dh;
-	    cb();
+	privateKeyFromAcct(function(err, privateKey) {
+	    if (!!err) {
+		cb(err);
+	    } else {
+		//console.log('privateKey: ' + privateKey);
+		if (privateKey.startsWith('0x'))
+		    privateKey = privateKey.substring(2);
+		dh.setPrivateKey(privateKey, 'hex');
+		dh.generateKeys('hex');
+		console.log('dhcrypt:private (' + dh.getPrivateKey('hex').length + '): ' + dh.getPrivateKey('hex'));
+		var publicKey = dh.getPublicKey('hex');
+		console.log('dhcrypt:public: (' + publicKey.length + '): ' + publicKey);
+		dhcrypt.dh = dh;
+		cb(null);
+	    }
 	});
     },
 
@@ -100,10 +107,13 @@ C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FF
 };
 
 
+//
 // generate a diffie hellman secret
 // we auto-generate the secret by signing an arbitrary message with the user's private key. the important point
 // is that the word is generated deterministically (so that we can re-generate it whenever we want). the secret
 // should never be shared or even stored anywhere at all.
+//
+// cb(err, privateKey)
 //
 function privateKeyFromAcct(cb) {
     var msg = "This is an arbitrary message. By signing it you will create a diffie-hellman secret.\n\n\
@@ -115,12 +125,12 @@ nor contests of strength, nor of his wife. He only dreamed of places now and of 
 	if (!!err) {
 	    console.log('secretFromAcct: error signing arbitrary message. err = ' + err);
 	    alert('Unable to generate secret: ' + err);
-	    cb(null);
+	    cb(err, null);
 	} else {
 	    //signature is 65 bytes (520 bits)
 	    //console.log('signature: ' + signature);
 	    //console.log('length: ' + signature.length);
-	    cb(signature);
+	    cb(null, signature);
 	}
     });
 }
