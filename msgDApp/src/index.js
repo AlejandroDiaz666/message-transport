@@ -155,7 +155,9 @@ function setValidateButtonHandler() {
 	    replyButton.disabled = true;
 	} else {
 	    ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
-		if (toAcctInfo[ether.ACCTINFO_G] == '0') {
+		var toPublickey = toAcctInfo[ether.ACCTINFO_PUBLICKEY];
+		console.log('toPublicKey: ' + toPublickey);
+		if (toPublickey == '0x') {
 		    msgTextArea.value = 'Error: no account was found for this address.';
 		    replyButton.disabled = true;
 		} else {
