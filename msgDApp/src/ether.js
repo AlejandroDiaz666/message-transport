@@ -226,4 +226,57 @@ var ether = module.exports = {
 	web3.eth.sendTransaction(tx, callback)
     },
 
+
+    //cb(err, result)
+    //options: {
+    //	fromBlock, toBlock, address, topics[]
+    //
+    //this is the more correct way to get logs.... except that it's not reliable :(
+    /*
+    getLogs: function(options, cb) {
+        const filter = common.web3.eth.filter(options);
+	filter.get(cb);
+	filter.stopWatching();
+    },
+    */
+    getLogs: function(options, cb) {
+	var url = 'https://' + ether.etherscanioHost   +
+	    '/api?module=logs&action=getLogs'          +
+	    '&fromBlock=' + options.fromBlock          +
+	    '&toBlock=' + options.toBlock              +
+	    '&address=' + options.address              +
+	    '&topic0=' + options.topics[0];
+	if (options.topics.length > 1) {
+	    url += '&topic1=' + options.topics[1];
+	    if (options.topics.length > 2)
+		url += '&topic2=' + options.topics[2];
+	}
+	common.fetch(url, function(str, err) {
+	    if (!str || !!err) {
+		var err = "error retreiving events: " + err;
+		console.log('ether.getLogs: ' + err);
+		cb(err, '');
+		return;
+	    }
+	    //typical
+	    //  { "status"  : "1",
+	    //    "message" : "OK",
+	    //    "result"  : [...]
+	    //  }
+	    var eventsResp = JSON.parse(str);
+	    if (eventsResp.status == 0 && eventsResp.message == 'No records found') {
+		//this is not an err... just no events
+		cb(err, '');
+		return;
+	    }
+	    if (eventsResp.status != 1 || eventsResp.message != 'OK') {
+		var err = "error retreiving events: bad status (" + eventsResp.status + ", " + eventsResp.message + ")";
+		console.log('ether.getLogs: ' + err);
+		cb(err, '');
+		return;
+	    }
+	    cb(null, eventsResp.result);
+	});
+    },
+
 };

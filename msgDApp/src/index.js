@@ -771,23 +771,19 @@ function showSentMsg(msgNo) {
 
 //cb(err, fromAddr, toAddr, date, sentMsgCtr, msgHex)
 function getSentMsg(fromAddr, sentMsgNo, cb) {
-    var url = 'https://' + ether.etherscanioHost   +
-	'/api?module=logs&action=getLogs'          +
-	'&fromBlock=0&toBlock=latest'              +
-	'&address=' + ether.EMT_CONTRACT_ADDR      +
-	'&topic0=' + ether.MESSAGETX_EVENT_TOPIC0  +
-	'&topic1=' + '0x' + common.leftPadTo(fromAddr.substring(2), 64, '0') +
-	'&topic2=' + '0x' + common.leftPadTo(sentMsgNo.toString(16), 64, '0');
-    common.fetch(url, function(str, err) {
-	if (!str || !!err) {
-	    var err = "error retreiving events: " + err;
-	    console.log('getSentMsg: ' + err);
-	    cb(err, '', '', '', '');
+    const options = {
+	fromBlock: 9089420,
+	toBlock: 'latest',
+	address: ether.EMT_CONTRACT_ADDR,
+	topics: [ether.MESSAGETX_EVENT_TOPIC0, '0x' + common.leftPadTo(fromAddr.substring(2), 64, '0'), '0x' + common.leftPadTo(sentMsgNo.toString(16), 64, '0') ]
+    };
+    ether.getLogs(options, function(err, result) {
+	if (!!err || !result || result.length == 0) {
+	    //either an error, or maybe just no events
+	    cb(err, '', '', '', '', '');
 	    return;
 	}
 	//typical
-	//  { "status"  : "1",
-	//    "message" : "OK",
 	//    "result"  : [
 	//                  { "address"     : "0x170d49612b631bc989a72253d78cb4218ca12aeb",
 	//                    "topics"      : [
@@ -806,32 +802,20 @@ function getSentMsg(fromAddr, sentMsgNo, cb) {
 	//                    "transactionIndex" : "0x11"
 	//                 }
 	//               ]
-	//  }
-	var eventsResp = JSON.parse(str);
-	if (eventsResp.status == 0 && eventsResp.message == 'No records found') {
-	    //this is not an err... just no events
-	    cb(err, '', '', '', '');
-	    return;
-	}
-	if (eventsResp.status != 1 || eventsResp.message != 'OK') {
-	    var err = "error retreiving events: bad status (" + eventsResp.status + ", " + eventsResp.message + ")";
-	    console.log('getSentMsg: ' + err);
-	    cb(err, '', '', '', '');
-	    return;
-	}
 	var toAddr = '';
 	var toCount = 0;
 	var i = 0;
 	{
-	    console.log(eventsResp.result[i]);
-	    //var blockNumber = parseInt(eventsResp.result[i].blockNumber, 16);
-	    var timeStamp = parseInt(eventsResp.result[i].timeStamp, 16);
+	    console.log(result[i]);
+	    var blockNumber = parseInt(result[i].blockNumber);
+	    console.log('getRecvMsg: blockNumber = ' + blockNumber);
+	    var timeStamp = parseInt(result[i].timeStamp);
 	    var sentDate = (new Date(timeStamp * 1000)).toUTCString();
 	    console.log('sentDate = ' + sentDate);
 	    //first 2 chars are '0x'
-	    toAddr = eventsResp.result[i].data.slice(0+2, 64+2);
+	    toAddr = result[i].data.slice(0+2, 64+2);
 	    toAddr = '0x' + toAddr.substring(12*2);
-	    var toCountHex = eventsResp.result[i].data.slice(64+2, 128+2);
+	    var toCountHex = result[i].data.slice(64+2, 128+2);
 	    toCount = parseInt(toCountHex, 16);
 	    console.log('getSentMsg: toAddr = ' + toAddr + ', toCount = ' + toCount);
 	    //get the n'th messages received by the toAddr
@@ -845,23 +829,20 @@ function getSentMsg(fromAddr, sentMsgNo, cb) {
 
 //cb(err, fromAddr, toAddr, date, sentMsgCtr, msgHex)
 function getRecvMsg(toAddr, recvMsgNo, cb) {
-    var url = 'https://' + ether.etherscanioHost   +
-	'/api?module=logs&action=getLogs'          +
-	'&fromBlock=0&toBlock=latest'              +
-	'&address=' + ether.EMT_CONTRACT_ADDR      +
-	'&topic0=' + ether.MESSAGERX_EVENT_TOPIC0  +
-	'&topic1=' + '0x' + common.leftPadTo(toAddr.substring(2), 64, '0') +
-	'&topic2=' + '0x' + common.leftPadTo(recvMsgNo.toString(16), 64, '0');
-    common.fetch(url, function(str, err) {
-	if (!str || !!err) {
-	    var err = "error retreiving events: " + err;
-	    console.log('getRecvMsg: ' + err);
+    const options = {
+	fromBlock: 9089420,
+	toBlock: 'latest',
+	address: ether.EMT_CONTRACT_ADDR,
+	topics: [ether.MESSAGERX_EVENT_TOPIC0, '0x' + common.leftPadTo(toAddr.substring(2), 64, '0'), '0x' + common.leftPadTo(recvMsgNo.toString(16), 64, '0') ]
+    };
+    ether.getLogs(options, function(err, result) {
+	if (!!err || !result || result.length == 0) {
+	    //either an error, or maybe just no events
 	    cb(err, '', '', '', '', '');
 	    return;
 	}
+	console.log('result.length: ' + result.length);
 	//typical
-	//  { "status"  : "1",
-	//    "message" : "OK",
 	//    "result"  : [
 	//                  { "address" : "0x800bf6d2bb0156fd21a84ae20e1b9479dea0dca9",
 	//                    "topics"  : [
@@ -884,49 +865,34 @@ function getRecvMsg(toAddr, recvMsgNo, cb) {
 	//                    "transactionIndex" : "0x15"
 	//                  }
 	//                ]
-	//  }
-	var eventsResp = JSON.parse(str);
-	if (eventsResp.status == 0 && eventsResp.message == 'No records found') {
-	    //this is not an err... just no events
-	    cb(err, '', '', '', '', '');
-	    return;
-	}
-	if (eventsResp.status != 1 || eventsResp.message != 'OK') {
-	    var err = "error retreiving events: bad status (" + eventsResp.status + ", " + eventsResp.message + ")";
-	    console.log('getRecvMsg: ' + err);
-	    cb(err, '', '', '', '', '');
-	    return;
-	}
-	var msgHex = '';
-	var fromAddr = '';
-	var mimeType = 0;
-	var sentMsgCtr = 0;
-	var i = 0;
-	{
-	    console.log(eventsResp.result[i]);
-	    //var blockNumber = parseInt(eventsResp.result[i].blockNumber, 16);
-	    var timeStamp = parseInt(eventsResp.result[i].timeStamp, 16);
+	for (var i = result.length - 1; i >= 0; --i) {
+	    console.log('result[' + i + ']: ' + result[i]);
+	    console.log('string: ' + JSON.stringify(result[i]));
+	    var blockNumber = parseInt(result[i].blockNumber);
+	    console.log('getRecvMsg: blockNumber = ' + blockNumber);
+	    var timeStamp = parseInt(result[i].timeStamp);
 	    var date = (new Date(timeStamp * 1000)).toUTCString();
 	    console.log('getRecvMsg: date = ' + date);
 	    //first 2 chars are '0x'
-	    fromAddr = eventsResp.result[i].data.slice(0+2, 64+2);
+	    fromAddr = result[i].data.slice(0+2, 64+2);
 	    fromAddr = '0x' + fromAddr.substring(12*2);
-	    var mimeTypeHex = eventsResp.result[i].data.slice(64+2, 128+2);
+	    var mimeTypeHex = result[i].data.slice(64+2, 128+2);
 	    mimeType = parseInt(mimeTypeHex, 16);
 	    console.log('getRecvMsg: mimeType = ' + mimeType.toString(10));
-	    var sentMsgCtrHex = eventsResp.result[i].data.slice(128+2, 192+2);
+	    var sentMsgCtrHex = result[i].data.slice(128+2, 192+2);
 	    sentMsgCtr = parseInt(sentMsgCtrHex, 16);
 	    console.log('getRecvMsg: sentMsgCtr = ' + sentMsgCtr.toString(10));
-	    var msgOffsetHex = eventsResp.result[i].data.slice(192+2, 256+2);
+	    var msgOffsetHex = result[i].data.slice(192+2, 256+2);
 	    var msgOffset = parseInt(msgOffsetHex, 16);
-	    var msgLenHex = eventsResp.result[i].data.slice((2*msgOffset)+2, (2*msgOffset)+64+2);
+	    var msgLenHex = result[i].data.slice((2*msgOffset)+2, (2*msgOffset)+64+2);
 	    var msgLen = parseInt(msgLenHex, 16);
 	    console.log('getRecvMsg: msgLen = 0x' + msgLen.toString(16));
-	    msgHex = '0x' + eventsResp.result[i].data.slice((2*msgOffset)+64+2, (2*msgOffset)+64+2+(msgLen*2));
+	    msgHex = '0x' + result[i].data.slice((2*msgOffset)+64+2, (2*msgOffset)+64+2+(msgLen*2));
 	    console.log('getRecvMsg: msgHex = ' + msgHex);
+	    if (i == 0)
+		cb(null, fromAddr, toAddr, date, sentMsgCtr, msgHex);
 	}
-	cb(null, fromAddr, toAddr, date, sentMsgCtr, msgHex);
-    });
+    })
 }
 
 
