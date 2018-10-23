@@ -343,10 +343,11 @@ function handleUnregisteredAcct() {
     //display "waiting for metamask" in case metamask dialog is hidden
     var metaMaskModal = document.getElementById('metaMaskModal');
     metaMaskModal.style.display = 'block';
-    dhcrypt.initDH(function(err) {
+    dhcrypt.initDH(null, function(err) {
 	metaMaskModal.style.display = 'none';
-	if (!err)
+	if (!err) {
 	    setMenuButtonState('registerButton',   'Enabled');
+	}
     });
     //
     var totalReceivedArea = document.getElementById('totalReceivedArea');
@@ -405,7 +406,8 @@ function handleRegisteredAcct(mode) {
 	//display "waiting for metamask" in case metamask dialog is hidden
 	var metaMaskModal = document.getElementById('metaMaskModal');
 	metaMaskModal.style.display = 'block';
-	dhcrypt.initDH(function(err) {
+	var encryptedPrivateKey = index.acctInfo[ether.ACCTINFO_ENCRYPTEDPRIVATEKEY];
+	dhcrypt.initDH(encryptedPrivateKey, function(err) {
 	    metaMaskModal.style.display = 'none';
 	    if (!err)
 		handleViewRecv(index.acctInfo);
@@ -608,10 +610,11 @@ function handleRegisterSubmit() {
     var spamFee = parseInt(spamFeeInput.value, 10);
     console.log('message fee = ' + messageFee + ', spam fee = ' + spamFee);
     var publicKey = dhcrypt.publicKey();
+    var encryptedPrivateKey = dhcrypt.encryptedPrivateKey();
     //display "waiting for metamask" in case metamask dialog is hidden
     var metaMaskModal = document.getElementById('metaMaskModal');
     metaMaskModal.style.display = 'block';
-    ether.register(common.web3, messageFee, spamFee, publicKey, function(err, txid) {
+    ether.register(common.web3, messageFee, spamFee, publicKey, encryptedPrivateKey, function(err, txid) {
 	console.log('txid = ' + txid);
 	metaMaskModal.style.display = 'none';
 	var statusDiv = document.getElementById('statusDiv');
@@ -772,7 +775,7 @@ function showSentMsg(msgNo) {
 //cb(err, fromAddr, toAddr, date, sentMsgCtr, msgHex)
 function getSentMsg(fromAddr, sentMsgNo, cb) {
     const options = {
-	fromBlock: 9089420,
+	fromBlock: 0,
 	toBlock: 'latest',
 	address: ether.EMT_CONTRACT_ADDR,
 	topics: [ether.MESSAGETX_EVENT_TOPIC0, '0x' + common.leftPadTo(fromAddr.substring(2), 64, '0'), '0x' + common.leftPadTo(sentMsgNo.toString(16), 64, '0') ]
@@ -830,7 +833,7 @@ function getSentMsg(fromAddr, sentMsgNo, cb) {
 //cb(err, fromAddr, toAddr, date, sentMsgCtr, msgHex)
 function getRecvMsg(toAddr, recvMsgNo, cb) {
     const options = {
-	fromBlock: 9089420,
+	fromBlock: 0,
 	toBlock: 'latest',
 	address: ether.EMT_CONTRACT_ADDR,
 	topics: [ether.MESSAGERX_EVENT_TOPIC0, '0x' + common.leftPadTo(toAddr.substring(2), 64, '0'), '0x' + common.leftPadTo(recvMsgNo.toString(16), 64, '0') ]

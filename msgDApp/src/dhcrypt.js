@@ -13,6 +13,7 @@ const keccak = require('keccakjs');
 var dhcrypt = module.exports = {
 
     dh: null,
+    epk: null,
     //this Prime is from the 2048-bit MODP group from RFC 3526
     PRIME_2048: 'FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A0\
 8798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE38\
@@ -21,32 +22,50 @@ var dhcrypt = module.exports = {
 C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF',
 
     //
-    // cb(err)
+    // cb(err, encryptedPrivateKey)
     //
-    initDH: function(cb) {
+    initDH: function(encryptedPrivateKey, cb) {
 	//The DH algorithm begins with a large prime, P, and a generator, G. These don't have to be secret, and they may be
 	//transmitted over an insecure channel. The generator is a small integer and typically has the value 2 or 5.
 	//we use a known safe prime and generator.
 	var primeBN = new BN(dhcrypt.PRIME_2048, 16);
 	var dh = crypto.createDiffieHellman(primeBN.toString(16), 'hex', '02', 'hex');
-	console.log('dhcrypt:prime: ' + dh.getPrime('hex'));
-	console.log('dhcrypt:generator: ' + dh.getGenerator('hex'));
-	privateKeyFromAcct(function(err, privateKey) {
+	console.log('dhcrypt.initDH: prime: ' + dh.getPrime('hex'));
+	console.log('dhcrypt.initDH: generator: ' + dh.getGenerator('hex'));
+	signatureFromAcct(function(err, signature) {
 	    if (!!err) {
-		cb(err);
+		cb(err, null);
 	    } else {
-		//console.log('privateKey: ' + privateKey);
-		if (privateKey.startsWith('0x'))
-		    privateKey = privateKey.substring(2);
-		dh.setPrivateKey(privateKey, 'hex');
-		dh.generateKeys('hex');
-		console.log('dhcrypt:private (' + dh.getPrivateKey('hex').length + '): ' + dh.getPrivateKey('hex'));
+		console.log('dhcrypt.initDH: signature: ' + signature);
+		//the signature is 65 bytes; strip off last byte for 256 encrption key
+		var keyEncryptionKey = signature.substring(0, 128);
+		console.log('dhcrypt.initDH: keyEncryptionKey: ' + keyEncryptionKey);
+		if (!!encryptedPrivateKey) {
+		    //we already have an encrypted private key... need to decrypt it
+		    var privateKey = dhcrypt.decrypt(keyEncryptionKey, encryptedPrivateKey);
+		    console.log('dhcrypt.initDH: privateKey: ' + privateKey);
+		    if (privateKey.startsWith('0x'))
+			privateKey = privateKey.substring(2);
+		    dh.setPrivateKey(privateKey, 'hex');
+		    dh.generateKeys('hex');
+		} else {
+		    //generate a new private key, and encrypt it
+		    dh.generateKeys('hex');
+		    var privateKey = dh.getPrivateKey('hex');
+		    console.log('dhcrypt.initDH: private (' + privateKey.length + '): ' + privateKey);
+		    encryptedPrivateKey = dhcrypt.encrypt(keyEncryptionKey, privateKey);
+		}
 		var publicKey = dh.getPublicKey('hex');
-		console.log('dhcrypt:public: (' + publicKey.length + '): ' + publicKey);
+		console.log('dhcrypt.initDH: public: (' + publicKey.length + '): ' + publicKey);
 		dhcrypt.dh = dh;
+		dhcrypt.epk = encryptedPrivateKey;
 		cb(null);
 	    }
 	});
+    },
+
+    encryptedPrivateKey: function() {
+	return(dhcrypt.epk);
     },
 
     publicKey: function() {
@@ -68,8 +87,8 @@ C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FF
 	var sentMsgCtrBuffer = sentMsgCtrBN.toArrayLike(Buffer, 'be');
 	var sentMsgCtrHex = ethUtils.bufferToHex(sentMsgCtrBuffer);
 	console.log('dhcrypt:ptk: sentMsgCtrHex = ' + sentMsgCtrHex);
-	const hash = crypto.createHash('sha256');
-	hash.update(pmk);
+	var hash = crypto.createHash('sha256');
+	hash.update(pmk.toString('hex'));
 	hash.update(toAddr);
 	hash.update(fromAddr);
 	hash.update(sentMsgCtrHex);
@@ -113,9 +132,9 @@ C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FF
 // is that the word is generated deterministically (so that we can re-generate it whenever we want). the secret
 // should never be shared or even stored anywhere at all.
 //
-// cb(err, privateKey)
+// cb(err, signature)
 //
-function privateKeyFromAcct(cb) {
+function signatureFromAcct(cb) {
     var msg = "This is an arbitrary message. By signing it you will create a diffie-hellman secret.\n\n\
 He no longer dreamed of storms, nor of women, nor of great occurrences, nor of great fish, nor fights, \
 nor contests of strength, nor of his wife. He only dreamed of places now and of the lions on the beach.";
@@ -123,13 +142,14 @@ nor contests of strength, nor of his wife. He only dreamed of places now and of 
     //console.log('hexMsg: ' + hexMsg.toString());
     common.web3.personal.sign(hexMsg, common.web3.eth.accounts[0], function(err, signature) {
 	if (!!err) {
-	    console.log('secretFromAcct: error signing arbitrary message. err = ' + err);
+	    console.log('dhcrypt.signatureFromAcct: error signing arbitrary message. err = ' + err);
 	    alert('Unable to generate secret: ' + err);
 	    cb(err, null);
 	} else {
 	    //signature is 65 bytes (520 bits)
-	    //console.log('signature: ' + signature);
-	    //console.log('length: ' + signature.length);
+	    console.log('dhcrypt.signatureFromAcct: signature (' + signature.length + '): ' + signature);
+	    if (signature.startsWith('0x'))
+		signature = signature.substring(2);
 	    cb(null, signature);
 	}
     });
