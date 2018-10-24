@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 // ---------------------------------------------------------------------------
 //  Message_Transport
 // ---------------------------------------------------------------------------
-contract G_Message_Transport {
+contract H_Message_Transport {
 
   // -------------------------------------------------------------------------
   // events
@@ -33,6 +33,7 @@ contract G_Message_Transport {
     uint recvMessageCount;     // total messages received
     uint sentMessageCount;     // total messages sent
     bytes publicKey;           // encryption parameter
+    bytes encryptedPrivateKey; // encryption parameter
     mapping (address => uint256) peerRecvMessageCount;
   }
 
@@ -86,11 +87,12 @@ contract G_Message_Transport {
   // -------------------------------------------------------------------------
   // register a simple message account
   // -------------------------------------------------------------------------
-  function register(uint256 _messageFee, uint256 _spamFee, bytes _publicKey) public {
+  function register(uint256 _messageFee, uint256 _spamFee, bytes _publicKey, bytes _encryptedPrivateKey) public {
     Account storage _account = accounts[msg.sender];
     _account.messageFee = _messageFee;
     _account.spamFee = _spamFee;
     _account.publicKey = _publicKey;
+    _account.encryptedPrivateKey = _encryptedPrivateKey;
   }
 
 
