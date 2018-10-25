@@ -93,10 +93,10 @@ function setReplyButtonHandlers() {
 	    ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
 		//encrypt the message...
 		var toPublicKey = toAcctInfo[ether.ACCTINFO_PUBLICKEY];
-		var sentMsgCtr = parseInt(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
+		var sentMsgCtrBN = common.numberToBN(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
+		sentMsgCtrBN.iaddn(1);
 		console.log('setReplyButtonHandlers: toPublicKey = ' + toPublicKey);
-		console.log('setReplyButtonHandlers: sentMsgCtr = ' + sentMsgCtr);
-		var ptk = dhcrypt.ptk(toPublicKey, toAddr, common.web3.eth.accounts[0], sentMsgCtr + 1);
+		var ptk = dhcrypt.ptk(toPublicKey, toAddr, common.web3.eth.accounts[0], sentMsgCtrBN.toString(16));
 		console.log('setReplyButtonHandlers: ptk = ' + ptk);
 		var encrypted = dhcrypt.encrypt(ptk, message);
 		console.log('setReplyButtonHandlers: encrypted (length = ' + encrypted.length + ') = ' + encrypted);
@@ -108,7 +108,8 @@ function setReplyButtonHandlers() {
 		    //display "waiting for metamask" in case metamask dialog is hidden
 		    var metaMaskModal = document.getElementById('metaMaskModal');
 		    metaMaskModal.style.display = 'block';
-		    ether.sendMessage(common.web3, toAddr, mimeType, encrypted, fee, function(err, txid) {
+		    //TODO: read ref!
+		    ether.sendMessage(common.web3, toAddr, mimeType, 0, encrypted, fee, function(err, txid) {
 			console.log('txid = ' + txid);
 			metaMaskModal.style.display = 'none';
 			var statusDiv = document.getElementById('statusDiv');
@@ -707,7 +708,8 @@ function showRecvMsg(msgNo) {
     //msgAddrArea.cols = 80;
     //msgTextArea.cols = 80;
     //msgTextArea.rows = 10;
-    getRecvMsg(common.web3.eth.accounts[0], msgNo, function(err, fromAddr, toAddr, date, sentMsgCtr, msgHex) {
+    getRecvMsg(common.web3.eth.accounts[0], msgNo, function(err, id, fromAddr, toAddr, date, rxCount, nonce, msgHex) {
+	console.log('showRecvMsg: nonce = ' + nonce);
 	if (!!err) {
 	    msgTextArea.value = 'Error: ' + err;
 	} else {
@@ -721,7 +723,7 @@ function showRecvMsg(msgNo) {
 		    if (!!fromAcctInfo) {
 			var fromPublicKey = fromAcctInfo[ether.ACCTINFO_PUBLICKEY];
 			console.log('showRecvMsg: fromPublicKey = ' + fromPublicKey);
-			var ptk = dhcrypt.ptk(fromPublicKey, common.web3.eth.accounts[0], fromAddr, sentMsgCtr);
+			var ptk = dhcrypt.ptk(fromPublicKey, common.web3.eth.accounts[0], fromAddr, nonce);
 			//console.log('showRecvMsg: ptk = ' + ptk);
 			var decrypted = dhcrypt.decrypt(ptk, msgHex);
 			//console.log('showRecvMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted);
@@ -747,7 +749,7 @@ function showSentMsg(msgNo) {
     var msgNoNotButton = document.getElementById('msgNoNotButton');
     msgAddrArea.disabled = true;
     msgTextArea.disabled = true;
-    getSentMsg(common.web3.eth.accounts[0], msgNo, function(err, fromAddr, toAddr, date, sentMsgCtr, msgHex) {
+    getSentMsg(common.web3.eth.accounts[0], msgNo, function(err, id, fromAddr, toAddr, date, txCount, nonce, msgHex) {
 	if (!!err) {
 	    msgTextArea.value = 'Error: ' + err;
 	} else {
@@ -759,7 +761,7 @@ function showSentMsg(msgNo) {
 		    if (!!toAcctInfo) {
 			var toPublicKey = toAcctInfo[ether.ACCTINFO_PUBLICKEY];
 			console.log('showSentMsg: toPublicKey = ' + toPublicKey);
-			var ptk = dhcrypt.ptk(toPublicKey, toAddr, fromAddr, sentMsgCtr);
+			var ptk = dhcrypt.ptk(toPublicKey, toAddr, fromAddr, nonce);
 			//console.log('showRecvMsg: ptk = ' + ptk);
 			var decrypted = dhcrypt.decrypt(ptk, msgHex);
 			//console.log('showRecvMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted);
@@ -775,129 +777,96 @@ function showSentMsg(msgNo) {
 
 
 //cb(err, fromAddr, toAddr, date, sentMsgCtr, msgHex)
+//cb(err, id, fromAddr, toAddr, date, txCount, nonce, msgHex);
 function getSentMsg(fromAddr, sentMsgNo, cb) {
-    const options = {
+    const txOptions = {
 	fromBlock: 0,
 	toBlock: 'latest',
 	address: ether.EMT_CONTRACT_ADDR,
 	topics: [ether.MESSAGETX_EVENT_TOPIC0, '0x' + common.leftPadTo(fromAddr.substring(2), 64, '0'), '0x' + common.leftPadTo(sentMsgNo.toString(16), 64, '0') ]
     };
-    ether.getLogs(options, function(err, result) {
-	if (!!err || !result || result.length == 0) {
+    ether.getLogs(txOptions, function(err, txResult) {
+	if (!!err || !txResult || txResult.length == 0) {
 	    //either an error, or maybe just no events
+	    if (!txResult)
+		err = 'Message not found';
 	    cb(err, '', '', '', '', '');
 	    return;
 	}
-	//typical
-	//    "result"  : [
-	//                  { "address"     : "0x170d49612b631bc989a72253d78cb4218ca12aeb",
-	//                    "topics"      : [
-	//                                      "0xbd6eec70c65c378858289ddb15fba6b7a1f247614a57b602623822fa40def19a",
-	//                                      "0x00000000000000000000000053c619594a6f15cd59f32f76257787d5438cd016",
-	//                                      "0x0000000000000000000000000000000000000000000000000000000000000001"
-	//                                    ],
-	//                    "data"        : "0x000000000000000000000000f48ae436e4813c7dcd5cdeb305131d07ca022469     -- toAddr
-	//                                       0000000000000000000000000000000000000000000000000000000000000001",   -- toCount
-	//                    "blockNumber" : "0x3d8fb3",
-	//                    "timeStamp"   : "0x5b9b0ae5",
-	//                    "gasPrice"    : "0x3b9aca00",
-	//                    "gasUsed"     : "0x2076a",
-	//                    "logIndex"    : "0x13",
-	//                    "transactionHash"  : "0x9b729a9025ca7c12829fba145bf1edbdcd6426224d80be372296c0b0cd17bf95",
-	//                    "transactionIndex" : "0x11"
-	//                 }
-	//               ]
-	var toAddr = '';
-	var toCount = 0;
-	var i = 0;
-	{
-	    console.log(result[i]);
-	    var blockNumber = parseInt(result[i].blockNumber);
-	    console.log('getRecvMsg: blockNumber = ' + blockNumber);
-	    var timeStamp = parseInt(result[i].timeStamp);
-	    var sentDate = (new Date(timeStamp * 1000)).toUTCString();
-	    console.log('sentDate = ' + sentDate);
-	    //first 2 chars are '0x'
-	    toAddr = result[i].data.slice(0+2, 64+2);
-	    toAddr = '0x' + toAddr.substring(12*2);
-	    var toCountHex = result[i].data.slice(64+2, 128+2);
-	    toCount = parseInt(toCountHex, 16);
-	    console.log('getSentMsg: toAddr = ' + toAddr + ', toCount = ' + toCount);
-	    //get the n'th messages received by the toAddr
-	    getRecvMsg(toAddr, toCount, function(err, fromAddr, toAddr, date, sentMsgCtr, msgHex) {
-		cb(err, fromAddr, toAddr, sentDate, sentMsgCtr, msgHex);
+	ether.parseMessageTxEvent(txResult[0], function(err, fromAddr, txCount, id, blockNumber, date) {
+	    if (!!err || !id) {
+		cb(err, '', '', '', '', '');
+		return;
+	    }
+	    const msgOptions = {
+		fromBlock: 0,
+		toBlock: 'latest',
+		address: ether.EMT_CONTRACT_ADDR,
+		topics: [ether.MESSAGE_EVENT_TOPIC0, id ]
+	    };
+	    ether.getLogs(msgOptions, function(err, msgResult) {
+		if (!!err || !msgResult || msgResult.length == 0) {
+		    //either an error, or maybe just no events
+		    cb(err, '', '', '', '', '');
+		    return;
+		}
+		ether.parseMessageEvent(msgResult[0], function(err, id, fromAddr, toAddr, mimeType, ref, nonce, msgHex, blockNumber, date) {
+		    if (!!err || !id) {
+			cb(err, '', '', '', '', '');
+			return;
+		    }
+		    cb(err, id, fromAddr, toAddr, date, txCount, nonce, msgHex);
+		});
 	    });
-	}
+	});
     });
 }
 
 
 //cb(err, fromAddr, toAddr, date, sentMsgCtr, msgHex)
+//cb(err, id, fromAddr, toAddr, date, txCount, nonce, msgHex);
 function getRecvMsg(toAddr, recvMsgNo, cb) {
-    const options = {
+    const rxOptions = {
 	fromBlock: 0,
 	toBlock: 'latest',
 	address: ether.EMT_CONTRACT_ADDR,
 	topics: [ether.MESSAGERX_EVENT_TOPIC0, '0x' + common.leftPadTo(toAddr.substring(2), 64, '0'), '0x' + common.leftPadTo(recvMsgNo.toString(16), 64, '0') ]
     };
-    ether.getLogs(options, function(err, result) {
-	if (!!err || !result || result.length == 0) {
+    ether.getLogs(rxOptions, function(err, rxResult) {
+	if (!!err || !rxResult || rxResult.length == 0) {
 	    //either an error, or maybe just no events
+	    if (!rxResult)
+		err = 'Message not found';
 	    cb(err, '', '', '', '', '');
 	    return;
 	}
-	console.log('result.length: ' + result.length);
-	//typical
-	//    "result"  : [
-	//                  { "address" : "0x800bf6d2bb0156fd21a84ae20e1b9479dea0dca9",
-	//                    "topics"  : [
-	//                                  "0xa4b1fcc6b4f905c800aeac882ea4cbff09ab73cb784c8e0caad226fbeab35b63",
-	//                                  "0x00000000000000000000000053c619594a6f15cd59f32f76257787d5438cd016", -- _toAddr
-	//                                  "0x0000000000000000000000000000000000000000000000000000000000000001"  -- _count
-	//                                ],
-	//                    "data"    : "0x000000000000000000000000f48ae436e4813c7dcd5cdeb305131d07ca022469     -- _fromAddr
-	//                                   0000000000000000000000000000000000000000000000000000000000000001     -- _mimeType
-	//                                   0000000000000000000000000000000000000000000000000000000000000005     -- _sentMsgCtr
-	//                                   0000000000000000000000000000000000000000000000000000000000000060     -- offset to message
-	//                                   000000000000000000000000000000000000000000000000000000000000000d     -- message (length)
-	//                                   4669727374206d65737361676500000000000000000000000000000000000000",   -- message text
-	//                    "blockNumber" : "0x3d7f1d",
-	//                    "timeStamp"   : "0x5b9a2cf4",
-	//                    "gasPrice"    : "0x77359400",
-	//                    "gasUsed"     : "0x1afcf",
-	//                    "logIndex"    : "0x1a",
-	//                    "transactionHash"  : "0x266d1d418629668f5f23acc6b30c1283e9ea8d124e6f1aeac6e8e33f150e6747",
-	//                    "transactionIndex" : "0x15"
-	//                  }
-	//                ]
-	for (var i = result.length - 1; i >= 0; --i) {
-	    console.log('result[' + i + ']: ' + result[i]);
-	    console.log('string: ' + JSON.stringify(result[i]));
-	    var blockNumber = parseInt(result[i].blockNumber);
-	    console.log('getRecvMsg: blockNumber = ' + blockNumber);
-	    var timeStamp = parseInt(result[i].timeStamp);
-	    var date = (new Date(timeStamp * 1000)).toUTCString();
-	    console.log('getRecvMsg: date = ' + date);
-	    //first 2 chars are '0x'
-	    fromAddr = result[i].data.slice(0+2, 64+2);
-	    fromAddr = '0x' + fromAddr.substring(12*2);
-	    var mimeTypeHex = result[i].data.slice(64+2, 128+2);
-	    mimeType = parseInt(mimeTypeHex, 16);
-	    console.log('getRecvMsg: mimeType = ' + mimeType.toString(10));
-	    var sentMsgCtrHex = result[i].data.slice(128+2, 192+2);
-	    sentMsgCtr = parseInt(sentMsgCtrHex, 16);
-	    console.log('getRecvMsg: sentMsgCtr = ' + sentMsgCtr.toString(10));
-	    var msgOffsetHex = result[i].data.slice(192+2, 256+2);
-	    var msgOffset = parseInt(msgOffsetHex, 16);
-	    var msgLenHex = result[i].data.slice((2*msgOffset)+2, (2*msgOffset)+64+2);
-	    var msgLen = parseInt(msgLenHex, 16);
-	    console.log('getRecvMsg: msgLen = 0x' + msgLen.toString(16));
-	    msgHex = '0x' + result[i].data.slice((2*msgOffset)+64+2, (2*msgOffset)+64+2+(msgLen*2));
-	    console.log('getRecvMsg: msgHex = ' + msgHex);
-	    if (i == 0)
-		cb(null, fromAddr, toAddr, date, sentMsgCtr, msgHex);
-	}
-    })
+	ether.parseMessageRxEvent(rxResult[0], function(err, fromAddr, rxCount, id, blockNumber, date) {
+	    if (!!err || !id) {
+		cb(err, '', '', '', '', '');
+		return;
+	    }
+	    const msgOptions = {
+		fromBlock: 0,
+		toBlock: 'latest',
+		address: ether.EMT_CONTRACT_ADDR,
+		topics: [ether.MESSAGE_EVENT_TOPIC0, id ]
+	    };
+	    ether.getLogs(msgOptions, function(err, msgResult) {
+		if (!!err || !msgResult || msgResult.length == 0) {
+		    //either an error, or maybe just no events
+		    cb(err, '', '', '', '', '');
+		    return;
+		}
+		ether.parseMessageEvent(msgResult[0], function(err, id, fromAddr, toAddr, mimeType, ref, nonce, msgHex, blockNumber, date) {
+		    if (!!err || !id) {
+			cb(err, '', '', '', '', '');
+			return;
+		    }
+		    cb(err, id, fromAddr, toAddr, date, rxCount, nonce, msgHex);
+		});
+	    });
+	});
+    });
 }
 
 

@@ -1,6 +1,7 @@
 /*
- * common functions -- no dependancies here!
+ * common functions -- no local dependancies here!
  */
+var BN = require("bn.js");
 
 var common = module.exports = {
 
@@ -42,6 +43,19 @@ var common = module.exports = {
 	    common.web3 = null;
 	    cb('You must enable the MetaMask plugin to use this utility', null);
 	}
+    },
+
+
+    //number can be a numver or a string, with or without '0x'
+    numberToBN: function(number) {
+	//first ensure passed parm is a string
+	var numberStr = number.toString();
+	var base = 10;
+	if (numberStr.startsWith('0x')) {
+	    base = 16;
+	    numberStr = numberStr.substring(2);
+	}
+	return(new BN(numberStr, base));
     },
 
 

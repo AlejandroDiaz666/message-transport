@@ -9,8 +9,9 @@ contract H_Message_Transport {
   // events
   // -------------------------------------------------------------------------
   event InviteEvent(address indexed _toAddr, address indexed _fromAddr);
-  event MessageTxEvent(address indexed _fromAddr, uint indexed _count, address _toAddr, uint _toCount);
-  event MessageRxEvent(address indexed _toAddr, uint indexed _count, address _fromAddr, uint _mimeType, uint _sentMsgCtr, bytes message);
+  event MessageEvent(uint indexed _id, address _fromAddr, address _toAddr, uint _mimeType, uint _ref, uint _nonce, bytes message);
+  event MessageTxEvent(address indexed _fromAddr, uint indexed _txCount, uint _id);
+  event MessageRxEvent(address indexed _toAddr, uint indexed _rxCount, uint _id);
 
 
   // -------------------------------------------------------------------------
@@ -44,6 +45,7 @@ contract H_Message_Transport {
   bool public isLocked;
   address public owner;
   address public communityAddr;
+  uint messageCount;
   uint communityBalance;
   uint contractSendGas = 100000;
   mapping (address => bool) public trusted;
@@ -130,7 +132,7 @@ contract H_Message_Transport {
   // -------------------------------------------------------------------------
   // send message
   // -------------------------------------------------------------------------
-  function sendMessage(address _toAddr, uint mimeType, bytes message) public payable returns (uint _recvMessageCount) {
+  function sendMessage(address _toAddr, uint mimeType, uint _ref, bytes _message) public payable returns (uint _messageId) {
     Account storage _sendAccount = accounts[msg.sender];
     Account storage _recvAccount = accounts[_toAddr];
     //require(_sendAccount.publicKey != 0);
@@ -142,15 +144,17 @@ contract H_Message_Transport {
       require(msg.value >= _recvAccount.messageFee);
       if (_sendAccount.peerRecvMessageCount[_toAddr] == 0)
 	require(msg.value >= _recvAccount.spamFee);
+      ++messageCount;
       _recvAccount.recvMessageCount += 1;
       _sendAccount.sentMessageCount += 1;
-      emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount, msg.sender, mimeType, _sendAccount.sentMessageCount, message);
-      emit MessageTxEvent(msg.sender, _sendAccount.sentMessageCount, _toAddr, _recvAccount.recvMessageCount);
-      //return message numbers, which a calling function might want to log
-      _recvMessageCount = _recvAccount.recvMessageCount;
+      emit MessageEvent(messageCount, msg.sender, _toAddr, mimeType, _ref, _sendAccount.sentMessageCount, _message);
+      emit MessageTxEvent(msg.sender, _sendAccount.sentMessageCount, messageCount);
+      emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount, messageCount);
+      //return message id, which a calling function might want to log
+      _messageId = messageCount;
     } else {
       emit InviteEvent(_toAddr, msg.sender);
-      _recvMessageCount = 0;
+      _messageId = 0;
     }
     uint _communityAmount = msg.value / 10;
     communityBalance += _communityAmount;
@@ -158,7 +162,7 @@ contract H_Message_Transport {
     _recvAccount.peerRecvMessageCount[msg.sender] += 1;
   }
 
-  function sendMessage(address _fromAddr, address _toAddr, uint mimeType, bytes message) public payable trustedOnly returns (uint _recvMessageCount) {
+  function sendMessage(address _fromAddr, address _toAddr, uint mimeType, uint _ref, bytes _message) public payable trustedOnly returns (uint _messageId) {
     Account storage _sendAccount = accounts[_fromAddr];
     Account storage _recvAccount = accounts[_toAddr];
     //require(_sendAccount.publicKey != 0);
@@ -170,15 +174,17 @@ contract H_Message_Transport {
       require(msg.value >= _recvAccount.messageFee);
       if (_sendAccount.peerRecvMessageCount[_toAddr] == 0)
 	require(msg.value >= _recvAccount.spamFee);
+      ++messageCount;
       _recvAccount.recvMessageCount += 1;
       _sendAccount.sentMessageCount += 1;
-      emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount, msg.sender, mimeType, _sendAccount.sentMessageCount, message);
-      emit MessageTxEvent(msg.sender, _sendAccount.sentMessageCount, _toAddr, _recvAccount.recvMessageCount);
-      //return message numbers, which a calling function might want to log
-      _recvMessageCount = _recvAccount.recvMessageCount;
+      emit MessageEvent(messageCount, _fromAddr, _toAddr, mimeType, _ref, _sendAccount.sentMessageCount, _message);
+      emit MessageTxEvent(_fromAddr, _sendAccount.sentMessageCount, messageCount);
+      emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount, messageCount);
+      //return message id, which a calling function might want to log
+      _messageId = messageCount;
     } else {
       emit InviteEvent(_toAddr, msg.sender);
-      _recvMessageCount = 0;
+      _messageId = 0;
     }
     uint _communityAmount = msg.value / 10;
     communityBalance += _communityAmount;

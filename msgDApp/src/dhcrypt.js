@@ -83,7 +83,9 @@ C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FF
 	console.log('dhcrypt:ptk: myPublicKey = ' + dhcrypt.dh.getPublicKey('hex'));
 	console.log('dhcrypt:ptk: otherPublicKey = ' + otherPublicKey);
 	console.log('dhcrypt:ptk: pmk = ' + pmk.toString('hex'));
-	var sentMsgCtrBN = new BN(sentMsgCtr);
+	console.log('dhcrypt:ptk: sentMsgCtr = ' + sentMsgCtr);
+	var sentMsgCtrBN = common.numberToBN(sentMsgCtr);
+	console.log('dhcrypt:ptk: sentMsgCtrBN = ' + sentMsgCtrBN.toString(16));
 	var sentMsgCtrBuffer = sentMsgCtrBN.toArrayLike(Buffer, 'be');
 	var sentMsgCtrHex = ethUtils.bufferToHex(sentMsgCtrBuffer);
 	console.log('dhcrypt:ptk: sentMsgCtrHex = ' + sentMsgCtrHex);
