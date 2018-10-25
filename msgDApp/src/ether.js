@@ -162,7 +162,7 @@ var ether = module.exports = {
 	    encryptedPrivateKey = encryptedPrivateKey.substring(2);
 	var encryptedPrivateKeyBytes = common.hexToBytes(encryptedPrivateKey);
 	encoded = ethabi.rawEncode([ 'uint256', 'uint256', 'bytes', 'bytes' ],
-				   [ new BN(messageFee, 16), new BN(spamFee, 16), publicKeyBytes, encryptedPrivateKeyBytes ] ).toString('hex');
+				   [ common.numberToBN(messageFee), common.numberToBN(spamFee), publicKeyBytes, encryptedPrivateKeyBytes ] ).toString('hex');
 	return(encoded);
     },
 

@@ -58,6 +58,18 @@ var common = module.exports = {
 	return(new BN(numberStr, base));
     },
 
+    stripNonNumber: function(number) {
+	//first ensure passed parm is a string
+	var numberStr = number.toString();
+	if (numberStr.startsWith('0x')) {
+	    numberStr = numberStr.substring(2);
+	    numberStr = '0x' + numberStr.replace(/[^0-9a-fA-F]/g, '');
+	} else {
+	    numberStr = numberStr.replace(/[^0-9]/g, '');
+	}
+	return(numberStr);
+    },
+
     //Hex256 string will be '0x' followed by 64 hex digits
     BNToHex256: function(xBN) {
 	return('0x' + common.leftPadTo(xBN.toString(16), 64, '0'));

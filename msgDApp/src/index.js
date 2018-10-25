@@ -599,6 +599,10 @@ function handleRegister() {
     msgTextArea.disabled = true;
     var registerDiv = document.getElementById('registerDiv');
     registerDiv.className = (registerDiv.className).replace('hidden', 'visibleIB');
+    var messageFeeInput = document.getElementById('messageFeeInput');
+    messageFeeInput.value = index.acctInfo[ether.ACCTINFO_MESSAGEFEE];
+    var spamFeeInput = document.getElementById('spamFeeInput');
+    spamFeeInput.value = index.acctInfo[ether.ACCTINFO_SPAMFEE];
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -608,9 +612,11 @@ function handleRegisterSubmit() {
     console.log('handleRegisterSubmit');
     var registerDiv = document.getElementById('registerDiv');
     var messageFeeInput = document.getElementById('messageFeeInput');
+    var messageFee = common.stripNonNumber(messageFeeInput.value);
+    messageFeeInput.value = messageFee;
     var spamFeeInput = document.getElementById('spamFeeInput');
-    var messageFee = parseInt(messageFeeInput.value, 10);
-    var spamFee = parseInt(spamFeeInput.value, 10);
+    var spamFee = common.stripNonNumber(spamFeeInput.value);
+    spamFeeInput.value = spamFee;
     console.log('message fee = ' + messageFee + ', spam fee = ' + spamFee);
     var publicKey = dhcrypt.publicKey();
     var encryptedPrivateKey = dhcrypt.encryptedPrivateKey();
