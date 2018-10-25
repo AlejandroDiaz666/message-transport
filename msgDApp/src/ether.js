@@ -151,8 +151,10 @@ var ether = module.exports = {
     },
 
     abiEncodeRegisterParms: function(messageFee, spamFee, publicKey, encryptedPrivateKey) {
-	console.log('publicKey (' + publicKey.length + '): ' + publicKey);
-	console.log('encryptedPrivate (' + encryptedPrivateKey.length + '): ' + encryptedPrivateKey);
+	console.log('abiEncodeRegisterParms: messageFee = ' + messageFee);
+	console.log('abiEncodeRegisterParms: spamFee = ' + spamFee);
+	console.log('abiEncodeRegisterParms: publicKey (' + publicKey.length + ') = ' + publicKey);
+	console.log('abiEncodeRegisterParms: encryptedPrivate (' + encryptedPrivateKey.length + ') = ' + encryptedPrivateKey);
 	if (publicKey.startsWith('0x'))
 	    publicKey = publicKey.substring(2);
 	var publicKeyBytes = common.hexToBytes(publicKey);
@@ -372,8 +374,8 @@ var ether = module.exports = {
 	//                  }
 	console.log('parseMessageTxEvent: result = ' + result);
 	console.log('parseMessageTxEvent: string = ' + JSON.stringify(result));
-	var fromAddr = result.topics[0];
-	var txCount = result.topics[1];
+	var fromAddr = result.topics[1];
+	var txCount = result.topics[2];
 	console.log('parseMessageTxEvent: fromAddr = ' + fromAddr);
 	console.log('parseMessageTxEvent: txCount = ' + txCount);
 	//first 2 chars are '0x'; we want rightmost 20 out of 32 bytes
@@ -408,8 +410,8 @@ var ether = module.exports = {
 	//                  }
 	console.log('parseMessageRxEvent: result = ' + result);
 	console.log('parseMessageRxEvent: string = ' + JSON.stringify(result));
-	var toAddr = result.topics[0];
-	var rxCount = result.topics[1];
+	var toAddr = result.topics[1];
+	var rxCount = result.topics[2];
 	console.log('parseMessageRxEvent: toAddr = ' + toAddr);
 	console.log('parseMessageRxEvent: rxCount = ' + rxCount);
 	//first 2 chars are '0x'; we want rightmost 20 out of 32 bytes
