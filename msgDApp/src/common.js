@@ -58,6 +58,10 @@ var common = module.exports = {
 	return(new BN(numberStr, base));
     },
 
+    //Hex256 string will be '0x' followed by 64 hex digits
+    BNToHex256: function(xBN) {
+	return('0x' + common.leftPadTo(xBN.toString(16), 64, '0'));
+    },
 
     hexToAscii: function(hexStr) {
 	console.log('hexToAscii');

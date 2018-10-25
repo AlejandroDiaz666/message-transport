@@ -96,7 +96,7 @@ function setReplyButtonHandlers() {
 		var sentMsgCtrBN = common.numberToBN(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
 		sentMsgCtrBN.iaddn(1);
 		console.log('setReplyButtonHandlers: toPublicKey = ' + toPublicKey);
-		var ptk = dhcrypt.ptk(toPublicKey, toAddr, common.web3.eth.accounts[0], sentMsgCtrBN.toString(16));
+		var ptk = dhcrypt.ptk(toPublicKey, toAddr, common.web3.eth.accounts[0], '0x' + sentMsgCtrBN.toString(16));
 		console.log('setReplyButtonHandlers: ptk = ' + ptk);
 		var encrypted = dhcrypt.encrypt(ptk, message);
 		console.log('setReplyButtonHandlers: encrypted (length = ' + encrypted.length + ') = ' + encrypted);

@@ -78,23 +78,23 @@ C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FF
 
     //compute pairwise transient key
     ptk: function(otherPublicKey, toAddr, fromAddr, sentMsgCtr) {
-	var otherPublicKeyBytes = common.hexToBytes(otherPublicKey);
-    	var pmk = dhcrypt.dh.computeSecret(otherPublicKeyBytes, 'hex');
+	const otherPublicKeyBytes = common.hexToBytes(otherPublicKey);
+    	const pmk = dhcrypt.dh.computeSecret(otherPublicKeyBytes, 'hex');
 	console.log('dhcrypt:ptk: myPublicKey = ' + dhcrypt.dh.getPublicKey('hex'));
 	console.log('dhcrypt:ptk: otherPublicKey = ' + otherPublicKey);
 	console.log('dhcrypt:ptk: pmk = ' + pmk.toString('hex'));
 	console.log('dhcrypt:ptk: sentMsgCtr = ' + sentMsgCtr);
-	var sentMsgCtrBN = common.numberToBN(sentMsgCtr);
-	console.log('dhcrypt:ptk: sentMsgCtrBN = ' + sentMsgCtrBN.toString(16));
-	var sentMsgCtrBuffer = sentMsgCtrBN.toArrayLike(Buffer, 'be');
-	var sentMsgCtrHex = ethUtils.bufferToHex(sentMsgCtrBuffer);
+	const sentMsgCtrBN = common.numberToBN(sentMsgCtr);
+	const sentMsgCtrHex = common.BNToHex256(sentMsgCtrBN);
+	console.log('dhcrypt:ptk: toAddr = ' + toAddr);
+	console.log('dhcrypt:ptk: fromAddr = ' + fromAddr);
 	console.log('dhcrypt:ptk: sentMsgCtrHex = ' + sentMsgCtrHex);
-	var hash = crypto.createHash('sha256');
-	hash.update(pmk.toString('hex'));
-	hash.update(toAddr);
-	hash.update(fromAddr);
-	hash.update(sentMsgCtrHex);
-	var ptk = hash.digest('hex');
+	const hash = crypto.createHash('sha256');
+	hash.update(pmk.toString('hex'), 'utf8');
+	hash.update(toAddr.toUpperCase(), 'utf8');
+	hash.update(fromAddr.toUpperCase(), 'utf8');
+	hash.update(sentMsgCtrHex.toUpperCase(), 'utf8');
+	const ptk = hash.digest('hex');
 	console.log('dhcrypt:ptk: ptk = ' + ptk.toString('hex'));
 	return(ptk);
     },
