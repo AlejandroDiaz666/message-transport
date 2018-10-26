@@ -114,6 +114,15 @@ var common = module.exports = {
     },
 
 
+    hexToBase64: function(hexStr) {
+	//first ensure passed parm is a string
+	var hex = hexStr.toString();
+	if (hex.startsWith('0x'))
+	    hex = hex.substring(2);
+	var base64String = Buffer.from(hex, 'hex').toString('base64');
+	return(base64String);
+    },
+
     leftPadTo: function(str, desiredLen, ch) {
 	var padChar = (typeof ch !== 'undefined') ? ch : ' ';
 	var pad = new Array(1 + desiredLen).join(padChar);

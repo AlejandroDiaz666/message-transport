@@ -259,6 +259,13 @@ function handleLockedMetaMask(err) {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly="readonly"
     msgAddrArea.value = '';
+    var msgIdArea = document.getElementById('msgIdArea');
+    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
+    msgIdArea.disabled = true;
+    var msgRefButton = document.getElementById('msgRefButton');
+    msgRefButton.disabled = true;
+    msgRefButton.textContent = '';
+    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
     var msgDateArea = document.getElementById('msgDateArea');
     msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
     msgDateArea.disabled = true;
@@ -362,6 +369,13 @@ function handleUnregisteredAcct() {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly="readonly"
     msgAddrArea.value = '';
+    var msgIdArea = document.getElementById('msgIdArea');
+    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
+    msgIdArea.disabled = true;
+    var msgRefButton = document.getElementById('msgRefButton');
+    msgRefButton.disabled = true;
+    msgRefButton.textContent = '';
+    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
     var msgDateArea = document.getElementById('msgDateArea');
     msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
     msgDateArea.disabled = true;
@@ -437,6 +451,15 @@ function handleViewRecv(acctInfo) {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly="readonly"
     msgAddrArea.value = '';
+    var msgIdArea = document.getElementById('msgIdArea');
+    msgIdArea.className = (msgIdArea.className).replace('hidden', 'visibleTC');
+    msgIdArea.disabled = true;
+    msgIdArea.readonly="readonly"
+    msgIdArea.value = 'Msg ID: N/A';
+    var msgRefButton = document.getElementById('msgRefButton');
+    msgRefButton.disabled = true;
+    msgRefButton.textContent = 'Ref: N/A';
+    msgRefButton.className = (msgRefButton.className).replace('hidden', 'visibleTC');
     var msgDateArea = document.getElementById('msgDateArea');
     msgDateArea.disabled = true;
     msgDateArea.readonly="readonly"
@@ -484,6 +507,13 @@ function handleCompose(acctInfo, toAddr, subject) {
     msgAddrArea.disabled = false;
     msgAddrArea.readonly="";
     msgAddrArea.value = toAddr;
+    var msgIdArea = document.getElementById('msgIdArea');
+    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
+    msgIdArea.disabled = true;
+    var msgRefButton = document.getElementById('msgRefButton');
+    msgRefButton.disabled = true;
+    msgRefButton.textContent = '';
+    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
     var msgDateArea = document.getElementById('msgDateArea');
     msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
     msgDateArea.disabled = true;
@@ -530,6 +560,15 @@ function handleViewSent(acctInfo) {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly="readonly"
     msgAddrArea.value = '';
+    var msgIdArea = document.getElementById('msgIdArea');
+    msgIdArea.className = (msgIdArea.className).replace('hidden', 'visibleTC');
+    msgIdArea.disabled = true;
+    msgIdArea.readonly="readonly"
+    msgIdArea.value = 'Msg ID: N/A';
+    var msgRefButton = document.getElementById('msgRefButton');
+    msgRefButton.disabled = true;
+    msgRefButton.textContent = 'Ref: N/A';
+    msgRefButton.className = (msgRefButton.className).replace('hidden', 'visibleTC');
     var msgDateArea = document.getElementById('msgDateArea');
     msgDateArea.disabled = true;
     msgDateArea.readonly="readonly"
@@ -582,6 +621,13 @@ function handleRegister() {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly="readonly"
     msgAddrArea.value = common.web3.eth.accounts[0];
+    var msgIdArea = document.getElementById('msgIdArea');
+    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
+    msgIdArea.disabled = true;
+    var msgRefButton = document.getElementById('msgRefButton');
+    msgRefButton.disabled = true;
+    msgRefButton.textContent = '';
+    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
     var msgDateArea = document.getElementById('msgDateArea');
     msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
     msgDateArea.disabled = true;
@@ -634,11 +680,18 @@ function handleRegisterSubmit() {
 
 function handleWithdraw() {
     var msgPromptArea = document.getElementById('msgPromptArea');
-    msgPromptArea.value = '';
+    msgPromptArea.value = 'Addr: ';
     var msgAddrArea = document.getElementById('msgAddrArea');
     msgAddrArea.disabled = true;
     msgAddrArea.readonly="readonly"
-    msgAddrArea.value = '';
+    msgAddrArea.value = common.web3.eth.accounts[0];
+    var msgIdArea = document.getElementById('msgIdArea');
+    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
+    msgIdArea.disabled = true;
+    var msgRefButton = document.getElementById('msgRefButton');
+    msgRefButton.disabled = true;
+    msgRefButton.textContent = '';
+    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
     var msgDateArea = document.getElementById('msgDateArea');
     msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
     msgDateArea.disabled = true;
@@ -652,9 +705,14 @@ function handleWithdraw() {
     replyButton.disabled = true;
     replyButton.className = (replyButton.className).replace('visibleTC', 'hidden');
     var msgTextArea = document.getElementById('msgTextArea');
-    msgTextArea.className = (msgTextArea.className).replace('hidden', 'visibleIB');
-    msgTextArea.disabled = true;
+    msgTextArea.className = (msgTextArea.className).replace('visibleIB', 'hidden');
     msgTextArea.value = '';
+    msgTextArea.disabled = true;
+    msgTextArea.readonly='readonly';
+    msgTextArea.placeholder='';
+    msgTextArea.subject = '';
+    var registerDiv = document.getElementById('registerDiv');
+    registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
     //
     //display "waiting for metamask" in case metamask dialog is hidden
     var metaMaskModal = document.getElementById('metaMaskModal');
@@ -708,6 +766,8 @@ function showRecvMsg(msgNo) {
     console.log('showRecvMsg: enter msgNo = ' + msgNo);
     var msgAreaDiv = document.getElementById('msgAreaDiv');
     var msgAddrArea = document.getElementById('msgAddrArea');
+    var msgIdArea = document.getElementById('msgIdArea');
+    var msgRefButton = document.getElementById('msgRefButton');
     var msgDateArea = document.getElementById('msgDateArea');
     var msgTextArea = document.getElementById('msgTextArea');
     var msgNoNotButton = document.getElementById('msgNoNotButton');
@@ -721,6 +781,9 @@ function showRecvMsg(msgNo) {
 	} else {
 	    msgNoNotButton.textContent = msgNo.toString(10);
 	    msgAddrArea.value = fromAddr;
+	    var idShortHex = common.numberToBN(id).toString(16);
+	    msgIdArea.value = 'Msg ID: ' + common.hexToBase64(idShortHex);
+	    msgRefButton.textContent = 'Ref: ?';
 	    msgDateArea.value = date;
 	    //console.log('showRecvMsg: msg = ' + msgHex);
 	    //console.log('showRecvMsg: sentMsgCtr = ' + sentMsgCtr);
@@ -751,6 +814,8 @@ function showSentMsg(msgNo) {
     console.log('showSentMsg: enter');
     var msgAreaDiv = document.getElementById('msgAreaDiv');
     var msgAddrArea = document.getElementById('msgAddrArea');
+    var msgIdArea = document.getElementById('msgIdArea');
+    var msgRefButton = document.getElementById('msgRefButton');
     var msgTextArea = document.getElementById('msgTextArea');
     var msgNoNotButton = document.getElementById('msgNoNotButton');
     msgAddrArea.disabled = true;
@@ -761,6 +826,9 @@ function showSentMsg(msgNo) {
 	} else {
 	    msgNoNotButton.textContent = msgNo.toString(10);
 	    msgAddrArea.value = toAddr;
+	    var idShortHex = common.leftPadTo(common.numberToBN(id).toString(16), 32, '0');
+	    msgIdArea.value = 'Msg ID: ' + common.hexToBase64(idShortHex);
+	    msgRefButton.textContent = 'Ref: ?';
 	    msgDateArea.value = date;
 	    if (toAddr != '') {
 		ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
