@@ -133,6 +133,10 @@ var ether = module.exports = {
     abiEncodeSendMessageParms: function(toAddr, mimeType, ref, message) {
 	if (toAddr.startsWith('0x'))
 	    toAddr = toAddr.substring(2);
+	if (mimeType.startsWith('0x'))
+	    mimeType = mimeType.substring(2);
+	if (ref.startsWith('0x'))
+	    ref = ref.substring(2);
 	var bytes = common.hexToBytes(message);
 	console.log('abiEncodeSendMessageParms: toAddr = ' + toAddr);
 	console.log('abiEncodeSendMessageParms: mimeType = ' + mimeType);
