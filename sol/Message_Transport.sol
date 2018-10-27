@@ -3,13 +3,13 @@ pragma solidity ^0.4.24;
 // ---------------------------------------------------------------------------
 //  Message_Transport
 // ---------------------------------------------------------------------------
-contract H_Message_Transport {
+contract I_Message_Transport {
 
   // -------------------------------------------------------------------------
   // events
   // -------------------------------------------------------------------------
   event InviteEvent(address indexed _toAddr, address indexed _fromAddr);
-  event MessageEvent(uint indexed _id, address _fromAddr, address _toAddr, uint _mimeType, uint _ref, uint _nonce, bytes message);
+  event MessageEvent(uint indexed _id, address _fromAddr, address _toAddr, uint _txCount, uint _rxCount, uint _mimeType, uint _ref, bytes message);
   event MessageTxEvent(address indexed _fromAddr, uint indexed _txCount, uint _id);
   event MessageRxEvent(address indexed _toAddr, uint indexed _rxCount, uint _id);
 
@@ -147,7 +147,7 @@ contract H_Message_Transport {
       ++messageCount;
       _recvAccount.recvMessageCount += 1;
       _sendAccount.sentMessageCount += 1;
-      emit MessageEvent(messageCount, msg.sender, _toAddr, mimeType, _ref, _sendAccount.sentMessageCount, _message);
+      emit MessageEvent(messageCount, msg.sender, _toAddr, _sendAccount.sentMessageCount, _recvAccount.recvMessageCount, mimeType, _ref, _message);
       emit MessageTxEvent(msg.sender, _sendAccount.sentMessageCount, messageCount);
       emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount, messageCount);
       //return message id, which a calling function might want to log
@@ -177,7 +177,7 @@ contract H_Message_Transport {
       ++messageCount;
       _recvAccount.recvMessageCount += 1;
       _sendAccount.sentMessageCount += 1;
-      emit MessageEvent(messageCount, _fromAddr, _toAddr, mimeType, _ref, _sendAccount.sentMessageCount, _message);
+      emit MessageEvent(messageCount, _fromAddr, _toAddr, _sendAccount.sentMessageCount, _recvAccount.recvMessageCount, mimeType, _ref, _message);
       emit MessageTxEvent(_fromAddr, _sendAccount.sentMessageCount, messageCount);
       emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount, messageCount);
       //return message id, which a calling function might want to log

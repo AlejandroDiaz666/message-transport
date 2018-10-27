@@ -859,14 +859,14 @@ function showMsgLoop(acctInfo) {
 //
 function showSentMsg(msgNo) {
     console.log('showSentMsg: enter');
-    getSentMsg(common.web3.eth.accounts[0], msgNo, function(err, msgId, fromAddr, toAddr, mimeType, ref, nonce, msgHex, blockNumber, date) {
+    getSentMsg(common.web3.eth.accounts[0], msgNo, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
 	var msgTextArea = document.getElementById('msgTextArea');
 	if (!!err) {
 	    msgTextArea.value = 'Error: ' + err;
 	} else {
 	    var msgNoNotButton = document.getElementById('msgNoNotButton');
 	    msgNoNotButton.textContent = msgNo.toString(10);
-	    decryptAndShowMsg(msgId, toAddr, fromAddr, toAddr, date, ref, nonce, msgHex, function(err) {
+	    decryptAndShowMsg(msgId, txCount, toAddr, fromAddr, toAddr, date, ref, txCount, msgHex, function(err) {
 		if (!!err) {
 		    msgTextArea.value = 'Error: ' + err;
 		} else {
@@ -884,15 +884,14 @@ function showSentMsg(msgNo) {
 //
 function showRecvMsg(msgNo) {
     console.log('showRecvMsg: enter msgNo = ' + msgNo);
-    getRecvMsg(common.web3.eth.accounts[0], msgNo, function(err, msgId, fromAddr, toAddr, mimeType, ref, nonce, msgHex, blockNumber, date) {
-	console.log('showRecvMsg: nonce = ' + nonce);
+    getRecvMsg(common.web3.eth.accounts[0], msgNo, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
 	var msgTextArea = document.getElementById('msgTextArea');
 	if (!!err) {
 	    msgTextArea.value = 'Error: ' + err;
 	} else {
 	    var msgNoNotButton = document.getElementById('msgNoNotButton');
 	    msgNoNotButton.textContent = msgNo.toString(10);
-	    decryptAndShowMsg(msgId, fromAddr, fromAddr, toAddr, date, ref, nonce, msgHex, function(err) {
+	    decryptAndShowMsg(msgId, rxCount, fromAddr, fromAddr, toAddr, date, ref, txCount, msgHex, function(err) {
 		if (!!err) {
 		    msgTextArea.value = 'Error: ' + err;
 		} else {
@@ -911,23 +910,22 @@ function showRecvMsg(msgNo) {
 //
 function showIdMsg(msgId) {
     console.log('showMsgById: enter msgId = ' + msgId);
-    getIdMsg(msgId, function(err, id, fromAddr, toAddr, mimeType, ref, nonce, msgHex, blockNumber, date) {
+    getIdMsg(msgId, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
+	var otherAddr, msgCount;
 	var msgTextArea = document.getElementById('msgTextArea');
 	if (!!err) {
 	    msgTextArea.value = 'Error: ' + err;
 	} else {
 	    if (fromAddr == common.web3.eth.accounts[0]) {
+		msgCount = txCount;
 		otherAddr = toAddr;
 		handleViewSent(index.acctInfo, false);
 	    } else if (toAddr == common.web3.eth.accounts[0]) {
+		msgCount = rxCount;
 		otherAddr = fromAddr;
 		handleViewRecv(index.acctInfo, false);
 	    }
-	    //this isn't right...
-	    var msgNoNotButton = document.getElementById('msgNoNotButton');
-	    msgNoNotButton.textContent = '';
-	    //
-	    decryptAndShowMsg(msgId, otherAddr, fromAddr, toAddr, date, ref, nonce, msgHex, function(err) {
+	    decryptAndShowMsg(msgId, msgCount, otherAddr, fromAddr, toAddr, date, ref, txCount, msgHex, function(err) {
 		if (!!err) {
 		    msgTextArea.value = 'Error: ' + err;
 		} else {
@@ -942,9 +940,10 @@ function showIdMsg(msgId) {
 
 //
 //cb(err)
-//decrypt and display the message in the msgTextArea. also displays the msgId, ref & date
+//decrypt and display the message in the msgTextArea. also displays the msgId, ref, date & msgNo
+//msgNo is either txCount or rxCount depending on whether the message was sent or received
 //
-function decryptAndShowMsg(msgId, otherAddr, fromAddr, toAddr, date, ref, nonce, msgHex, cb) {
+function decryptAndShowMsg(msgId, msgNo, otherAddr, fromAddr, toAddr, date, ref, nonce, msgHex, cb) {
     console.log('showMsg: enter');
     var msgAddrArea = document.getElementById('msgAddrArea');
     var msgTextArea = document.getElementById('msgTextArea');
@@ -954,6 +953,8 @@ function decryptAndShowMsg(msgId, otherAddr, fromAddr, toAddr, date, ref, nonce,
     msgAddrArea.value = otherAddr;
     showIdAndRef(msgId, ref, true);
     msgDateArea.value = date;
+    var msgNoNotButton = document.getElementById('msgNoNotButton');
+    msgNoNotButton.textContent = msgNo.toString(10);
     ether.accountQuery(common.web3, otherAddr, function(err, otherAcctInfo) {
 	if (!!otherAcctInfo) {
 	    var otherPublicKey = otherAcctInfo[ether.ACCTINFO_PUBLICKEY];
@@ -970,8 +971,7 @@ function decryptAndShowMsg(msgId, otherAddr, fromAddr, toAddr, date, ref, nonce,
     });
 }
 
-
-//cb(err, msgId, fromAddr, toAddr, mimeType, ref, nonce, msgHex, blockNumber, date)
+//cb(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date)
 function getSentMsg(fromAddr, sentMsgNo, cb) {
     const txOptions = {
 	fromBlock: 0,
@@ -984,12 +984,12 @@ function getSentMsg(fromAddr, sentMsgNo, cb) {
 	    //either an error, or maybe just no events
 	    if (!txResult)
 		err = 'Message not found';
-	    cb(err, '', '', '', '', '', '', '', '', '');
+	    cb(err, '', '', '', '', '', '', '', '', '', '');
 	    return;
 	}
 	ether.parseMessageTxEvent(txResult[0], function(err, fromAddr, txCount, msgId, blockNumber, date) {
 	    if (!!err || !msgId) {
-		cb(err, '', '', '', '', '', '', '', '', '');
+		cb(err, '', '', '', '', '', '', '', '', '', '');
 		return;
 	    }
 	    getIdMsg(msgId, cb);
@@ -997,8 +997,7 @@ function getSentMsg(fromAddr, sentMsgNo, cb) {
     });
 }
 
-
-//cb(err, msgId, fromAddr, toAddr, mimeType, ref, nonce, msgHex, blockNumber, date)
+//cb(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date)
 function getRecvMsg(toAddr, recvMsgNo, cb) {
     const rxOptions = {
 	fromBlock: 0,
@@ -1011,12 +1010,12 @@ function getRecvMsg(toAddr, recvMsgNo, cb) {
 	    //either an error, or maybe just no events
 	    if (!rxResult)
 		err = 'Message not found';
-	    cb(err, '', '', '', '', '', '', '', '', '');
+	    cb(err, '', '', '', '', '', '', '', '', '', '');
 	    return;
 	}
 	ether.parseMessageRxEvent(rxResult[0], function(err, fromAddr, rxCount, msgId, blockNumber, date) {
 	    if (!!err || !msgId) {
-		cb(err, '', '', '', '', '', '', '', '', '');
+		cb(err, '', '', '', '', '', '', '', '', '', '');
 		return;
 	    }
 	    getIdMsg(msgId, cb);
@@ -1026,7 +1025,7 @@ function getRecvMsg(toAddr, recvMsgNo, cb) {
 
 
 //
-//cb(err, msgId, fromAddr, toAddr, mimeType, ref, nonce, msgHex, blockNumber, date)
+//cb(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date)
 //
 function getIdMsg(msgId, cb) {
     console.log('showMsgById: enter msgId = ' + msgId);
@@ -1039,7 +1038,7 @@ function getIdMsg(msgId, cb) {
     ether.getLogs(msgOptions, function(err, msgResult) {
 	if (!!err || !msgResult || msgResult.length == 0) {
 	    //either an error, or maybe just no events
-	    cb(err, '', '', '', '', '', '', '', '', '');
+	    cb(err, '', '', '', '', '', '', '', '', '', '');
 	    return;
 	}
 	ether.parseMessageEvent(msgResult[0], cb);
