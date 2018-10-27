@@ -954,7 +954,7 @@ function decryptAndShowMsg(msgId, msgNo, otherAddr, fromAddr, toAddr, date, ref,
     showIdAndRef(msgId, ref, true);
     msgDateArea.value = date;
     var msgNoNotButton = document.getElementById('msgNoNotButton');
-    msgNoNotButton.textContent = msgNo.toString(10);
+    msgNoNotButton.textContent = parseInt(msgNo).toString(10);
     ether.accountQuery(common.web3, otherAddr, function(err, otherAcctInfo) {
 	if (!!otherAcctInfo) {
 	    var otherPublicKey = otherAcctInfo[ether.ACCTINFO_PUBLICKEY];
