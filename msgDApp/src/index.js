@@ -303,6 +303,8 @@ function handleLockedMetaMask(err) {
     msgTextArea.placeholder='';
     var registerDiv = document.getElementById('registerDiv');
     registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
+    var navButtonsDiv = document.getElementById('navButtonsDiv');
+    navButtonsDiv.className = (navButtonsDiv.className).replace('visibleIB', 'hidden');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     alert(err);
@@ -413,6 +415,8 @@ function handleUnregisteredAcct() {
     msgTextArea.placeholder='';
     var registerDiv = document.getElementById('registerDiv');
     registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
+    var navButtonsDiv = document.getElementById('navButtonsDiv');
+    navButtonsDiv.className = (navButtonsDiv.className).replace('visibleIB', 'hidden');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -502,6 +506,8 @@ function handleViewRecv(acctInfo, doMsgLookup) {
     msgTextArea.placeholder='';
     var registerDiv = document.getElementById('registerDiv');
     registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
+    var navButtonsDiv = document.getElementById('navButtonsDiv');
+    navButtonsDiv.className = (navButtonsDiv.className).replace('hidden', 'visibleIB');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     if (!!doMsgLookup)
@@ -557,6 +563,8 @@ function handleCompose(acctInfo, toAddr) {
     msgTextArea.placeholder="Validate the recipient address, then type your message here...";
     var registerDiv = document.getElementById('registerDiv');
     registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
+    var navButtonsDiv = document.getElementById('navButtonsDiv');
+    navButtonsDiv.className = (navButtonsDiv.className).replace('visibleIB', 'hidden');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -624,6 +632,8 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	msgTextArea.placeholder='Type your message here...';
 	var registerDiv = document.getElementById('registerDiv');
 	registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
+	var navButtonsDiv = document.getElementById('navButtonsDiv');
+	navButtonsDiv.className = (navButtonsDiv.className).replace('visibleIB', 'hidden');
 	var statusDiv = document.getElementById('statusDiv');
 	clearStatusDiv(statusDiv);
 	//fees: see how many messages have been sent from the proposed recipient to me
@@ -688,6 +698,8 @@ function handleViewSent(acctInfo, doMsgLookup) {
     msgTextArea.placeholder='';
     var registerDiv = document.getElementById('registerDiv');
     registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
+    var navButtonsDiv = document.getElementById('navButtonsDiv');
+    navButtonsDiv.className = (navButtonsDiv.className).replace('hidden', 'visibleIB');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     if (!!doMsgLookup)
@@ -745,6 +757,8 @@ function handleRegister() {
     messageFeeInput.value = index.acctInfo[ether.ACCTINFO_MESSAGEFEE];
     var spamFeeInput = document.getElementById('spamFeeInput');
     spamFeeInput.value = index.acctInfo[ether.ACCTINFO_SPAMFEE];
+    var navButtonsDiv = document.getElementById('navButtonsDiv');
+    navButtonsDiv.className = (navButtonsDiv.className).replace('visibleIB', 'hidden');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -808,6 +822,8 @@ function handleWithdraw() {
     msgTextArea.placeholder='';
     var registerDiv = document.getElementById('registerDiv');
     registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
+    var navButtonsDiv = document.getElementById('navButtonsDiv');
+    navButtonsDiv.className = (navButtonsDiv.className).replace('visibleIB', 'hidden');
     //
     //display "waiting for metamask" in case metamask dialog is hidden
     var metaMaskModal = document.getElementById('metaMaskModal');
