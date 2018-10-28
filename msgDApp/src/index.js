@@ -1139,6 +1139,7 @@ function setMenuButtonState(buttonID, state) {
 function showIdAndRef(msgId, ref, enable) {
     if (!!msgId) {
 	var msgIdArea = document.getElementById('msgIdArea');
+	//every 3 bytes produces 4 base64 chars; so use a multiple of 3 bytes to avoid padding chars, '=='
 	var idShortHex = common.leftPadTo(common.numberToBN(msgId).toString(16), 36, '0');
 	msgIdArea.value = 'Msg ID: ' + common.hexToBase64(idShortHex);
 	msgIdArea.msgId = msgId;
