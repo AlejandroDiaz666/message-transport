@@ -1139,7 +1139,7 @@ function setMenuButtonState(buttonID, state) {
 function showIdAndRef(msgId, ref, enable) {
     if (!!msgId) {
 	var msgIdArea = document.getElementById('msgIdArea');
-	var idShortHex = common.leftPadTo(common.numberToBN(msgId).toString(16), 32, '0');
+	var idShortHex = common.leftPadTo(common.numberToBN(msgId).toString(16), 36, '0');
 	msgIdArea.value = 'Msg ID: ' + common.hexToBase64(idShortHex);
 	msgIdArea.msgId = msgId;
     }
@@ -1150,7 +1150,7 @@ function showIdAndRef(msgId, ref, enable) {
 	msgRefButton.ref = '';
 	msgRefButton.disabled = true;
     } else {
-	refShortHex = common.leftPadTo(refShortBN.toString(16), 32, '0');
+	refShortHex = common.leftPadTo(refShortBN.toString(16), 36, '0');
 	msgRefButton.textContent = 'Ref: ' + common.hexToBase64(refShortHex);
 	msgRefButton.ref = ref;
 	msgRefButton.disabled = (enable) ? false : true;
