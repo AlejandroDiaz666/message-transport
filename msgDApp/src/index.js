@@ -434,6 +434,16 @@ function handleRegisteredAcct(mode) {
     var feebalanceWei = index.acctInfo[ether.ACCTINFO_FEEBALANCE];
     //console.log('feeBalanceWei = ' + feebalanceWei);
     feeBalanceArea.value = 'Unclaimed message fees: ' + ether.convertWeiToComfort(common.web3, feebalanceWei);
+    //see if new messages have been received. if yes, display new message modal until user clicks anywhere outside
+    var noRxMsgs = localStorage["noRxMsgs"];
+    var currentNoRxMsgs = parseInt(index.acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT]);
+    if (noRxMsgs != currentNoRxMsgs) {
+	var newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
+	newMsgCountNotButton.textContent = currentNoRxMsgs.toString(10);
+	localStorage["noRxMsgs"] = currentNoRxMsgs.toString(10);
+	var newMsgModal = document.getElementById('newMsgModal');
+	newMsgModal.style.display = 'block';
+    }
     if (!!mode && !!dhcrypt.dh && index.publicKey == dhcrypt.publicKey()) {
 	if (mode == 'recv')
 	    handleViewRecv(index.acctInfo, true);
