@@ -135,20 +135,28 @@ var common = module.exports = {
 	return((str + bigPad).slice(0, desiredLen));
     },
 
+    setIndexedFlag: function(prefix, index, readflag) {
+	var wordIdx = rxMsgCount / 48;
+	var bitIdx = rxMsgCount % 48;
+	var wordIdxStr = '0x' + wordIdx.toString(16)
+	var wordStr = localStorage[prefix + '.' + wordIdxStr];
+	var word = (!!wordStr) ? parseInt(wordStr) : 0;
+	if (readFlag)
+	    word |= (1 << bitIdx);
+	else
+	    word &= ~(1 << bitIdx);
+	wordStr = '0x' + word.toString(16);
+	localStorage[prefix + '.' + wordIdxStr] = word;
+    },
 
-    retrieve_username: function() {
-	console.log('in retrieve_username... localStorage["username"] = ' + localStorage["username"]);
-	/*
-	if (localStorage["username"] == null)
-	    bg.bglog('is null');
-	else
-	    bg.bglog('is not null');
-	if (!!localStorage["username"])
-	    bg.bglog('!!localStorage["username"] is true');
-	else
-	    bg.bglog('!!localStorage["username"] is false');
-	*/
-	callback((!localStorage["username"]) ? "" : localStorage["username"]);
+    chkIndexedFlag: function(prefix, index) {
+	var wordIdx = rxMsgCount / 48;
+	var bitIdx = rxMsgCount % 48;
+	var wordIdxStr = '0x' + wordIdx.toString(16)
+	var wordStr = localStorage[prefix + '.' + wordIdxStr];
+	var word = (!!wordStr) ? parseInt(wordStr) : 0;
+	var read = (word & (1 << bitIdx)) ? true : false;
+	return(read);
     },
 
 
@@ -209,40 +217,6 @@ var common = module.exports = {
 	    complete = true;
 	    callback("", error);
 	});
-    },
-
-
-    //callback(err, transactionReceipt)
-    waitForTXID: function(txid, desc, statusDiv, statusContentDiv, callback) {
-	var statusCtr = 0;
-	var statusText = document.createTextNode('No status yet...');
-	//status div starts out hidden
-	common.showDiv(statusDiv);
-	common.showDiv(common.clearDivChildren(statusContentDiv));
-	statusContentDiv.appendChild(statusText);
-	var link = document.createElement('a');
-	link.href = 'https://etherscan.io/tx/' + txid;
-	link.innerHTML = "<h3>View transaction</h3>";
-	link.target = '_blank';
-	link.disabled = false;
-	statusContentDiv.appendChild(link);
-	var timer = setInterval(function() {
-	    statusText.textContent = 'Waiting for ' + desc + ' transaction: ' + ++statusCtr + ' seconds...';
-	    if ((statusCtr & 0xf) == 0) {
-		common.web3.eth.getTransactionReceipt(txid, function(err, receipt) {
-		    if (!!err || !!receipt) {
-			if (!err && !!receipt && receipt.status == 0)
-			    err = "Transaction Failed with REVERT opcode";
-			statusText.textContent = (!!err) ? ('Error in ' + desc + ' transaction: ' + err) : (desc + ' transaction succeeded!');
-			console.log('transaction is in block ' + (!!receipt ? receipt.blockNumber : 'err'));
-			//statusText.textContent = desc + ' transaction succeeded!';
-			clearInterval(timer);
-			callback(err, receipt);
-			return;
-		    }
-		});
-	    }
-	}, 1000);
     },
 
 };
