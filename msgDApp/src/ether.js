@@ -1,6 +1,6 @@
 
 //
-// fcns related to interaction w/ EMT contract
+// fcns related to ethereum and low level interaction w/ EMT contract
 //
 var common = require('./common');
 var ethUtils = require('ethereumjs-util');
