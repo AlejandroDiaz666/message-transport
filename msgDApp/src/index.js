@@ -132,7 +132,7 @@ function setReplyButtonHandlers() {
 			console.log('txid = ' + txid);
 			metaMaskModal.style.display = 'none';
 			var statusDiv = document.getElementById('statusDiv');
-			waitForTXID(txid, 'Send-Message', statusDiv, 'send', function() {
+			waitForTXID(err, txid, 'Send-Message', statusDiv, 'send', function() {
 			});
 		    });
 		});
@@ -724,10 +724,11 @@ function handleRegisterSubmit() {
     var metaMaskModal = document.getElementById('metaMaskModal');
     metaMaskModal.style.display = 'block';
     ether.register(common.web3, messageFee, spamFee, publicKey, encryptedPrivateKey, function(err, txid) {
-	console.log('txid = ' + txid);
+	console.log('handleRegisterSubmit: err = ' + err);
+	console.log('handleRegisterSubmit: txid = ' + txid);
 	metaMaskModal.style.display = 'none';
 	var statusDiv = document.getElementById('statusDiv');
-	waitForTXID(txid, 'Register', statusDiv, 'recv', function() {
+	waitForTXID(err, txid, 'Register', statusDiv, 'recv', function() {
 	});
     });
 }
@@ -787,7 +788,7 @@ function handleWithdraw() {
 	console.log('txid = ' + txid);
 	metaMaskModal.style.display = 'none';
 	var statusDiv = document.getElementById('statusDiv');
-	waitForTXID(txid, 'Withdraw', statusDiv, 'recv', function() {
+	waitForTXID(err, txid, 'Withdraw', statusDiv, 'recv', function() {
 	});
     });
 }
@@ -1174,7 +1175,11 @@ function showMsgDetail(msgId, msgNo, otherAddr, date, ref, msgContent) {
 }
 
 
-function waitForTXID(txid, desc, statusDiv, continuationMode, callback) {
+//
+// as a convenience, in case an error has already occurred (for example if the user rejects the transaction), you can
+// call this fcn with the error message and no txid.
+//
+function waitForTXID(err, txid, desc, statusDiv, continuationMode, callback) {
     //
     setMenuButtonState('importantInfoButton', 'Enabled');
     setMenuButtonState('registerButton',      'Disabled');
@@ -1197,6 +1202,22 @@ function waitForTXID(txid, desc, statusDiv, continuationMode, callback) {
     var statusCtr = 0;
     var statusText = document.createTextNode('No status yet...');
     leftDiv.appendChild(statusText);
+    if (!!err || !txid) {
+	if (!err)
+	    err = 'No transaction hash was generated.';
+	statusText.textContent = 'Error in ' + desc + ' transaction: ' + err;
+	var reloadLink = document.createElement('a');
+	reloadLink.addEventListener('click', function() {
+	    handleUnlockedMetaMask(continuationMode);
+	});
+	reloadLink.href = 'javascript:null;';
+	reloadLink.innerHTML = "<h2>Continue</h2>";
+	reloadLink.disabled = false;
+	rightDiv.appendChild(reloadLink);
+	callback(err);
+	return;
+    }
+    //
     var viewTxLink = document.createElement('a');
     viewTxLink.href = 'https://' + ether.etherscanioTxStatusHost + '/tx/' + txid;
     viewTxLink.innerHTML = "<h2>View transaction</h2>";
@@ -1208,6 +1229,8 @@ function waitForTXID(txid, desc, statusDiv, continuationMode, callback) {
 	statusText.textContent = 'Waiting for ' + desc + ' transaction: ' + ++statusCtr + ' seconds...';
 	if ((statusCtr & 0xf) == 0) {
 	    common.web3.eth.getTransactionReceipt(txid, function(err, receipt) {
+		console.log('waitForTXID: err = ' + err);
+		console.log('waitForTXID: receipt = ' + receipt);
 		if (!!err || !!receipt) {
 		    if (!err && !!receipt && receipt.status == 0)
 			err = "Transaction Failed with REVERT opcode";
