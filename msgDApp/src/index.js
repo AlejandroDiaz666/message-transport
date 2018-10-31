@@ -23,6 +23,7 @@ var index = module.exports = {
     acctCheckTimer: null,
     publicKey: null,
     listIdx: -1,
+    listMode: null,
     listEntries: {},
 
     main: function() {
@@ -797,10 +798,10 @@ function handleWithdraw() {
 
 //
 // handle View-Recv button
-// if doMsgLookup then call showMsgLoop to look up the message corresponding to the current index['recvMessageNo']
+// if refreshMsgList then call showMsgLoop to look up the message corresponding to the current index['recvMessageNo']
 // otherwise just set up the View-Recv mode and return.
 //
-function handleViewRecv(acctInfo, doMsgLookup) {
+function handleViewRecv(acctInfo, refreshMsgList) {
     setMenuButtonState('importantInfoButton', 'Enabled');
     setMenuButtonState('registerButton',      'Enabled');
     setMenuButtonState('viewRecvButton',      'Selected');
@@ -851,7 +852,9 @@ function handleViewRecv(acctInfo, doMsgLookup) {
     navButtonsSpan.className = (navButtonsSpan.className).replace('hidden', 'visibleIB');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
-    if (!!doMsgLookup) {
+    //
+    if (!!refreshMsgList) {
+	index.listMode = 'Recv';
 	var msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
@@ -863,10 +866,10 @@ function handleViewRecv(acctInfo, doMsgLookup) {
 
 //
 // handle View-Sent button
-// if doMsgLookup then call showMsgLoop to look up the message corresponding to the current index['sentMessageNo']
+// if refreshMsgList then call showMsgLoop to look up the message corresponding to the current index['sentMessageNo']
 // otherwise just set up the View-Sent mode and return.
 //
-function handleViewSent(acctInfo, doMsgLookup) {
+function handleViewSent(acctInfo, refreshMsgList) {
     setMenuButtonState('importantInfoButton', 'Enabled');
     setMenuButtonState('registerButton',      'Enabled');
     setMenuButtonState('viewRecvButton',      'Enabled');
@@ -917,7 +920,9 @@ function handleViewSent(acctInfo, doMsgLookup) {
     navButtonsSpan.className = (navButtonsSpan.className).replace('hidden', 'visibleIB');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
-    if (!!doMsgLookup) {
+    //
+    if (!!refreshMsgList) {
+	index.listMode = 'Sent';
 	var msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
@@ -1017,8 +1022,14 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
     index.listEntries[listIdx] = new ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content);
     if (!!msgNo) {
 	div.addEventListener('click', function() {
-	    var msgNoCounter = (viewRecvButton.className == 'menuBarButtonSelected') ? 'recvMessageNo' : 'sentMessageNo';
+	    //re-establish View-Sent of View-Recv mode as appropriate, but no need to refresh the msg list since
+	    //by definition we are selecting a message from the current list
+	    var msgNoCounter = (index.listMode == 'Recv') ? 'recvMessageNo' : 'sentMessageNo';
 	    index[msgNoCounter] = msgNo;
+	    if (index.listMode == 'Recv' && viewRecvButton.className != 'menuBarButtonSelected')
+		handleViewRecv(index.acctInfo, false);
+	    else if (index.listMode == 'Sent' && viewSentButton.className != 'menuBarButtonSelected')
+		handleViewSent(index.acctInfo, false);
 	    showMsgLoop(index.acctInfo);
 	});
     }
@@ -1113,43 +1124,6 @@ function showMsgLoop(acctInfo) {
 		      index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].content);
     }
 }
-
-
-//
-// show the message identified by msgId
-// this will put us into View-Sent mode or View-Recv mode depending on whether we sent or received the message
-//
-/*
-function showIdMsg(msgId) {
-    console.log('showIdMsg: enter msgId = ' + msgId);
-    getIdMsg(msgId, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
-	var otherAddr, msgCount;
-	var msgTextArea = document.getElementById('msgTextArea');
-	if (!!err) {
-	    msgTextArea.value = 'Error: ' + err;
-	} else {
-	    if (fromAddr == common.web3.eth.accounts[0]) {
-		msgCount = txCount;
-		otherAddr = toAddr;
-		handleViewSent(index.acctInfo, false);
-	    } else if (toAddr == common.web3.eth.accounts[0]) {
-		msgCount = rxCount;
-		otherAddr = fromAddr;
-		handleViewRecv(index.acctInfo, false);
-	    }
-	    msgUtil.decryptMsg(otherAddr, fromAddr, toAddr, nonce, msgHex, (err, decrypted) => {
-		console.log('showIdMsg: err = ' + err);
-		console.log('showIdMsg: msg = ' + decrypted);
-		if (!err) {
-		    msgTextArea.value = 'Error: ' + err;
-		} else {
-		    showMsgDetail(msgId, msgCount, otherAddr, date, ref, decrypted);
-		}
-	    });
-	}
-    });
-}
-*/
 
 
 //

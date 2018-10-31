@@ -170,7 +170,9 @@ h3 { font-size:18px; }
 /*
   message list attributes
   note that it's necessary to collapse table borders (as opposed to being draw separate) or
-  else you can't set a border with display: table-row
+  else you can't set a border with display: table-row. also you can't use margin & padding
+  with display: table-row, cuz the height is always the height of the cell. so i work around
+  by setting a transparent border where i would want a margin.
 */
 #listAreaDiv  {
     display: table;
@@ -184,12 +186,9 @@ h3 { font-size:18px; }
     display: table-row;
     clear: both;
     background-color: #e3eceb;
-    margin: 0px;
-    padding: 0px;
 }
 .msgListItemDiv {
-    padding: 0px;
-    margin: 0px;
+    border-top: 2px solid transparent;
 }
 .msgListItemDivSelected {
     border: 2px solid #404040;
