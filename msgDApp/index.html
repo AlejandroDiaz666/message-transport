@@ -7,9 +7,9 @@
     <meta http-equiv="Expires" content="0"/>
     <link rel="stylesheet" type="text/css" href="style.css">
     <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto:300i" rel="stylesheet">
-    <script type="text/javascript" src="bundle/index_TIMESTAMP_1540851955_.js"></script>
-    <script type="text/javascript" src="bundle/common_TIMESTAMP_1540851955_.js"></script>
-    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1540851955_.js"></script>
+    <script type="text/javascript" src="bundle/index_TIMESTAMP_1540978315_.js"></script>
+    <script type="text/javascript" src="bundle/common_TIMESTAMP_1540978315_.js"></script>
+    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1540978315_.js"></script>
 
 
     <!--
@@ -105,52 +105,41 @@
 	  <textarea id="feeBalanceArea" rows="1" cols="55" readonly="readonly">&nbsp;</textarea>
 	</div>
       </div>
-      <table style="height:180px;width:100%;">
-	<tbody>
-	  <tr>
-	    <td>
-	      <h1 style="text-align: left;">Ethereum Message Transport</h1>
-	    </td>
-	    <td>
-	      <div style="float:right;">
-		<img src="images/download-metamask.png" alt="Download MetaMask" width="300px" height="90px">
-	      </div>
-	      <h2>The Ethereum Message Transport:</h2>
-	      <ol style="list-style-type: upper-roman;">
-		<li>
-		  <h2>Is completely decentralized. It runs on the Ethereum blockchain.
-		    <!--
-		    <br/>SSoMEP does not even host the DApp (it is hosted on IPFS).</h2>
-		  -->
-		    <br/>This DApp executes completely on your computer.</h2>
-		</li>
-		<li>
-		  <h2>All messages are peer-to-peer encrypted using a computed key.
-		    <br/>Only the sender and receiver can compute their pairwise-unique key.
-		    <br/>Your half of the computed key is re-computed each time you execute
-		    <br/>this DApp -- it&apos;s never shared, or even stored on your computer.</h2>
-		</li>
-	      </ol>
-	    </td>
-	  </tr>
-	  <tr>
-	    <td colspan="2">
-	      <div id="menuBarDiv">
-		<button id="importantInfoButton" class="menuBarButton" type="button">Click here for important information</button>
-		<button id="registerButton" class="menuBarButton" type="button">Register Account</button>
-		<button id="viewRecvButton" class="menuBarButton" type="button">View Received</button>
-		<button id="composeButton" class="menuBarButton" type="button">Compose</button>
-		<button id="viewSentButton" class="menuBarButton" type="button">View Sent</button>
-		<button id="withdrawButton" class="menuBarButton" type="button">Withdraw Fees</button>
-	      </div>
-	    </td>
-	  </tr>
-	</tbody>
-      </table>
     </div>
 
-    <!-- for important information modal -->
-    <div id="msgAreaDiv">
+    <div id="topMenuBarDiv" style="clear:both">
+      <button id="viewSentButton" class="menuBarButton" type="button">View Sent</button>
+      <button id="viewRecvButton" class="menuBarButton" type="button">View Received</button>
+      <button id="viewSentButton" class="menuBarButton" type="button">Mark as Read</button>
+      <span id="navButtonsSpan" class="hidden">
+	<button id="firstMsgButton"  type="button" class="navButton">first</button>
+	<button id="prevMsgButton"  type="button" class="navButton">prev</button>
+	<button id="msgNoNotButton" type="button" class="navButton" disabled="true">&nbsp;</button>
+	<button id="nextMsgButton"  type="button" class="navButton">next</button>
+	<button id="lastMsgButton"  type="button" class="navButton">last</button>
+	</span>
+    </div>
+
+    <!-- list display area -->
+    <div id="listAreaDiv">
+      <div id="msgListHeaderDiv" class="msgListItemDiv">
+	<textarea id="msgListHeaderMsgNo" class="msgListMsgNoArea" rows="1" readonly="readonly" disabled="disabled">Msg No.</textarea>
+	<textarea id="msgListHeaderAddr" class="msgListAddrArea" rows="1" readonly="readonly" disabled="disabled">From</textarea>
+	<textarea id="msgListHeaderDate" class="msgListDateArea" rows="1" readonly="readonly" disabled="disabled">Date</textarea>
+	<textarea id="msgListHeaderMsgId" class="msgListMsgIdArea" rows="1" readonly="readonly" disabled="disabled">Msg ID</textarea>
+	<textarea id="msgListHeaderSubject" class="msgListSubjectArea" rows="1" readonly="readonly" disabled="disabled">Subject</textarea>
+      </div>
+    </div>
+
+    <div id="botMenuBarDiv" style="clear:both">
+      <button id="importantInfoButton" class="menuBarButton" type="button">Click here for important information</button>
+      <button id="registerButton" class="menuBarButton" type="button">Register Account</button>
+      <button id="composeButton" class="menuBarButton" type="button">Compose</button>
+      <button id="withdrawButton" class="menuBarButton" type="button">Withdraw Fees</button>
+    </div>
+
+    <!-- general display area -->
+    <div id="msgAreaDiv" style="clear:both">
       <form action="javascript:void(0);">
 	<div id="msgInfoAreaDiv">
 	  <span>
@@ -183,11 +172,6 @@
 	  </div>
 	</div>
       </form>
-    </div>
-    <div id="navButtonsDiv" class="hidden">
-      <button id="prevMsgButton"  type="button" class="navButton">prev</button>
-      <button id="msgNoNotButton" type="button" class="navButton" disabled="true">&nbsp;</button>
-      <button id="nextMsgButton"  type="button" class="navButton">next</button>
     </div>
     <p>&nbsp;</p>
     <div id="statusDiv" class="finalresultstable" style="display: none;"></div>

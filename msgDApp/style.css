@@ -12,6 +12,24 @@ h2 { font-size:20px; }
 h3 { font-size:18px; }
 
 
+/*
+  modifiers to make blocks disappear and re-appear.
+  visibleIB: for normal divs (inline-block)
+  visibleTC: for buttons (table-cells) for vertical alignment
+*/
+.visibleIB {
+    display: inline-block;
+}
+.visibleTC {
+    display: table-cell;
+}
+.hidden {
+    display: none;
+}
+.attention {
+    background-color: #9cd9db;
+}
+
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -89,19 +107,8 @@ h3 { font-size:18px; }
     margin-right: auto;
 }
 
-#XgenBidFormDiv {
-    display: block;
-    margin-left: 0px;
-    margin-right: auto;
-}
-
-#XgenBidResultsDiv  {
-    display: block;
-    margin-left: 0px;
-    margin-right: auto;
-}
-
 #topSection {
+    display: block;
     font-family: 'Lato', sans-serif;
     background-color: #e3eceb;
     margin-top:0px;
@@ -129,13 +136,16 @@ h3 { font-size:18px; }
     resize: none;
 }
 
-#menuBarDiv {
+#topMenuBarDiv, #botMenuBarDiv {
     display: block;
     padding-top: 4px;
     padding-right: 4px;
     padding-bottom: 4px;
     padding-left: 4px;
-    margin: 4px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    margin-left: 0px;
+    margin-right: 0px;
     height: 100%;
     background-color: #dbdcdb;
 }
@@ -143,7 +153,7 @@ h3 { font-size:18px; }
 .menuBarButton, .menuBarButtonEnabled, .menuBarButtonDisabled,
 .menuBarButtonSelected, .menuBarButton:hover {
     margin: 5px;
-    width: 14%;
+    width: 20%;
     height: 80%;
 }
 .menuBarButtonEnabled, .menuBarButtonDisabled {
@@ -153,29 +163,64 @@ h3 { font-size:18px; }
     background-color: #dbeeee;
 }
 
+#navButtonsSpan {
+    margin-left: 30px;
+}
+
 
 /*
-  modifiers to make blocks disappear and re-appear.
-  visibleIB: for normal divs (inline-block)
-  visibleTC: for buttons (table-cells) for vertical alignment
+  message list attributes
 */
-.visibleIB {
-    display: inline-block;
+#listAreaDiv  {
+    display: block;
+    padding: 12px;
+    margin: 0px;
+    background-color: #e3eceb;
 }
-.visibleTC {
-    display: table-cell;
-}
-.hidden {
-    display: none;
-}
-.attention {
+.msgListItemDiv {
+    display: table-row;
+    clear: both;
+    margin: 0px;
+    padding: 0px;
     background-color: #9cd9db;
 }
+.msgListMsgNoArea, .msgListAddrArea, .msgListDateArea, .msgListMsgIdArea, .msgListSubjectArea {
+    display: table-cell;
+    vertical-align: middle;
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    margin: 0px;
+    resize: none;
+}
+.msgListMsgNoArea {
+    width: 5em;
+}
+.msgListAddrArea {
+    width: 26em;
+}
+.msgListDateArea {
+    width: 30em;
+}
+.msgListMsgIdArea {
+    width: 20em;
+}
+.msgListSubjectArea {
+    min-width: 20em;
+    overflow: hidden;
+    white-space: nowrap;
+    test-overflow: elipsis;
+}
 
 
+/*
+  individual message area attributes
+*/
 #msgAreaDiv  {
-    padding: 20px;
     display: block;
+    padding: 20px;
+    margin-top: 30px;
     margin-left: 0px;
     margin-right: auto;
     /* background-color: #a4a4a4; */
@@ -209,8 +254,8 @@ h3 { font-size:18px; }
 }
 #msgAddrArea {
     display: table-cell;
-    width: 30em;
-    min-width: 30%;
+    width: 26em;
+    min-width: 20%;
 }
 #msgIdArea {
     width: 20em;

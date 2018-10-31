@@ -41,14 +41,14 @@ that you need to sign this message each time you load Ethereum Message Transport
 	    if (!!err) {
 		cb(err, null);
 	    } else {
-		console.log('dhcrypt.initDH: signature: ' + signature);
+		//console.log('dhcrypt.initDH: signature: ' + signature);
 		//the signature is 65 bytes; strip off last byte for 256 encrption key
 		var keyEncryptionKey = signature.substring(0, 128);
-		console.log('dhcrypt.initDH: keyEncryptionKey: ' + keyEncryptionKey);
+		//console.log('dhcrypt.initDH: keyEncryptionKey: ' + keyEncryptionKey);
 		if (!!encryptedPrivateKey) {
 		    //we already have an encrypted private key... need to decrypt it
 		    var privateKey = dhcrypt.decrypt(keyEncryptionKey, encryptedPrivateKey);
-		    console.log('dhcrypt.initDH: privateKey: ' + privateKey);
+		    //console.log('dhcrypt.initDH: privateKey: ' + privateKey);
 		    if (privateKey.startsWith('0x'))
 			privateKey = privateKey.substring(2);
 		    dh.setPrivateKey(privateKey, 'hex');
@@ -57,11 +57,11 @@ that you need to sign this message each time you load Ethereum Message Transport
 		    //generate a new private key, and encrypt it
 		    dh.generateKeys('hex');
 		    var privateKey = dh.getPrivateKey('hex');
-		    console.log('dhcrypt.initDH: private (' + privateKey.length + '): ' + privateKey);
+		    //console.log('dhcrypt.initDH: private (' + privateKey.length + '): ' + privateKey);
 		    encryptedPrivateKey = dhcrypt.encrypt(keyEncryptionKey, privateKey);
 		}
 		var publicKey = dh.getPublicKey('hex');
-		console.log('dhcrypt.initDH: public: (' + publicKey.length + '): ' + publicKey);
+		//console.log('dhcrypt.initDH: public: (' + publicKey.length + '): ' + publicKey);
 		dhcrypt.dh = dh;
 		dhcrypt.epk = encryptedPrivateKey;
 		cb(null);
@@ -85,22 +85,22 @@ that you need to sign this message each time you load Ethereum Message Transport
     ptk: function(otherPublicKey, toAddr, fromAddr, sentMsgCtr) {
 	const otherPublicKeyBytes = common.hexToBytes(otherPublicKey);
     	const pmk = dhcrypt.dh.computeSecret(otherPublicKeyBytes, 'hex');
-	console.log('dhcrypt:ptk: myPublicKey = ' + dhcrypt.dh.getPublicKey('hex'));
-	console.log('dhcrypt:ptk: otherPublicKey = ' + otherPublicKey);
-	console.log('dhcrypt:ptk: pmk = ' + pmk.toString('hex'));
-	console.log('dhcrypt:ptk: sentMsgCtr = ' + sentMsgCtr);
+	//console.log('dhcrypt:ptk: myPublicKey = ' + dhcrypt.dh.getPublicKey('hex'));
+	//console.log('dhcrypt:ptk: otherPublicKey = ' + otherPublicKey);
+	//console.log('dhcrypt:ptk: pmk = ' + pmk.toString('hex'));
+	//console.log('dhcrypt:ptk: sentMsgCtr = ' + sentMsgCtr);
 	const sentMsgCtrBN = common.numberToBN(sentMsgCtr);
 	const sentMsgCtrHex = common.BNToHex256(sentMsgCtrBN);
-	console.log('dhcrypt:ptk: toAddr = ' + toAddr);
-	console.log('dhcrypt:ptk: fromAddr = ' + fromAddr);
-	console.log('dhcrypt:ptk: sentMsgCtrHex = ' + sentMsgCtrHex);
+	//console.log('dhcrypt:ptk: toAddr = ' + toAddr);
+	//console.log('dhcrypt:ptk: fromAddr = ' + fromAddr);
+	//console.log('dhcrypt:ptk: sentMsgCtrHex = ' + sentMsgCtrHex);
 	const hash = crypto.createHash('sha256');
 	hash.update(pmk.toString('hex'), 'utf8');
 	hash.update(toAddr.toUpperCase(), 'utf8');
 	hash.update(fromAddr.toUpperCase(), 'utf8');
 	hash.update(sentMsgCtrHex.toUpperCase(), 'utf8');
 	const ptk = hash.digest('hex');
-	console.log('dhcrypt:ptk: ptk = ' + ptk.toString('hex'));
+	//console.log('dhcrypt:ptk: ptk = ' + ptk.toString('hex'));
 	return(ptk);
     },
 
@@ -108,8 +108,8 @@ that you need to sign this message each time you load Ethereum Message Transport
 	const cipher = crypto.createCipher('aes256', ptk);
 	var encrypted = cipher.update(message, 'utf8', 'hex');
 	encrypted += cipher.final('hex');
-	console.log('encyrpt: message = ' + message);
-	console.log('encyrpt: encrypted = ' + encrypted);
+	//console.log('encyrpt: message = ' + message);
+	//console.log('encyrpt: encrypted = ' + encrypted);
 	return(encrypted);
     },
 
@@ -118,11 +118,11 @@ that you need to sign this message each time you load Ethereum Message Transport
 	    encrypted = encrypted.substring(2);
 	var message = 'Unable to decrypt message';
 	try {
-	    console.log('decyrpt: encrypted = ' + encrypted);
+	    //console.log('decyrpt: encrypted = ' + encrypted);
 	    const decipher = crypto.createDecipher('aes256', ptk);
 	    var message = decipher.update(encrypted, 'hex', 'utf8');
 	    message += decipher.final('utf8');
-	    console.log('decyrpt: message = ' + message);
+	    //console.log('decyrpt: message = ' + message);
 	} catch (err) {
 	    message = err + '\n' + encrypted;
 	    console.log('decyrpt: err = ' + err);
