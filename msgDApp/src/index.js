@@ -853,6 +853,8 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     //
+    var msgListHeaderAddr = document.getElementById('msgListHeaderAddr');
+    msgListHeaderAddr.value = 'From: ';
     if (!!refreshMsgList) {
 	index.listMode = 'Recv';
 	var msgNo = getCurMsgNo(acctInfo);
@@ -921,6 +923,8 @@ function handleViewSent(acctInfo, refreshMsgList) {
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     //
+    var msgListHeaderAddr = document.getElementById('msgListHeaderAddr');
+    msgListHeaderAddr.value = 'To: ';
     if (!!refreshMsgList) {
 	index.listMode = 'Sent';
 	var msgNo = getCurMsgNo(acctInfo);
@@ -944,6 +948,7 @@ function makeMsgList(msgNo, cb) {
 	    break;
 	listTableBody.removeChild(child);
     }
+    index.listIdx = -1;
     var batch = Math.floor((msgNo - 1) / 10);
     var listIdx = (msgNo - 1) % 10;
     var firstMsgNo = batch * 10 + 1;
@@ -1025,6 +1030,8 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
 	    //re-establish View-Sent of View-Recv mode as appropriate, but no need to refresh the msg list since
 	    //by definition we are selecting a message from the current list
 	    var msgNoCounter = (index.listMode == 'Recv') ? 'recvMessageNo' : 'sentMessageNo';
+	    var viewSentButton = document.getElementById('viewSentButton');
+	    var viewRecvButton = document.getElementById('viewRecvButton');
 	    index[msgNoCounter] = msgNo;
 	    if (index.listMode == 'Recv' && viewRecvButton.className != 'menuBarButtonSelected')
 		handleViewRecv(index.acctInfo, false);
@@ -1081,6 +1088,7 @@ function getCurMsgNo(acctInfo) {
 	index[msgNoCounter] = 1;
     if (index[msgNoCounter] > maxMsgNo)
 	index[msgNoCounter] = maxMsgNo;
+    console.log('getCurMsgNo: curMsgNo = ' + index[msgNoCounter]);
     return(index[msgNoCounter]);
 }
 
