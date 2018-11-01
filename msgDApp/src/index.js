@@ -1011,7 +1011,8 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
 		(listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 		return;
 	    }
-	    msgUtil.decryptMsg(toAddr, fromAddr, toAddr, txCount, msgHex, (err, decrypted) => {
+	    var otherAddr = (index.listMode == 'sent') ? toAddr : fromAddr;
+	    msgUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, (err, decrypted) => {
 		if (!!err) {
 		    addToMsgList(listIdx, msgNo, '', '', '', '', 'message decryption error', listTableBody);
 		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
