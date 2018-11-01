@@ -490,7 +490,7 @@ function handleRegisteredAcct(mode) {
     //see if new messages have been received. if yes, display new message modal until user clicks anywhere outside
     var noRxMsgs = localStorage["noRxMsgs"];
     var currentNoRxMsgs = parseInt(index.acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT]);
-    if (noRxMsgs > 0 && noRxMsgs != currentNoRxMsgs) {
+    if (currentNoRxMsgs > 0 && noRxMsgs != currentNoRxMsgs) {
 	var newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
 	newMsgCountNotButton.textContent = currentNoRxMsgs.toString(10);
 	localStorage["noRxMsgs"] = currentNoRxMsgs.toString(10);
