@@ -118,11 +118,11 @@ that you need to sign this message each time you load Ethereum Message Transport
 	    encrypted = encrypted.substring(2);
 	var message = 'Unable to decrypt message';
 	try {
-	    //console.log('decyrpt: encrypted = ' + encrypted);
+	    console.log('decyrpt: encrypted = ' + encrypted);
 	    const decipher = crypto.createDecipher('aes256', ptk);
 	    var message = decipher.update(encrypted, 'hex', 'utf8');
 	    message += decipher.final('utf8');
-	    //console.log('decyrpt: message = ' + message);
+	    console.log('decyrpt: message = ' + message);
 	} catch (err) {
 	    message = err + '\n' + encrypted;
 	    console.log('decyrpt: err = ' + err);

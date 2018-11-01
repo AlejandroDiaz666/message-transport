@@ -1,9 +1,9 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.25;
 
 // ---------------------------------------------------------------------------
 //  Message_Transport
 // ---------------------------------------------------------------------------
-contract J_Message_Transport {
+contract K_Message_Transport {
 
   // -------------------------------------------------------------------------
   // events
@@ -148,8 +148,8 @@ contract J_Message_Transport {
       _recvAccount.recvMessageCount += 1;
       _sendAccount.sentMessageCount += 1;
       emit MessageEvent(messageCount, msg.sender, _toAddr, _sendAccount.sentMessageCount, _recvAccount.recvMessageCount, mimeType, _ref, _message);
-      emit MessageTxEvent(msg.sender, _sendAccount.sentMessageCount / 10, _sendAccount.sentMessageCount, messageCount);
-      emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount / 10, _recvAccount.recvMessageCount, messageCount);
+      emit MessageTxEvent(msg.sender, (_sendAccount.sentMessageCount - 1) / 10, _sendAccount.sentMessageCount, messageCount);
+      emit MessageRxEvent(_toAddr, (_recvAccount.recvMessageCount - 1) / 10, _recvAccount.recvMessageCount, messageCount);
       //return message id, which a calling function might want to log
       _messageId = messageCount;
     } else {
@@ -178,8 +178,8 @@ contract J_Message_Transport {
       _recvAccount.recvMessageCount += 1;
       _sendAccount.sentMessageCount += 1;
       emit MessageEvent(messageCount, _fromAddr, _toAddr, _sendAccount.sentMessageCount, _recvAccount.recvMessageCount, mimeType, _ref, _message);
-      emit MessageTxEvent(_fromAddr, _sendAccount.sentMessageCount / 10, _sendAccount.sentMessageCount, messageCount);
-      emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount / 10, _recvAccount.recvMessageCount, messageCount);
+      emit MessageTxEvent(_fromAddr, (_sendAccount.sentMessageCount - 1) / 10, _sendAccount.sentMessageCount, messageCount);
+      emit MessageRxEvent(_toAddr, (_recvAccount.recvMessageCount - 1) / 10, _recvAccount.recvMessageCount, messageCount);
       //return message id, which a calling function might want to log
       _messageId = messageCount;
     } else {

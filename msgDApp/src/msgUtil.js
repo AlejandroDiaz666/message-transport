@@ -60,15 +60,17 @@ var msgUtil = module.exports = {
     //cb(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date)
     //
     getAndParseIdMsg: function(msgId, cb) {
-	console.log('getIdMsg: enter msgId = ' + msgId);
+	console.log('getAndParseIdMsg: enter msgId = ' + msgId);
 	const msgOptions = {
 	    fromBlock: 0,
 	    toBlock: 'latest',
 	    address: ether.EMT_CONTRACT_ADDR,
-	    topics: [ether.MESSAGE_EVENT_TOPIC0, msgId ]
+	    topics: [ether.getMessageEventTopic0(), msgId ]
 	};
 	ether.getLogs(msgOptions, function(err, msgResult) {
 	    if (!!err || !msgResult || msgResult.length == 0) {
+		if (!!err)
+		    console.log('getAndParseIdMsg: err = ' + err);
 		//either an error, or maybe just no events
 		cb(err, '', '', '', '', '', '', '', '', '', '');
 		return;
@@ -84,17 +86,18 @@ var msgUtil = module.exports = {
     //msgNo is either txCount or rxCount depending on whether the message was sent or received
     //
     decryptMsg: function(otherAddr, fromAddr, toAddr, nonce, msgHex, cb) {
-	console.log('decryptMsg: enter');
+	console.log('decryptMsg: otherAddr = ' + otherAddr);
 	ether.accountQuery(common.web3, otherAddr, function(err, otherAcctInfo) {
-	    if (!!otherAcctInfo) {
-		var otherPublicKey = otherAcctInfo[ether.ACCTINFO_PUBLICKEY];
-		//console.log('decryptMsg: otherPublicKey = ' + otherPublicKey);
+	    var otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+	    if (!!otherPublicKey && otherPublicKey != '0x') {
+		console.log('decryptMsg: otherPublicKey = ' + otherPublicKey);
 		var ptk = dhcrypt.ptk(otherPublicKey, toAddr, fromAddr, nonce);
-		//console.log('decryptMsg: ptk = ' + ptk);
+		console.log('decryptMsg: ptk = ' + ptk);
 		var decrypted = dhcrypt.decrypt(ptk, msgHex);
 		console.log('decryptMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted);
 		cb(null, decrypted);
 	    } else {
+		console.log('decryptMsg: error looking up account for ' + otherAddr + ', otherPublicKey = ' + otherPublicKey);
 		cb('Error looking up account for ' + otherAddr, '');
 	    }
 	});

@@ -95,6 +95,7 @@ function setReplyButtonHandlers() {
     var replyButton = document.getElementById('replyButton');
     replyButton.addEventListener('click', function() {
 	console.log('replyButton');
+	var validateAddrButton = document.getElementById('validateAddrButton');
 	var composeButton = document.getElementById('composeButton');
 	var viewRecvButton = document.getElementById('viewRecvButton');
 	var viewSentButton = document.getElementById('viewSentButton');
@@ -106,12 +107,19 @@ function setReplyButtonHandlers() {
 	    console.log('send');
 	    replyButton.disabled = true;
 	    msgTextArea.disabled = true;
+	    msgAddrArea.disabled = true;
+	    validateAddrButton.disabled = true;
 	    var mimeType = '0x1';
 	    var toAddr = msgAddrArea.value;
 	    //the toAddr has already been validated. really.
 	    ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
 		//encrypt the message...
-		var toPublicKey = toAcctInfo[ether.ACCTINFO_PUBLICKEY];
+		var toPublicKey = (!!toAcctInfo) ? toAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+		if (!toPublicKey || toPublicKey == '0x') {
+		    alert('Encryption error: unable to look up destination address in contract!');
+		    handleUnlockedMetaMask(continuationMode);
+		    return;
+		}
 		var sentMsgCtrBN = common.numberToBN(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
 		sentMsgCtrBN.iaddn(1);
 		console.log('setReplyButtonHandlers: toPublicKey = ' + toPublicKey);
@@ -179,9 +187,9 @@ function setValidateButtonHandler() {
 	    replyButton.disabled = true;
 	} else {
 	    ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
-		var toPublickey = toAcctInfo[ether.ACCTINFO_PUBLICKEY];
-		console.log('toPublicKey: ' + toPublickey);
-		if (toPublickey == '0x') {
+		var toPublicKey = (!!toAcctInfo) ? toAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+		console.log('validateAddrButton.listener: toPublicKey: ' + toPublicKey);
+		if (!toPublicKey || toPublicKey == '0x') {
 		    msgTextArea.value = 'Error: no account was found for this address.';
 		    replyButton.disabled = true;
 		} else {
@@ -389,10 +397,10 @@ function handleUnlockedMetaMask(mode) {
     });
     ether.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
 	index.acctInfo = _acctInfo;
-	console.log('acctInfo: ' + JSON.stringify(index.acctInfo));
-	index.publicKey = index.acctInfo[ether.ACCTINFO_PUBLICKEY];
-	console.log('publicKey: ' + index.publicKey);
-	if (index.publicKey == '0x') {
+	index.publicKey = (!!index.acctInfo) ? index.acctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+	console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(index.acctInfo));
+	console.log('handleUnlockedMetaMask: publicKey: ' + index.publicKey);
+	if (!index.publicKey || index.publicKey == '0x') {
 	    handleUnregisteredAcct();
 	} else {
 	    handleRegisteredAcct(mode);
@@ -482,7 +490,7 @@ function handleRegisteredAcct(mode) {
     //see if new messages have been received. if yes, display new message modal until user clicks anywhere outside
     var noRxMsgs = localStorage["noRxMsgs"];
     var currentNoRxMsgs = parseInt(index.acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT]);
-    if (noRxMsgs != currentNoRxMsgs) {
+    if (noRxMsgs > 0 && noRxMsgs != currentNoRxMsgs) {
 	var newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
 	newMsgCountNotButton.textContent = currentNoRxMsgs.toString(10);
 	localStorage["noRxMsgs"] = currentNoRxMsgs.toString(10);
@@ -592,8 +600,8 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
     index.listIdx = -1;
     //
     ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
-	var toPublickey = toAcctInfo[ether.ACCTINFO_PUBLICKEY];
-	if (toPublickey == '0x') {
+	var toPublicKey = (!!toAcctInfo) ? toAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+	if (!toPublickey || toPublickey == '0x') {
 	    msgTextArea.value = 'Error: no account was found for this address.';
 	    replyButton.disabled = true;
 	    handleCompose(index.acctInfo, toAddr);
@@ -856,7 +864,7 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     var msgListHeaderAddr = document.getElementById('msgListHeaderAddr');
     msgListHeaderAddr.value = 'From: ';
     if (!!refreshMsgList) {
-	index.listMode = 'Recv';
+	index.listMode = 'recv';
 	var msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
@@ -926,7 +934,7 @@ function handleViewSent(acctInfo, refreshMsgList) {
     var msgListHeaderAddr = document.getElementById('msgListHeaderAddr');
     msgListHeaderAddr.value = 'To: ';
     if (!!refreshMsgList) {
-	index.listMode = 'Sent';
+	index.listMode = 'sent';
 	var msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
@@ -943,28 +951,27 @@ function makeMsgList(msgNo, cb) {
     var listTableBody = document.getElementById('listAreaDiv');
     while (listTableBody.hasChildNodes()) {
 	var child = listTableBody.lastChild;
-	console.log('child.id = ' + child.id);
 	if (!!child.id && child.id.startsWith("msgListHeader"))
 	    break;
 	listTableBody.removeChild(child);
     }
     index.listIdx = -1;
-    var batch = Math.floor((msgNo - 1) / 10);
-    var listIdx = (msgNo - 1) % 10;
+    console.log('makeMsgList: msgNo = ' + msgNo + ', index.listIdx = ' + index.listIdx);
+    var batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
+    var listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
     var firstMsgNo = batch * 10 + 1;
     var viewRecvButton = document.getElementById('viewRecvButton');
     var getMsgLogFcn   = (viewRecvButton.className == 'menuBarButtonSelected') ? msgUtil.getRecvMsgLogs    : msgUtil.getSentMsgLogs;
     var parseLogsFcn   = (viewRecvButton.className == 'menuBarButtonSelected') ? ether.parseMessageRxEvent : ether.parseMessageTxEvent;
     getMsgLogFcn(common.web3.eth.accounts[0], batch, function(err, result) {
 	if (!!err || !result || result.length < listIdx + 1) {
-	    //either an error, or maybe just no events
-	    if (!err)
-		err = 'Unable to retreive message logs';
 	    var msgTextArea = document.getElementById('msgTextArea');
-	    msgTextArea.value = 'Error: ' + err;
-	    return;
+	    //either an error, or maybe just no events
+	    msgTextArea.value = (!!err) ? 'Error: ' + err : (msgNo > 0) ? 'Error: Unable to retreive message logs' : 'No messages';
+	    result = null;
 	}
-	makeMsgListEntry(parseLogsFcn, result, 0, firstMsgNo, msgNo, cb);
+	console.log('makeMsgList: calling makeMsgListEntry(0, ' + firstMsgNo + ')');
+	makeMsgListEntry(parseLogsFcn, result, 0, firstMsgNo, cb);
     });
 }
 
@@ -975,42 +982,43 @@ function makeMsgList(msgNo, cb) {
 // recursive fcn to populate the entire list
 //
 // parseFcn: ether.parseMessageTxEvent or ether.parseMessageRxEvent
-// result: array of logs
+// result: array of logs (can be null)
 // listIdx: index into list (0 - 9)
 // msgNo: msgNo of this entry
-// curMsgNo: msgNo that should be dispalyed in the message area
 // cb: callback when all done
 //
-function makeMsgListEntry(parseFcn, result, listIdx, msgNo, curMsgNo, cb) {
+function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
     var listTableBody = document.getElementById('listAreaDiv');
-    if (listIdx >= result.length) {
+    console.log('makeMsgListEntry[' + listIdx + '] = msgNo(' + msgNo + '), result.length = ' + (!!result ? result.length : 0));
+    if (!result || listIdx >= result.length) {
 	addToMsgList(listIdx, '', '', '', '', '', '', listTableBody);
-	(listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, curMsgNo + 1, cb) : cb();
+	(listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 	return;
     }
     parseFcn(result[listIdx], function(err, fromAddr, txCount, msgId, blockNumber, date) {
 	if (!!err || !msgId) {
 	    if (!err)
 		err = 'Unable to parse message';
+	    console.log('makeMsgListEntry parseFcn: err = ' + err);
 	    addToMsgList(listIdx, msgNo, '', '', '', '', err, listTableBody);
-	    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, curMsgNo + 1, cb) : cb();
+	    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 	    return;
 	}
 	msgUtil.getAndParseIdMsg(msgId, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
 	    if (!!err) {
 		err = 'Message ID ' + msgId + ' not found';
 		addToMsgList(listIdx, msgNo, '', '', '', '', err, listTableBody);
-		(listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, curMsgNo + 1, cb) : cb();
+		(listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 		return;
 	    }
 	    msgUtil.decryptMsg(toAddr, fromAddr, toAddr, txCount, msgHex, (err, decrypted) => {
 		if (!!err) {
 		    addToMsgList(listIdx, msgNo, '', '', '', '', 'message decryption error', listTableBody);
-		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, curMsgNo + 1, cb) : cb();
+		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 		    return;
 		} else {
 		    addToMsgList(listIdx, msgNo, toAddr, date, msgId, ref, decrypted, listTableBody);
-		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, curMsgNo + 1, cb) : cb();
+		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 		}
 	    });
 	});
@@ -1019,7 +1027,7 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, curMsgNo, cb) {
 
 
 function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
-    console.log('addToMsgList: enter msgNo = ' + msgNo);
+    console.log('addToMsgList: msgNo = ' + msgNo + ', subject = ' + content.substring(0, 20));
     var subject = msgUtil.extractSubject(content, 80);
     var div, msgNoArea, addrArea, subjectArea, dateArea, msgIdArea
     (div = document.createElement("div")).className = 'msgListItemDiv';
@@ -1029,13 +1037,13 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
 	div.addEventListener('click', function() {
 	    //re-establish View-Sent of View-Recv mode as appropriate, but no need to refresh the msg list since
 	    //by definition we are selecting a message from the current list
-	    var msgNoCounter = (index.listMode == 'Recv') ? 'recvMessageNo' : 'sentMessageNo';
+	    var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	    var viewSentButton = document.getElementById('viewSentButton');
 	    var viewRecvButton = document.getElementById('viewRecvButton');
 	    index[msgNoCounter] = msgNo;
-	    if (index.listMode == 'Recv' && viewRecvButton.className != 'menuBarButtonSelected')
+	    if (index.listMode == 'recv' && viewRecvButton.className != 'menuBarButtonSelected')
 		handleViewRecv(index.acctInfo, false);
-	    else if (index.listMode == 'Sent' && viewSentButton.className != 'menuBarButtonSelected')
+	    else if (index.listMode == 'sent' && viewSentButton.className != 'menuBarButtonSelected')
 		handleViewSent(index.acctInfo, false);
 	    showMsgLoop(index.acctInfo);
 	});
@@ -1110,13 +1118,15 @@ function showMsgLoop(acctInfo) {
     nextButton.disabled = (msgNo < maxMsgNo) ? false : true;
     //check msgNo outside of listEntries.... if yes, regenerate listEntries, and call us again
     var minListMsgNo = index.listEntries[0].msgNo;
-    if (msgNo != 0 && (msgNo < minListMsgNo || msgNo > minListMsgNo + 9)) {
+    if (msgNo != 0 && (msgNo < minListMsgNo || msgNo >= minListMsgNo + 10)) {
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
 	    return;
 	});
+	return;
     }
     var listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : -1;
+    console.log('showMsgLoop: listIdx = ' + listIdx + ', index.listIdx = ' + index.listIdx);
     if (listIdx != index.listIdx) {
 	if (index.listIdx >= 0)
 	    (index.listEntries[index.listIdx].div).className = 'msgListItemDiv';
