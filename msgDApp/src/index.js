@@ -263,6 +263,8 @@ function setPrevNextButtonHandlers() {
     var nextMsgButton = document.getElementById('nextMsgButton');
     var prevPageButton = document.getElementById('prevPageButton');
     var nextPageButton = document.getElementById('nextPageButton');
+    var prevUnreadButton = document.getElementById('prevUnreadButton');
+    var nextUnreadButton = document.getElementById('nextUnreadButton');
     var firstButton = document.getElementById('firstMsgButton');
     var lastButton = document.getElementById('lastMsgButton');
     prevMsgButton.addEventListener('click', function() {
@@ -272,29 +274,9 @@ function setPrevNextButtonHandlers() {
 	    showMsgLoop(index.acctInfo);
 	}
     });
-    prevPageButton.addEventListener('click', function() {
-	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	var msgNo = index[msgNoCounter];
-	var pageIdx = Math.floor((msgNo - 1) / 10);
-	console.log('pageIdx = ' + pageIdx);
-	if (pageIdx > 0) {
-	    --pageIdx;
-	    index[msgNoCounter] = (pageIdx * 10) + 1;
-	    showMsgLoop(index.acctInfo);
-	}
-    });
     nextMsgButton.addEventListener('click', function() {
 	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	++index[msgNoCounter];
-	showMsgLoop(index.acctInfo);
-    });
-    nextPageButton.addEventListener('click', function() {
-	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	var msgNo = index[msgNoCounter];
-	var pageIdx = Math.floor((msgNo - 1) / 10);
-	console.log('pageIdx = ' + pageIdx);
-	++pageIdx;
-	index[msgNoCounter] = (pageIdx * 10) + 1;
 	showMsgLoop(index.acctInfo);
     });
     firstButton.addEventListener('click', function() {
@@ -310,6 +292,47 @@ function setPrevNextButtonHandlers() {
 	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	index[msgNoCounter] = maxMsgNo;
 	showMsgLoop(index.acctInfo);
+    });
+    prevPageButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	var msgNo = index[msgNoCounter];
+	var pageIdx = Math.floor((msgNo - 1) / 10);
+	console.log('pageIdx = ' + pageIdx);
+	if (pageIdx > 0) {
+	    --pageIdx;
+	    index[msgNoCounter] = (pageIdx * 10) + 1;
+	    showMsgLoop(index.acctInfo);
+	}
+    });
+    nextPageButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	var msgNo = index[msgNoCounter];
+	var pageIdx = Math.floor((msgNo - 1) / 10);
+	console.log('pageIdx = ' + pageIdx);
+	++pageIdx;
+	index[msgNoCounter] = (pageIdx * 10) + 1;
+	showMsgLoop(index.acctInfo);
+    });
+    prevUnreadButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	var msgNo = index[msgNoCounter];
+	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var unreadMsgNo = common.findFlag('beenRead', msgNo - 1, 1, false);
+	if (unreadMsgNo > 0) {
+	    index[msgNoCounter] = unreadMsgNo;
+	    showMsgLoop(index.acctInfo);
+	}
+    });
+    nextUnreadButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	var msgNo = index[msgNoCounter];
+	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
+	var unreadMsgNo = common.findFlag('beenRead', msgNo + 1, maxMsgNo, false);
+	if (unreadMsgNo > 0) {
+	    index[msgNoCounter] = unreadMsgNo;
+	    showMsgLoop(index.acctInfo);
+	}
     });
 }
 

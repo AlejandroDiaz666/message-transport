@@ -136,27 +136,64 @@ var common = module.exports = {
     },
 
     setIndexedFlag: function(prefix, index, flag) {
-	var wordIdx = index / 48;
+	var wordIdx = Math.floor(index / 48);
 	var bitIdx = index % 48;
 	var wordIdxStr = '0x' + wordIdx.toString(16)
-	var wordStr = localStorage[prefix + '.' + wordIdxStr];
+	var wordStr = localStorage[prefix + '-' + wordIdxStr];
+	console.log('setIndexedFlag: wordStr = ' + wordStr);
 	var word = (!!wordStr) ? parseInt(wordStr) : 0;
 	if (flag)
 	    word |= (1 << bitIdx);
 	else
 	    word &= ~(1 << bitIdx);
 	wordStr = '0x' + word.toString(16);
-	localStorage[prefix + '.' + wordIdxStr] = word;
+	localStorage[prefix + '-' + wordIdxStr] = '0x' + word.toString(16);
+	console.log('setIndexedFlag: localStorage[' + prefix + '-' + wordIdxStr + '] = ' + wordStr);
     },
 
     chkIndexedFlag: function(prefix, index) {
-	var wordIdx = index / 48;
+	var wordIdx = Math.floor(index / 48);
 	var bitIdx = index % 48;
 	var wordIdxStr = '0x' + wordIdx.toString(16)
-	var wordStr = localStorage[prefix + '.' + wordIdxStr];
+	var wordStr = localStorage[prefix + '-' + wordIdxStr];
+	console.log('chkIndexedFlag: localStorage[' + prefix + '-' + wordIdxStr + '] = ' + wordStr);
 	var word = (!!wordStr) ? parseInt(wordStr) : 0;
-	var read = (word & (1 << bitIdx)) ? true : false;
-	return(read);
+	var flag = (word & (1 << bitIdx)) ? true : false;
+	return(flag);
+    },
+
+
+    //find the index of the first flag that is z or nz, starting with begIndex, goin forward or backwards
+    //to endIndex. returns -1 if no flag found.
+    findFlag: function(prefix, begIndex, endIndex, nz) {
+	var allOnes = (1 << 48) - 1;
+	var increment = (endIndex > begIndex) ? 1 : -1;
+	var wordIdx = Math.floor(begIndex / 48);
+	var bitIdx = begIndex % 48;
+	do {
+	    var wordIdxStr = '0x' + wordIdx.toString(16)
+	    var wordStr = localStorage[prefix + '-' + wordIdxStr];
+	    var word = (!!wordStr) ? parseInt(wordStr) : 0;
+	    console.log('findFlag: localStorage[' + prefix + '-' + wordIdxStr + '] = 0x' + word.toString(16));
+	    if ((!!nz && word != 0) || (!nz && (word & allOnes) != allOnes)) {
+		do {
+		    if ((!!nz && (word & (1 << bitIdx)) != 0) ||
+			( !nz && (word & (1 << bitIdx)) == 0) ) {
+			var foundIdx = wordIdx * 48 + bitIdx;
+			console.log('findFlag: foundIdx = ' + foundIdx);
+			return((increment > 0 && foundIdx <= endIndex) ||
+			       (increment < 0 && foundIdx >= endIndex) ? foundIdx : -1);
+		    }
+		    bitIdx += increment;
+		} while ((increment > 0 && bitIdx < 48) || (increment < 0 && bitIdx >= 0));
+		//first time through it's possible to fall out, if the nz bit was
+		//lt the start bitIdx
+	    }
+	    bitIdx = (increment > 0) ? 0 : 47;
+	    wordIdx += increment;
+	} while ((increment > 0 &&  wordIdx      * 48 < endIndex) ||
+		 (increment < 0 && (wordIdx + 1) * 48 > endIndex));
+	return(-1);
     },
 
 
