@@ -171,6 +171,11 @@ h3 { font-size:18px; }
     right: 0%;
     transform: translateY(-50%);
 }
+#prevUnreadButton {
+}
+#nextUnreadButton {
+    margin-right: 10px;
+}
 
 
 /*

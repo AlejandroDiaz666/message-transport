@@ -858,6 +858,8 @@ function handleViewRecv(acctInfo, refreshMsgList) {
 	    showMsgLoop(acctInfo);
 	    setMenuButtonState('viewRecvButton', 'Selected');
 	    setMenuButtonState('viewSentButton', 'Enabled');
+	    replaceElemClassFromTo('nextUnreadButton', 'hidden', 'visibleIB', false);
+	    replaceElemClassFromTo('prevUnreadButton', 'hidden', 'visibleIB', false);
 	    replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
 	});
     }
@@ -898,6 +900,8 @@ function handleViewSent(acctInfo, refreshMsgList) {
     replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send again';
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('nextUnreadButton',   'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('prevUnreadButton',   'visibleIB', 'hidden',    true);
     if (refreshMsgList)
 	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
     else
