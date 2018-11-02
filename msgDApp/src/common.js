@@ -135,13 +135,13 @@ var common = module.exports = {
 	return((str + bigPad).slice(0, desiredLen));
     },
 
-    setIndexedFlag: function(prefix, index, readflag) {
-	var wordIdx = rxMsgCount / 48;
-	var bitIdx = rxMsgCount % 48;
+    setIndexedFlag: function(prefix, index, flag) {
+	var wordIdx = index / 48;
+	var bitIdx = index % 48;
 	var wordIdxStr = '0x' + wordIdx.toString(16)
 	var wordStr = localStorage[prefix + '.' + wordIdxStr];
 	var word = (!!wordStr) ? parseInt(wordStr) : 0;
-	if (readFlag)
+	if (flag)
 	    word |= (1 << bitIdx);
 	else
 	    word &= ~(1 << bitIdx);
@@ -150,8 +150,8 @@ var common = module.exports = {
     },
 
     chkIndexedFlag: function(prefix, index) {
-	var wordIdx = rxMsgCount / 48;
-	var bitIdx = rxMsgCount % 48;
+	var wordIdx = index / 48;
+	var bitIdx = index % 48;
 	var wordIdxStr = '0x' + wordIdx.toString(16)
 	var wordStr = localStorage[prefix + '.' + wordIdxStr];
 	var word = (!!wordStr) ? parseInt(wordStr) : 0;

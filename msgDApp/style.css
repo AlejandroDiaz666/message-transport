@@ -182,18 +182,28 @@ h3 { font-size:18px; }
     border-collapse: collapse;
 
 }
-.msgListItemDiv, .msgListItemDivSelected {
+
+.msgListItemDiv,    .msgListItemDivSelected,
+.msgListItemDivNew, .msgListItemDivSelectedNew {
     display: table-row;
     clear: both;
     background-color: #e3eceb;
+    font-weight: normal;
 }
-.msgListItemDiv {
+.msgListItemDiv,
+.msgListItemDivNew {
     border-top: 2px solid transparent;
 }
-.msgListItemDivSelected {
+.msgListItemDivSelected,
+.msgListItemDivSelectedNew {
     border: 2px solid #404040;
 }
-.msgListMsgNoArea, .msgListAddrArea, .msgListDateArea, .msgListMsgIdArea, .msgListSubjectArea {
+.msgListItemDivNew,
+.msgListItemDivSelectedNew {
+    font-weight: bold;
+}
+
+.msgListMsgNoArea,    .msgListAddrArea,    .msgListDateArea,    .msgListMsgIdArea,    .msgListSubjectArea {
     display: table-cell;
     vertical-align: middle;
     padding-top: 1px;
@@ -202,6 +212,7 @@ h3 { font-size:18px; }
     padding-left: 0px;
     margin: 1px;
     resize: none;
+    font-weight: inherit;
 }
 .msgListMsgNoArea {
     width: 5em;
@@ -219,8 +230,10 @@ h3 { font-size:18px; }
     min-width: 20em;
     overflow: hidden;
     white-space: nowrap;
-    test-overflow: elipsis;
+    text-overflow: elipsis;
 }
+
+
 
 
 /*

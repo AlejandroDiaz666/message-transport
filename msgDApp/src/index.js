@@ -31,6 +31,7 @@ var index = module.exports = {
 	setMainButtonHandlers();
 	setReplyButtonHandlers();
 	setValidateButtonHandler();
+	setMarkReadButtonHandler();
 	setPrevNextButtonHandlers();
 	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')
 	if (!!msgNo)
@@ -212,6 +213,24 @@ function setValidateButtonHandler() {
 }
 
 
+function setMarkReadButtonHandler() {
+    var markReadButton = document.getElementById('markReadButton');
+    markReadButton.addEventListener('click', function() {
+	if (index.listMode != 'recv') {
+	    console.log('setMarkReadButtonHandlr: we should never be here!');
+	    return;
+	}
+	var msgNo = index.listEntries[index.listIdx].msgNo;
+	var div = index.listEntries[index.listIdx].div;
+	var flag = common.chkIndexedFlag('beenRead', msgNo);
+	flag = (flag) ? false : true;
+	common.setIndexedFlag('beenRead', msgNo, flag);
+	var newSuffix = (flag) ? '' : 'New';
+	div.className = 'msgListItemDivSelected' + newSuffix;
+	markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
+    });
+}
+
 //this also sets the msgRefButton handler
 function setPrevNextButtonHandlers() {
     var prevButton = document.getElementById('prevMsgButton');
@@ -328,36 +347,23 @@ function handleLockedMetaMask(err) {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = '';
-    var msgIdArea = document.getElementById('msgIdArea');
-    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
-    msgIdArea.disabled = true;
-    var msgRefButton = document.getElementById('msgRefButton');
-    msgRefButton.disabled = true;
-    msgRefButton.textContent = '';
-    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
-    var msgDateArea = document.getElementById('msgDateArea');
-    msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
-    msgDateArea.disabled = true;
-    var validateAddrButton = document.getElementById('validateAddrButton');
-    validateAddrButton.className = (validateAddrButton.className).replace('visibleTC', 'hidden');
-    validateAddrButton.disabled = true;
-    var msgFeeArea = document.getElementById('msgFeeArea');
-    msgFeeArea.className = (msgFeeArea.className).replace('visibleTC', 'hidden');
-    msgFeeArea.disabled = true;
-    var replyButton = document.getElementById('replyButton');
-    replyButton.disabled = true;
-    replyButton.textContent = 'Reply';
-    replyButton.className = (replyButton.className).replace('hidden', 'visibleTC');
+    //
+    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true).textContent = 'Reply';
+    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    //
     var msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('hidden', 'visibleIB');
     msgTextArea.value = '';
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
-    var registerDiv = document.getElementById('registerDiv');
-    registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
-    var navButtonsSpan = document.getElementById('navButtonsSpan');
-    navButtonsSpan.className = (navButtonsSpan.className).replace('visibleIB', 'hidden');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     alert(err);
@@ -440,36 +446,23 @@ function handleUnregisteredAcct() {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = '';
-    var msgIdArea = document.getElementById('msgIdArea');
-    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
-    msgIdArea.disabled = true;
-    var msgRefButton = document.getElementById('msgRefButton');
-    msgRefButton.disabled = true;
-    msgRefButton.textContent = '';
-    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
-    var msgDateArea = document.getElementById('msgDateArea');
-    msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
-    msgDateArea.disabled = true;
-    var validateAddrButton = document.getElementById('validateAddrButton');
-    validateAddrButton.className = (validateAddrButton.className).replace('visibleTC', 'hidden');
-    validateAddrButton.disabled = true;
-    var msgFeeArea = document.getElementById('msgFeeArea');
-    msgFeeArea.className = (msgFeeArea.className).replace('visibleTC', 'hidden');
-    msgFeeArea.disabled = true;
-    var replyButton = document.getElementById('replyButton');
-    replyButton.disabled = true;
-    replyButton.textContent = 'Reply';
-    replyButton.className = (replyButton.className).replace('hidden', 'visibleTC');
+    //
+    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true).textContent = 'Reply';
+    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    //
     var msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('hidden', 'visibleIB');
     msgTextArea.value = '';
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
-    var registerDiv = document.getElementById('registerDiv');
-    registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
-    var navButtonsSpan = document.getElementById('navButtonsSpan');
-    navButtonsSpan.className = (navButtonsSpan.className).replace('visibleIB', 'hidden');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -537,28 +530,19 @@ function handleCompose(acctInfo, toAddr) {
     msgAddrArea.disabled = false;
     msgAddrArea.readonly = '';
     msgAddrArea.value = toAddr;
-    var msgIdArea = document.getElementById('msgIdArea');
-    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
-    msgIdArea.disabled = true;
+    //
+    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('validateAddrButton', 'hidden',    'visibleTC', false);
+    replaceElemClassFromTo('msgFeeArea',         'hidden',    'visibleTC', true).value = 'Fee: ';
+    replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send';
+    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    //
     var msgRefButton = document.getElementById('msgRefButton');
-    msgRefButton.disabled = true;
-    msgRefButton.textContent = '';
-    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
     msgRefButton.ref = '0';
-    var msgDateArea = document.getElementById('msgDateArea');
-    msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
-    msgDateArea.disabled = true;
-    var validateAddrButton = document.getElementById('validateAddrButton');
-    validateAddrButton.className = (validateAddrButton.className).replace('hidden', 'visibleTC');
-    validateAddrButton.disabled = false;
-    var msgFeeArea = document.getElementById('msgFeeArea');
-    msgFeeArea.className = (msgFeeArea.className).replace('hidden', 'visibleTC');
-    msgFeeArea.disabled = true;
-    msgFeeArea.value = 'Fee: ';
-    var replyButton = document.getElementById('replyButton');
-    replyButton.disabled = true;
-    replyButton.textContent = 'Send';
-    replyButton.className = (replyButton.className).replace('hidden', 'visibleTC');
     //textarea will be enabled after addr is validated
     var msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('hidden', 'visibleIB');
@@ -566,10 +550,6 @@ function handleCompose(acctInfo, toAddr) {
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder="Validate the recipient address, then type your message here...";
-    var registerDiv = document.getElementById('registerDiv');
-    registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
-    var navButtonsSpan = document.getElementById('navButtonsSpan');
-    navButtonsSpan.className = (navButtonsSpan.className).replace('visibleIB', 'hidden');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -613,37 +593,24 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	msgAddrArea.disabled = true;
 	msgAddrArea.readonly = 'readonly';
 	msgAddrArea.value = toAddr;
-	var msgIdArea = document.getElementById('msgIdArea');
-	msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
-	msgIdArea.disabled = true;
-	var msgRefButton = document.getElementById('msgRefButton');
-	msgRefButton.disabled = true;
-	msgRefButton.className = (msgRefButton.className).replace('hidden', 'visibleTC');
+	//
+	replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+	replaceElemClassFromTo('msgRefButton',       'hidden',    'visibleTC', true);
+	replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+	replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+	replaceElemClassFromTo('msgFeeArea',         'hidden',    'visibleTC', true).value = 'Fee: ';
+	replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', false).textContent = 'Send';
+	replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+	replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+	replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+	//
 	showIdAndRef('', ref, false);
-	var msgDateArea = document.getElementById('msgDateArea');
-	msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
-	msgDateArea.disabled = true;
-	var validateAddrButton = document.getElementById('validateAddrButton');
-	validateAddrButton.className = (validateAddrButton.className).replace('visibleTC', 'hidden');
-	validateAddrButton.disabled = true;
-	//msg fee calculation handled below
-	var msgFeeArea = document.getElementById('msgFeeArea');
-	msgFeeArea.className = (msgFeeArea.className).replace('hidden', 'visibleTC');
-	msgFeeArea.disabled = true;
-	var replyButton = document.getElementById('replyButton');
-	replyButton.disabled = false;
-	replyButton.textContent = 'Send';
-	replyButton.className = (replyButton.className).replace('hidden', 'visibleTC');
 	var msgTextArea = document.getElementById('msgTextArea');
 	msgTextArea.className = (msgTextArea.className).replace('hidden', 'visibleIB');
 	msgTextArea.value = (!!subject) ? subject : '';
 	msgTextArea.disabled = false;
 	msgTextArea.readonly = '';
 	msgTextArea.placeholder='Type your message here...';
-	var registerDiv = document.getElementById('registerDiv');
-	registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
-	var navButtonsSpan = document.getElementById('navButtonsSpan');
-	navButtonsSpan.className = (navButtonsSpan.className).replace('visibleIB', 'hidden');
 	var statusDiv = document.getElementById('statusDiv');
 	clearStatusDiv(statusDiv);
 	//fees: see how many messages have been sent from the proposed recipient to me
@@ -682,36 +649,24 @@ function handleRegister() {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = common.web3.eth.accounts[0];
-    var msgIdArea = document.getElementById('msgIdArea');
-    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
-    msgIdArea.disabled = true;
-    var msgRefButton = document.getElementById('msgRefButton');
-    msgRefButton.disabled = true;
-    msgRefButton.textContent = '';
-    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
-    var msgDateArea = document.getElementById('msgDateArea');
-    msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
-    msgDateArea.disabled = true;
-    var validateAddrButton = document.getElementById('validateAddrButton');
-    validateAddrButton.className = (validateAddrButton.className).replace('visibleTC', 'hidden');
-    validateAddrButton.disabled = true;
-    var msgFeeArea = document.getElementById('msgFeeArea');
-    msgFeeArea.className = (msgFeeArea.className).replace('visibleTC', 'hidden');
-    msgFeeArea.disabled = true;
-    var replyButton = document.getElementById('replyButton');
-    replyButton.disabled = true;
-    replyButton.className = (replyButton.className).replace('visibleTC', 'hidden');
+    //
+    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('registerDiv',        'hidden',    'visibleIB', true);
+    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    //
     var msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('visibleIB', 'hidden');
     msgTextArea.disabled = true;
-    var registerDiv = document.getElementById('registerDiv');
-    registerDiv.className = (registerDiv.className).replace('hidden', 'visibleIB');
     var messageFeeInput = document.getElementById('messageFeeInput');
     messageFeeInput.value = index.acctInfo[ether.ACCTINFO_MESSAGEFEE];
     var spamFeeInput = document.getElementById('spamFeeInput');
     spamFeeInput.value = index.acctInfo[ether.ACCTINFO_SPAMFEE];
-    var navButtonsSpan = document.getElementById('navButtonsSpan');
-    navButtonsSpan.className = (navButtonsSpan.className).replace('visibleIB', 'hidden');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -760,35 +715,23 @@ function handleWithdraw() {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = common.web3.eth.accounts[0];
-    var msgIdArea = document.getElementById('msgIdArea');
-    msgIdArea.className = (msgIdArea.className).replace('visibleTC', 'hidden');
-    msgIdArea.disabled = true;
-    var msgRefButton = document.getElementById('msgRefButton');
-    msgRefButton.disabled = true;
-    msgRefButton.textContent = '';
-    msgRefButton.className = (msgRefButton.className).replace('visibleTC', 'hidden');
-    var msgDateArea = document.getElementById('msgDateArea');
-    msgDateArea.className = (msgDateArea.className).replace('visibleTC', 'hidden');
-    msgDateArea.disabled = true;
-    var validateAddrButton = document.getElementById('validateAddrButton');
-    validateAddrButton.className = (validateAddrButton.className).replace('visibleTC', 'hidden');
-    validateAddrButton.disabled = true;
-    var msgFeeArea = document.getElementById('msgFeeArea');
-    msgFeeArea.className = (msgFeeArea.className).replace('visibleTC', 'hidden');
-    msgFeeArea.disabled = true;
-    var replyButton = document.getElementById('replyButton');
-    replyButton.disabled = true;
-    replyButton.className = (replyButton.className).replace('visibleTC', 'hidden');
+    //
+    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    //
     var msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('visibleIB', 'hidden');
     msgTextArea.value = '';
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
-    var registerDiv = document.getElementById('registerDiv');
-    registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
-    var navButtonsSpan = document.getElementById('navButtonsSpan');
-    navButtonsSpan.className = (navButtonsSpan.className).replace('visibleIB', 'hidden');
     //
     //display "waiting for metamask" in case metamask dialog is hidden
     var metaMaskModal = document.getElementById('metaMaskModal');
@@ -823,41 +766,28 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = '';
-    var msgIdArea = document.getElementById('msgIdArea');
-    msgIdArea.className = (msgIdArea.className).replace('hidden', 'visibleTC');
-    msgIdArea.disabled = true;
-    msgIdArea.readonly = "readonly"
-    msgIdArea.value = 'Msg ID: N/A';
-    var msgRefButton = document.getElementById('msgRefButton');
-    msgRefButton.disabled = true;
-    msgRefButton.textContent = 'Ref: N/A';
-    msgRefButton.className = (msgRefButton.className).replace('hidden', 'visibleTC');
-    var msgDateArea = document.getElementById('msgDateArea');
-    msgDateArea.disabled = true;
-    msgDateArea.readonly = "readonly"
-    msgDateArea.value = '';
-    msgDateArea.className = (msgDateArea.className).replace('hidden', 'visibleTC');
-    var validateAddrButton = document.getElementById('validateAddrButton');
-    validateAddrButton.className = (validateAddrButton.className).replace('visibleTC', 'hidden');
-    validateAddrButton.disabled = true;
-    var msgFeeArea = document.getElementById('msgFeeArea');
-    msgFeeArea.className = (msgFeeArea.className).replace('visibleTC', 'hidden');
-    msgFeeArea.disabled = true;
+    //
+    replaceElemClassFromTo('msgIdArea',          'hidden',    'visibleTC', true).value = 'Msg ID: N/A';
+    replaceElemClassFromTo('msgRefButton',       'hidden',    'visibleTC', true).textContent = 'Ref: N/A';
+    replaceElemClassFromTo('msgDateArea',        'hidden',    'visibleTC', true).value = '';
+    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
     //we'll set this to enabled after we have a valid message displayed
-    var replyButton = document.getElementById('replyButton');
-    replyButton.disabled = true;
-    replyButton.textContent = 'Reply';
-    replyButton.className = (replyButton.className).replace('hidden', 'visibleTC');
+    replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Reply';
+    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'hidden',    'visibleTC', false);
+    replaceElemClassFromTo('navButtonsSpan',     'hidden',    'visibleIB', true);
+    //
+    var msgIdArea = document.getElementById('msgIdArea');
+    msgIdArea.readonly = "readonly"
+    var msgDateArea = document.getElementById('msgDateArea');
+    msgDateArea.readonly = "readonly"
     var msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('hidden', 'visibleIB');
     msgTextArea.value = '';
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
-    var registerDiv = document.getElementById('registerDiv');
-    registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
-    var navButtonsSpan = document.getElementById('navButtonsSpan');
-    navButtonsSpan.className = (navButtonsSpan.className).replace('hidden', 'visibleIB');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     //
@@ -893,41 +823,30 @@ function handleViewSent(acctInfo, refreshMsgList) {
     msgAddrArea.disabled = true;
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = '';
+    //
+    replaceElemClassFromTo('msgIdArea',          'hidden',    'visibleTC', true).value = 'Msg ID: N/A';
+    replaceElemClassFromTo('msgRefButton',       'hidden',    'visibleTC', true).textContent = 'Ref: N/A';
+    replaceElemClassFromTo('msgDateArea',        'hidden',    'visibleTC', true).value = '';
+    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    //we'll set this to enabled after we have a valid message displayed
+    replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send again';
+    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('navButtonsSpan',     'hidden',    'visibleIB', true);
+    //
     var msgIdArea = document.getElementById('msgIdArea');
-    msgIdArea.className = (msgIdArea.className).replace('hidden', 'visibleTC');
-    msgIdArea.disabled = true;
     msgIdArea.readonly = "readonly"
-    msgIdArea.value = 'Msg ID: N/A';
     var msgRefButton = document.getElementById('msgRefButton');
     msgRefButton.disabled = true;
-    msgRefButton.textContent = 'Ref: N/A';
-    msgRefButton.className = (msgRefButton.className).replace('hidden', 'visibleTC');
     var msgDateArea = document.getElementById('msgDateArea');
-    msgDateArea.disabled = true;
     msgDateArea.readonly = "readonly"
-    msgDateArea.value = '';
-    msgDateArea.className = (msgDateArea.className).replace('hidden', 'visibleTC');
-    var validateAddrButton = document.getElementById('validateAddrButton');
-    validateAddrButton.className = (validateAddrButton.className).replace('visibleTC', 'hidden');
-    validateAddrButton.disabled = true;
-    var msgFeeArea = document.getElementById('msgFeeArea');
-    msgFeeArea.className = (msgFeeArea.className).replace('visibleTC', 'hidden');
-    msgFeeArea.disabled = true;
-    //we'll set this to enabled after we have a valid message displayed
-    var replyButton = document.getElementById('replyButton');
-    replyButton.disabled = true;
-    replyButton.textContent = 'Send again';
-    replyButton.className = (replyButton.className).replace('hidden', 'visibleTC');
     var msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('hidden', 'visibleIB');
     msgTextArea.value = '';
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
-    var registerDiv = document.getElementById('registerDiv');
-    registerDiv.className = (registerDiv.className).replace('visibleIB', 'hidden');
-    var navButtonsSpan = document.getElementById('navButtonsSpan');
-    navButtonsSpan.className = (navButtonsSpan.className).replace('hidden', 'visibleIB');
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     //
@@ -1031,8 +950,10 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
     console.log('addToMsgList: msgNo = ' + msgNo + ', subject = ' + content.substring(0, 20));
     var subject = msgUtil.extractSubject(content, 80);
     var div, msgNoArea, addrArea, subjectArea, dateArea, msgIdArea
-    (div = document.createElement("div")).className = 'msgListItemDiv';
-    div.id = 'msgListDivIdx-' + listIdx;
+
+    (div = document.createElement("div")).id = 'msgListDivIdx-' + listIdx;
+    var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag('beenRead', msgNo)) ? '' : 'New';
+    div.className = 'msgListItemDiv' + newSuffix;
     index.listEntries[listIdx] = new ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content);
     if (!!msgNo) {
 	div.addEventListener('click', function() {
@@ -1129,11 +1050,18 @@ function showMsgLoop(acctInfo) {
     var listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : -1;
     console.log('showMsgLoop: listIdx = ' + listIdx + ', index.listIdx = ' + index.listIdx);
     if (listIdx != index.listIdx) {
-	if (index.listIdx >= 0)
-	    (index.listEntries[index.listIdx].div).className = 'msgListItemDiv';
+	if (index.listIdx >= 0) {
+	    var oldMsgNo = index.listEntries[index.listIdx].msgNo;
+	    var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag('beenRead', oldMsgNo)) ? '' : 'New';
+	    (index.listEntries[index.listIdx].div).className = 'msgListItemDiv' + newSuffix;
+	}
 	index.listIdx = listIdx;
-	if (index.listIdx >= 0)
-	    (index.listEntries[index.listIdx].div).className = 'msgListItemDivSelected';
+	if (index.listIdx >= 0) {
+	    var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag('beenRead', msgNo)) ? '' : 'New';
+	    (index.listEntries[index.listIdx].div).className = 'msgListItemDivSelected' + newSuffix;
+	    var markReadButton = document.getElementById('markReadButton');
+	    markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
+	}
     }
     console.log('showMsgLoop: index[msgNoCounter] = ' + msgNo + ', maxMsgNo = ' + maxMsgNo);
     if (msgNo != 0) {
@@ -1263,6 +1191,14 @@ function setMenuButtonState(buttonID, state) {
     button.className = 'menuBarButton' + state;
 }
 
+function replaceElemClassFromTo(elemId, from, to, disabled) {
+    var elem = document.getElementById(elemId);
+    if (!elem)
+	console.log('could not find elem: ' + elemId);
+    elem.className = (elem.className).replace(from, to);
+    elem.disabled = disabled;
+    return(elem);
+}
 
 //we also save the id and ref in the area/button objects, for onclick
 //if enable is set, then the msgRefButton is enabled, but only if ref is nz
