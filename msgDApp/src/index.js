@@ -581,7 +581,7 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
     //
     ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
 	var toPublicKey = (!!toAcctInfo) ? toAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
-	if (!toPublickey || toPublickey == '0x') {
+	if (!toPublicKey || toPublicKey == '0x') {
 	    msgTextArea.value = 'Error: no account was found for this address.';
 	    replyButton.disabled = true;
 	    handleCompose(index.acctInfo, toAddr);
@@ -937,7 +937,7 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
 		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 		    return;
 		} else {
-		    addToMsgList(listIdx, msgNo, toAddr, date, msgId, ref, decrypted, listTableBody);
+		    addToMsgList(listIdx, msgNo, otherAddr, date, msgId, ref, decrypted, listTableBody);
 		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 		}
 	    });
