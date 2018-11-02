@@ -752,12 +752,16 @@ function handleWithdraw() {
 // if refreshMsgList then call showMsgLoop to look up the message corresponding to the current index['recvMessageNo']
 // otherwise just set up the View-Recv mode and return.
 //
+// if refreshing the msg-list, then we only enable view-sent mode after the list is copmlete. if you don't take that
+// precaution, then it's possible for a user to flip between recv and sent modes, and makeMsgListEntry will be confounded
+// because the index.listMode has changed.
+//
 function handleViewRecv(acctInfo, refreshMsgList) {
     setMenuButtonState('importantInfoButton', 'Enabled');
     setMenuButtonState('registerButton',      'Enabled');
     setMenuButtonState('viewRecvButton',      'Selected');
     setMenuButtonState('composeButton',       'Enabled');
-    setMenuButtonState('viewSentButton',      'Enabled');
+    setMenuButtonState('viewSentButton',      refreshMsgList ? 'Disabled' : 'Enabled');
     setMenuButtonState('withdrawButton',      'Enabled');
     //
     var msgPromptArea = document.getElementById('msgPromptArea');
@@ -798,6 +802,8 @@ function handleViewRecv(acctInfo, refreshMsgList) {
 	var msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
+	    if (refreshMsgList)
+		setMenuButtonState('viewSentButton', 'Enabled');
 	});
     }
 }
@@ -809,10 +815,14 @@ function handleViewRecv(acctInfo, refreshMsgList) {
 // if refreshMsgList then call showMsgLoop to look up the message corresponding to the current index['sentMessageNo']
 // otherwise just set up the View-Sent mode and return.
 //
+// if refreshing the msg-list, then we only enable view-recv mode after the list is copmlete. if you don't take that
+// precaution, then it's possible for a user to flip between recv and sent modes, and makeMsgListEntry will be confounded
+// because the index.listMode has changed.
+//
 function handleViewSent(acctInfo, refreshMsgList) {
     setMenuButtonState('importantInfoButton', 'Enabled');
     setMenuButtonState('registerButton',      'Enabled');
-    setMenuButtonState('viewRecvButton',      'Enabled');
+    setMenuButtonState('viewRecvButton',      refreshMsgList ? 'Disabled' : 'Enabled');
     setMenuButtonState('composeButton',       'Enabled');
     setMenuButtonState('viewSentButton',      'Selected');
     setMenuButtonState('withdrawButton',      'Enabled');
@@ -857,6 +867,8 @@ function handleViewSent(acctInfo, refreshMsgList) {
 	var msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
+	    if (refreshMsgList)
+		setMenuButtonState('viewRecvButton', 'Enabled');
 	});
     }
 }
