@@ -147,12 +147,13 @@ h3 { font-size:18px; }
     margin-right: 0px;
     height: 100%;
     background-color: #dbdcdb;
+    position: relative;
 }
 
 .menuBarButton, .menuBarButtonEnabled, .menuBarButtonDisabled,
 .menuBarButtonSelected, .menuBarButton:hover {
     margin: 5px;
-    width: 20%;
+    width: 15%;
     height: 80%;
 }
 .menuBarButtonEnabled, .menuBarButtonDisabled {
@@ -163,7 +164,12 @@ h3 { font-size:18px; }
 }
 
 #navButtonsSpan {
-    margin-left: 30px;
+    margin-right: 10px;
+    /* below is essentially equivelent to: vertical-align: middle; */
+    position: absolute;
+    top: 50%;
+    right: 0%;
+    transform: translateY(-50%);
 }
 
 
@@ -221,7 +227,7 @@ h3 { font-size:18px; }
     width: 26em;
 }
 .msgListDateArea {
-    width: 30em;
+    width: 20em;
 }
 .msgListMsgIdArea {
     width: 20em;
@@ -300,7 +306,7 @@ h3 { font-size:18px; }
     padding-bottom: 1px;
     padding-left: 0px;
     margin: 0px;
-    width: 30em;
+    width: 20em;
     resize: none;
 }
 #validateAddrButton {

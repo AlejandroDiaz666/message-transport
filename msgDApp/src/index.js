@@ -31,6 +31,7 @@ var index = module.exports = {
 	setMainButtonHandlers();
 	setReplyButtonHandlers();
 	setValidateButtonHandler();
+	setMsgRefButtonHandler();
 	setMarkReadButtonHandler();
 	setPrevNextButtonHandlers();
 	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')
@@ -213,56 +214,8 @@ function setValidateButtonHandler() {
 }
 
 
-function setMarkReadButtonHandler() {
-    var markReadButton = document.getElementById('markReadButton');
-    markReadButton.addEventListener('click', function() {
-	if (index.listMode != 'recv') {
-	    console.log('setMarkReadButtonHandlr: we should never be here!');
-	    return;
-	}
-	var msgNo = index.listEntries[index.listIdx].msgNo;
-	var div = index.listEntries[index.listIdx].div;
-	var flag = common.chkIndexedFlag('beenRead', msgNo);
-	flag = (flag) ? false : true;
-	common.setIndexedFlag('beenRead', msgNo, flag);
-	var newSuffix = (flag) ? '' : 'New';
-	div.className = 'msgListItemDivSelected' + newSuffix;
-	markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
-    });
-}
-
-//this also sets the msgRefButton handler
-function setPrevNextButtonHandlers() {
-    var prevButton = document.getElementById('prevMsgButton');
-    var nextButton = document.getElementById('nextMsgButton');
-    var firstButton = document.getElementById('firstMsgButton');
-    var lastButton = document.getElementById('lastMsgButton');
+function setMsgRefButtonHandler() {
     var msgRefButton = document.getElementById('msgRefButton');
-    var viewRecvButton = document.getElementById('viewRecvButton');
-    prevButton.addEventListener('click', function() {
-	var msgNoCounter = (viewRecvButton.className == 'menuBarButtonSelected') ? 'recvMessageNo' : 'sentMessageNo';
-	--index[msgNoCounter];
-	showMsgLoop(index.acctInfo);
-    });
-    nextButton.addEventListener('click', function() {
-	var msgNoCounter = (viewRecvButton.className == 'menuBarButtonSelected') ? 'recvMessageNo' : 'sentMessageNo';
-	++index[msgNoCounter];
-	showMsgLoop(index.acctInfo);
-    });
-    firstButton.addEventListener('click', function() {
-	var msgNoCounter = (viewRecvButton.className == 'menuBarButtonSelected') ? 'recvMessageNo' : 'sentMessageNo';
-	var acctInfoCountIdx = (viewRecvButton.className == 'menuBarButtonSelected') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
-	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
-	index[msgNoCounter] = (maxMsgNo > 0) ? 1 : 0;
-	showMsgLoop(index.acctInfo);
-    });
-    lastButton.addEventListener('click', function() {
-	var msgNoCounter = (viewRecvButton.className == 'menuBarButtonSelected') ? 'recvMessageNo' : 'sentMessageNo';
-	var acctInfoCountIdx = (viewRecvButton.className == 'menuBarButtonSelected') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
-	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
-	index[msgNoCounter] = maxMsgNo;
-	showMsgLoop(index.acctInfo);
-    });
     msgRefButton.addEventListener('click', function() {
 	var ref = msgRefButton.ref;
 	if (!!ref) {
@@ -282,6 +235,81 @@ function setPrevNextButtonHandlers() {
 		}
 	    });
 	}
+    });
+}
+
+
+function setMarkReadButtonHandler() {
+    var markReadButton = document.getElementById('markReadButton');
+    markReadButton.addEventListener('click', function() {
+	if (index.listMode != 'recv') {
+	    console.log('setMarkReadButtonHandlr: we should never be here!');
+	    return;
+	}
+	var msgNo = index.listEntries[index.listIdx].msgNo;
+	var div = index.listEntries[index.listIdx].div;
+	var flag = common.chkIndexedFlag('beenRead', msgNo);
+	flag = (flag) ? false : true;
+	common.setIndexedFlag('beenRead', msgNo, flag);
+	var newSuffix = (flag) ? '' : 'New';
+	div.className = 'msgListItemDivSelected' + newSuffix;
+	markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
+    });
+}
+
+
+function setPrevNextButtonHandlers() {
+    var prevMsgButton = document.getElementById('prevMsgButton');
+    var nextMsgButton = document.getElementById('nextMsgButton');
+    var prevPageButton = document.getElementById('prevPageButton');
+    var nextPageButton = document.getElementById('nextPageButton');
+    var firstButton = document.getElementById('firstMsgButton');
+    var lastButton = document.getElementById('lastMsgButton');
+    prevMsgButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	if (index[msgNoCounter] > 0) {
+	    --index[msgNoCounter];
+	    showMsgLoop(index.acctInfo);
+	}
+    });
+    prevPageButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	var msgNo = index[msgNoCounter];
+	var pageIdx = Math.floor((msgNo - 1) / 10);
+	console.log('pageIdx = ' + pageIdx);
+	if (pageIdx > 0) {
+	    --pageIdx;
+	    index[msgNoCounter] = (pageIdx * 10) + 1;
+	    showMsgLoop(index.acctInfo);
+	}
+    });
+    nextMsgButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	++index[msgNoCounter];
+	showMsgLoop(index.acctInfo);
+    });
+    nextPageButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	var msgNo = index[msgNoCounter];
+	var pageIdx = Math.floor((msgNo - 1) / 10);
+	console.log('pageIdx = ' + pageIdx);
+	++pageIdx;
+	index[msgNoCounter] = (pageIdx * 10) + 1;
+	showMsgLoop(index.acctInfo);
+    });
+    firstButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
+	index[msgNoCounter] = (maxMsgNo > 0) ? 1 : 0;
+	showMsgLoop(index.acctInfo);
+    });
+    lastButton.addEventListener('click', function() {
+	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
+	index[msgNoCounter] = maxMsgNo;
+	showMsgLoop(index.acctInfo);
     });
 }
 
@@ -754,7 +782,7 @@ function handleWithdraw() {
 //
 // if refreshing the msg-list, then we only enable view-sent mode after the list is copmlete. if you don't take that
 // precaution, then it's possible for a user to flip between recv and sent modes, and makeMsgListEntry will be confounded
-// because the index.listMode has changed.
+// because the index.listMode has changed. same considerations apply to navButtons.
 //
 function handleViewRecv(acctInfo, refreshMsgList) {
     setMenuButtonState('importantInfoButton', 'Enabled');
@@ -780,7 +808,10 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Reply';
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('markReadButton',     'hidden',    'visibleTC', false);
-    replaceElemClassFromTo('navButtonsSpan',     'hidden',    'visibleIB', true);
+    if (refreshMsgList)
+	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
+    else
+	replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
     //
     var msgIdArea = document.getElementById('msgIdArea');
     msgIdArea.readonly = "readonly"
@@ -802,8 +833,9 @@ function handleViewRecv(acctInfo, refreshMsgList) {
 	var msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
-	    if (refreshMsgList)
-		setMenuButtonState('viewSentButton', 'Enabled');
+	    setMenuButtonState('viewRecvButton', 'Selected');
+	    setMenuButtonState('viewSentButton', 'Enabled');
+	    replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
 	});
     }
 }
@@ -817,7 +849,7 @@ function handleViewRecv(acctInfo, refreshMsgList) {
 //
 // if refreshing the msg-list, then we only enable view-recv mode after the list is copmlete. if you don't take that
 // precaution, then it's possible for a user to flip between recv and sent modes, and makeMsgListEntry will be confounded
-// because the index.listMode has changed.
+// because the index.listMode has changed. same considerations apply to navButtons.
 //
 function handleViewSent(acctInfo, refreshMsgList) {
     setMenuButtonState('importantInfoButton', 'Enabled');
@@ -843,7 +875,10 @@ function handleViewSent(acctInfo, refreshMsgList) {
     replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send again';
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('navButtonsSpan',     'hidden',    'visibleIB', true);
+    if (refreshMsgList)
+	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
+    else
+	replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
     //
     var msgIdArea = document.getElementById('msgIdArea');
     msgIdArea.readonly = "readonly"
@@ -867,8 +902,9 @@ function handleViewSent(acctInfo, refreshMsgList) {
 	var msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
-	    if (refreshMsgList)
-		setMenuButtonState('viewRecvButton', 'Enabled');
+	    setMenuButtonState('viewRecvButton', 'Enabled');
+	    setMenuButtonState('viewSentButton', 'Selected');
+	    replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
 	});
     }
 }
@@ -891,9 +927,8 @@ function makeMsgList(msgNo, cb) {
     var batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
     var listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
     var firstMsgNo = batch * 10 + 1;
-    var viewRecvButton = document.getElementById('viewRecvButton');
-    var getMsgLogFcn   = (viewRecvButton.className == 'menuBarButtonSelected') ? msgUtil.getRecvMsgLogs    : msgUtil.getSentMsgLogs;
-    var parseLogsFcn   = (viewRecvButton.className == 'menuBarButtonSelected') ? ether.parseMessageRxEvent : ether.parseMessageTxEvent;
+    var getMsgLogFcn   = (index.listMode == 'recv') ? msgUtil.getRecvMsgLogs    : msgUtil.getSentMsgLogs;
+    var parseLogsFcn   = (index.listMode == 'recv') ? ether.parseMessageRxEvent : ether.parseMessageTxEvent;
     getMsgLogFcn(common.web3.eth.accounts[0], batch, function(err, result) {
 	if (!!err || !result || result.length < listIdx + 1) {
 	    var msgTextArea = document.getElementById('msgTextArea');
@@ -962,7 +997,6 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
     console.log('addToMsgList: msgNo = ' + msgNo + ', subject = ' + content.substring(0, 20));
     var subject = msgUtil.extractSubject(content, 80);
     var div, msgNoArea, addrArea, subjectArea, dateArea, msgIdArea
-
     (div = document.createElement("div")).id = 'msgListDivIdx-' + listIdx;
     var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag('beenRead', msgNo)) ? '' : 'New';
     div.className = 'msgListItemDiv' + newSuffix;
@@ -1022,9 +1056,8 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
 // msgNo depending on the current mode
 //
 function getCurMsgNo(acctInfo) {
-    var viewRecvButton = document.getElementById('viewRecvButton');
-    var msgNoCounter     = (viewRecvButton.className == 'menuBarButtonSelected') ? 'recvMessageNo'                 : 'sentMessageNo';
-    var acctInfoCountIdx = (viewRecvButton.className == 'menuBarButtonSelected') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+    var msgNoCounter     = (index.listMode == 'recv') ? 'recvMessageNo'                 : 'sentMessageNo';
+    var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
     var maxMsgNo = parseInt(acctInfo[acctInfoCountIdx]);
     if (index[msgNoCounter] == 0 && maxMsgNo > 0)
 	index[msgNoCounter] = 1;
@@ -1042,20 +1075,31 @@ function getCurMsgNo(acctInfo) {
 //
 var prevAndNextButtonHasOnClick = false;
 function showMsgLoop(acctInfo) {
-    var prevButton = document.getElementById('prevMsgButton');
-    var nextButton = document.getElementById('nextMsgButton');
-    var viewRecvButton = document.getElementById('viewRecvButton');
-    var acctInfoCountIdx = (viewRecvButton.className == 'menuBarButtonSelected') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+    var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
     var maxMsgNo = parseInt(acctInfo[acctInfoCountIdx]);
     var msgNo = getCurMsgNo(acctInfo);
-    prevButton.disabled = (msgNo > 1)        ? false : true;
-    nextButton.disabled = (msgNo < maxMsgNo) ? false : true;
-    //check msgNo outside of listEntries.... if yes, regenerate listEntries, and call us again
+    var prevMsgButton = document.getElementById('prevMsgButton');
+    var nextMsgButton = document.getElementById('nextMsgButton');
+    var prevPageButton = document.getElementById('prevPageButton');
+    var nextPageButton = document.getElementById('nextPageButton');
+    prevMsgButton.disabled = (msgNo > 1)          ? false : true;
+    nextMsgButton.disabled = (msgNo < maxMsgNo)   ? false : true;
+    prevPageButton.disabled = (msgNo > 10)        ? false : true;
+    nextPageButton.disabled = (msgNo < (Math.floor((maxMsgNo - 1) / 10) * 10) + 1) ? false : true;
+    //check msgNo outside of listEntries.... if yes, regenerate listEntries, and call us again; in this case we disable the navButtons and other view-list
+    //mode until after the list is regenerated.
     var minListMsgNo = index.listEntries[0].msgNo;
     if (msgNo != 0 && (msgNo < minListMsgNo || msgNo >= minListMsgNo + 10)) {
+	console.log('showMsgLoop: regenerating msg list!');
+	setMenuButtonState('viewRecvButton', 'Disabled');
+	setMenuButtonState('viewSentButton', 'Disabled');
+	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
-	    return;
+	    console.log('showMsgLoop: index.listMode = ' + index.listMode);
+	    setMenuButtonState('viewRecvButton', (index.listMode == 'recv') ? 'Selected' : 'Enabled');
+	    setMenuButtonState('viewSentButton', (index.listMode == 'sent') ? 'Selected' : 'Enabled');
+	    replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
 	});
 	return;
     }
