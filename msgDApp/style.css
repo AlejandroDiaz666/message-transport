@@ -282,8 +282,8 @@ h3 { font-size:18px; }
 }
 #msgPromptArea {
     display: table-cell;
-    width: 5em;
-    max-width: 5em;
+    width: 4em;
+    max-width: 4em;
 }
 #msgAddrArea {
     display: table-cell;

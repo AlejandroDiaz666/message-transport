@@ -15,13 +15,15 @@ var common = module.exports = {
 	if (window.ethereum) {
 	    // Modern dapp browsers...
             common.web3 = new Web3(ethereum);
-	    console.log('found new metamask. prvider: ' + common.web3.currentProvider.toString());
+	    //console.log('checkForMetaMask: found new metamask');
+	    //provider: ' + common.web3.currentProvider.toString());
             try {
 		// Request account access if needed
 		await ethereum.enable();
 		cb(null, common.web3);
             } catch (error) {
 		// User denied account access...
+		console.log('checkForMetaMask: err = ' + error.toString());
 		common.web3 = null;
 		cb('You must enable the MetaMask plugin to use this utility', null);
             }
@@ -165,7 +167,7 @@ var common = module.exports = {
 
     //find the index of the first flag that is z or nz, starting with begIndex, goin forward or backwards
     //to endIndex. returns -1 if no flag found.
-    findFlag: function(prefix, begIndex, endIndex, nz) {
+    findIndexedFlag: function(prefix, begIndex, endIndex, nz) {
 	var allOnes = (1 << 48) - 1;
 	var increment = (endIndex > begIndex) ? 1 : -1;
 	var wordIdx = Math.floor(begIndex / 48);

@@ -25,6 +25,8 @@ var index = module.exports = {
     listIdx: -1,
     listMode: null,
     listEntries: {},
+    waitingForTxid: false,
+    localStoragePrefix: '',
 
     main: function() {
 	console.log('index.main');
@@ -37,7 +39,7 @@ var index = module.exports = {
 	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')
 	if (!!msgNo)
 	    index['recvMessageNo'] = parseInt(msgNo);
-	beginTheBeguine();
+	beginTheBeguine(null);
     },
 
 };
@@ -119,7 +121,7 @@ function setReplyButtonHandlers() {
 		var toPublicKey = (!!toAcctInfo) ? toAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
 		if (!toPublicKey || toPublicKey == '0x') {
 		    alert('Encryption error: unable to look up destination address in contract!');
-		    handleUnlockedMetaMask(continuationMode);
+		    handleUnlockedMetaMask(null);
 		    return;
 		}
 		var sentMsgCtrBN = common.numberToBN(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
@@ -248,9 +250,9 @@ function setMarkReadButtonHandler() {
 	}
 	var msgNo = index.listEntries[index.listIdx].msgNo;
 	var div = index.listEntries[index.listIdx].div;
-	var flag = common.chkIndexedFlag('beenRead', msgNo);
+	var flag = common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo);
 	flag = (flag) ? false : true;
-	common.setIndexedFlag('beenRead', msgNo, flag);
+	common.setIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo, flag);
 	var newSuffix = (flag) ? '' : 'New';
 	div.className = 'msgListItemDivSelected' + newSuffix;
 	markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
@@ -317,7 +319,7 @@ function setPrevNextButtonHandlers() {
 	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	var msgNo = index[msgNoCounter];
 	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
-	var unreadMsgNo = common.findFlag('beenRead', msgNo - 1, 1, false);
+	var unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo - 1, 1, false);
 	if (unreadMsgNo > 0) {
 	    index[msgNoCounter] = unreadMsgNo;
 	    showMsgLoop(index.acctInfo);
@@ -328,7 +330,7 @@ function setPrevNextButtonHandlers() {
 	var msgNo = index[msgNoCounter];
 	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
 	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
-	var unreadMsgNo = common.findFlag('beenRead', msgNo + 1, maxMsgNo, false);
+	var unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
 	if (unreadMsgNo > 0) {
 	    index[msgNoCounter] = unreadMsgNo;
 	    showMsgLoop(index.acctInfo);
@@ -337,25 +339,46 @@ function setPrevNextButtonHandlers() {
 }
 
 
-function beginTheBeguine() {
+//
+// mode = [ 'send' | 'recv' | null ]
+//
+function beginTheBeguine(mode) {
     if (!index.acctCheckTimer) {
 	console.log('init acctCheckTimer');
+	var count = 0;
 	index.acctCheckTimer = setInterval(function() {
 	    common.checkForMetaMask(true, function(err, w3) {
 		var acct = (!err && !!w3) ? w3.eth.accounts[0] : null;
 		if (acct != index.account) {
 		    console.log('MetaMask account changed!');
-		    beginTheBeguine();
-		} else {
-		    console.log('MetaMask account unchanged...');
+		    console.log('acct = ' + acct + ', index.account = ' + index.account);
+		    beginTheBeguine(null);
+		} else if (!!acct && ++count > 5 && !index.waitingForTxid) {
+		    count = 0;
+		    console.log('MetaMask account unchanged...' + count);
+		    ether.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
+			var recvCntNew = parseInt(_acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT]);
+			var sentCntNew = parseInt(_acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
+			var recvCntOld = parseInt(index.acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT]);
+			var sentCntOld = parseInt(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
+			if (recvCntNew != recvCntOld) {
+			    console.log('beginTheBeguine(timer): recvCnt ' + recvCntOld + ' => ' + recvCntNew);
+			    beginTheBeguine('recv');
+			} else if (sentCntNew != sentCntOld) {
+			    console.log('beginTheBeguine(timer): sentCnt ' + sentCntOld + ' => ' + sentCntNew);
+			    beginTheBeguine('send');
+			}
+		    });
 		}
 	    });
 	}, 10000);
     }
     common.checkForMetaMask(true, function(err, w3) {
 	var acct = (!err && !!w3) ? w3.eth.accounts[0] : null;
+	console.log('beginTheBeguine: checkForMetaMask acct = ' + acct);
 	index.account = acct;
 	if (!!err) {
+	    console.log('beginTheBeguine: checkForMetaMask err = ' + err);
 	    handleLockedMetaMask(err);
 	} else {
 	    setMenuButtonState('importantInfoButton', 'Disabled');
@@ -364,7 +387,8 @@ function beginTheBeguine() {
 	    setMenuButtonState('composeButton',       'Disabled');
 	    setMenuButtonState('viewSentButton',      'Disabled');
 	    setMenuButtonState('withdrawButton',      'Disabled');
-	    handleUnlockedMetaMask(null);
+	    clearMsgList();
+	    handleUnlockedMetaMask(mode);
 	}
     });
 }
@@ -431,6 +455,10 @@ function handleLockedMetaMask(err) {
 //
 function handleUnlockedMetaMask(mode) {
     console.log('handleUnlockedMetaMask: mode = ' + mode);
+    //we can be called from the 'continue' link in waitForTXID, so clear waiting flag. this re-enables the interval
+    //timer to check for changed rx/tx counts
+    index.waitingForTxid = false;
+    index.localStoragePrefix = (common.web3.eth.accounts[0]).substring(2, 10) + '-';
     var accountArea = document.getElementById('accountArea');
     accountArea.value = 'Your account: ' + common.web3.eth.accounts[0];
     ether.getNetwork(common.web3, function(err, network) {
@@ -532,12 +560,13 @@ function handleRegisteredAcct(mode) {
     //console.log('feeBalanceWei = ' + feebalanceWei);
     feeBalanceArea.value = 'Unclaimed message fees: ' + ether.convertWeiToComfort(common.web3, feebalanceWei);
     //see if new messages have been received. if yes, display new message modal until user clicks anywhere outside
-    var noRxMsgs = localStorage["noRxMsgs"];
+    var noRxMsgs = localStorage[index.localStoragePrefix + 'noRxMsgs'];
     var currentNoRxMsgs = parseInt(index.acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT]);
-    if (currentNoRxMsgs > 0 && noRxMsgs != currentNoRxMsgs) {
+    var deltaRxMsgCount = currentNoRxMsgs - noRxMsgs;
+    if (currentNoRxMsgs > 0 && deltaRxMsgCount > 0) {
 	var newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
-	newMsgCountNotButton.textContent = currentNoRxMsgs.toString(10);
-	localStorage["noRxMsgs"] = currentNoRxMsgs.toString(10);
+	newMsgCountNotButton.textContent = deltaRxMsgCount.toString(10);
+	localStorage[index.localStoragePrefix + 'noRxMsgs'] = currentNoRxMsgs.toString(10);
 	var newMsgModal = document.getElementById('newMsgModal');
 	newMsgModal.style.display = 'block';
     }
@@ -850,7 +879,7 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     clearStatusDiv(statusDiv);
     //
     var msgListHeaderAddr = document.getElementById('msgListHeaderAddr');
-    msgListHeaderAddr.value = 'From: ';
+    msgListHeaderAddr.value = 'From';
     if (!!refreshMsgList) {
 	index.listMode = 'recv';
 	var msgNo = getCurMsgNo(acctInfo);
@@ -942,14 +971,7 @@ function handleViewSent(acctInfo, refreshMsgList) {
 // this fcn displays the group of 10 messages that include the passed msgNo
 //
 function makeMsgList(msgNo, cb) {
-    var listTableBody = document.getElementById('listAreaDiv');
-    while (listTableBody.hasChildNodes()) {
-	var child = listTableBody.lastChild;
-	if (!!child.id && child.id.startsWith("msgListHeader"))
-	    break;
-	listTableBody.removeChild(child);
-    }
-    index.listIdx = -1;
+    clearMsgList();
     console.log('makeMsgList: msgNo = ' + msgNo + ', index.listIdx = ' + index.listIdx);
     var batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
     var listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
@@ -1025,7 +1047,7 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
     var subject = msgUtil.extractSubject(content, 80);
     var div, msgNoArea, addrArea, subjectArea, dateArea, msgIdArea
     (div = document.createElement("div")).id = 'msgListDivIdx-' + listIdx;
-    var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag('beenRead', msgNo)) ? '' : 'New';
+    var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo)) ? '' : 'New';
     div.className = 'msgListItemDiv' + newSuffix;
     index.listEntries[listIdx] = new ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content);
     if (!!msgNo) {
@@ -1135,12 +1157,12 @@ function showMsgLoop(acctInfo) {
     if (listIdx != index.listIdx) {
 	if (index.listIdx >= 0) {
 	    var oldMsgNo = index.listEntries[index.listIdx].msgNo;
-	    var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag('beenRead', oldMsgNo)) ? '' : 'New';
+	    var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', oldMsgNo)) ? '' : 'New';
 	    (index.listEntries[index.listIdx].div).className = 'msgListItemDiv' + newSuffix;
 	}
 	index.listIdx = listIdx;
 	if (index.listIdx >= 0) {
-	    var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag('beenRead', msgNo)) ? '' : 'New';
+	    var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo)) ? '' : 'New';
 	    (index.listEntries[index.listIdx].div).className = 'msgListItemDivSelected' + newSuffix;
 	    var markReadButton = document.getElementById('markReadButton');
 	    markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
@@ -1229,6 +1251,8 @@ function waitForTXID(err, txid, desc, statusDiv, continuationMode, callback) {
     viewTxLink.disabled = false;
     leftDiv.appendChild(viewTxLink);
     //
+    //cleared in handleUnlockedMetaMask, after the user clicks 'continue'
+    index.waitingForTxid = true;
     var timer = setInterval(function() {
 	statusText.textContent = 'Waiting for ' + desc + ' transaction: ' + ++statusCtr + ' seconds...';
 	if ((statusCtr & 0xf) == 0) {
@@ -1259,11 +1283,24 @@ function waitForTXID(err, txid, desc, statusDiv, continuationMode, callback) {
     }, 1000);
 }
 
+
 function clearStatusDiv(statusDiv) {
     while (statusDiv.hasChildNodes()) {
 	statusDiv.removeChild(statusDiv.lastChild);
     }
     statusDiv.style.display = "none";
+}
+
+
+function clearMsgList() {
+    var listTableBody = document.getElementById('listAreaDiv');
+    while (listTableBody.hasChildNodes()) {
+	var child = listTableBody.lastChild;
+	if (!!child.id && child.id.startsWith("msgListHeader"))
+	    break;
+	listTableBody.removeChild(child);
+    }
+    index.listIdx = -1;
 }
 
 
