@@ -255,7 +255,11 @@ function setMarkReadButtonHandler() {
 	common.setIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo, flag);
 	var newSuffix = (flag) ? '' : 'New';
 	div.className = 'msgListItemDivSelected' + newSuffix;
+	//modify the markReadButton text, in case the nextMsgButton has no effect
 	markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
+	var nextMsgButton = document.getElementById('nextMsgButton');
+	if (!nextMsgButton.disabled)
+	    index.nextMsgButtonFcn();
     });
 }
 
@@ -276,11 +280,16 @@ function setPrevNextButtonHandlers() {
 	    showMsgLoop(index.acctInfo);
 	}
     });
-    nextMsgButton.addEventListener('click', function() {
+    index.nextMsgButtonFcn = () => {
+	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	++index[msgNoCounter];
-	showMsgLoop(index.acctInfo);
-    });
+	if (index[msgNoCounter] < maxMsgNo) {
+	    ++index[msgNoCounter];
+	    showMsgLoop(index.acctInfo);
+	}
+    };
+    nextMsgButton.addEventListener('click', index.nextMsgButtonFcn);
     firstButton.addEventListener('click', function() {
 	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
