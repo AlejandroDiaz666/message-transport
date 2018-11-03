@@ -142,15 +142,15 @@ var common = module.exports = {
 	var bitIdx = index % 48;
 	var wordIdxStr = '0x' + wordIdx.toString(16)
 	var wordStr = localStorage[prefix + '-' + wordIdxStr];
-	console.log('setIndexedFlag: wordStr = ' + wordStr);
+	//console.log('setIndexedFlag: flag = ' + flag + ', wordStr = ' + wordStr + ', bitIdx = ' + bitIdx);
 	var word = (!!wordStr) ? parseInt(wordStr) : 0;
-	if (flag)
+	if (!!flag)
 	    word |= (1 << bitIdx);
 	else
 	    word &= ~(1 << bitIdx);
 	wordStr = '0x' + word.toString(16);
 	localStorage[prefix + '-' + wordIdxStr] = '0x' + word.toString(16);
-	console.log('setIndexedFlag: localStorage[' + prefix + '-' + wordIdxStr + '] = ' + wordStr);
+	//console.log('setIndexedFlag: localStorage[' + prefix + '-' + wordIdxStr + '] = ' + wordStr);
     },
 
     chkIndexedFlag: function(prefix, index) {

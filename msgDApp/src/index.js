@@ -673,6 +673,11 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	handleCompose(index.acctInfo, toAddr);
 	return;
     }
+    //replying to a message implies that it has been read
+    console.log('handleReplyCompose: listmode = ' + index.listMode + ', index.listEntries[index.listIdx].msgId = ' + index.listEntries[index.listIdx].msgId + ', ref = ' + ref);
+    if (index.listMode.indexOf('recv') >= 0 && index.listEntries[index.listIdx].msgId == ref) {
+	common.setIndexedFlag(index.localStoragePrefix + 'beenRead', index.listEntries[index.listIdx].msgNo, true);
+    }
     //
     if (index.listIdx >= 0)
 	(index.listEntries[index.listIdx].div).className = 'msgListItemDiv';
