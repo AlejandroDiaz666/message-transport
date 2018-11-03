@@ -351,18 +351,28 @@ function setPrevNextButtonHandlers() {
 //
 // mode = [ 'send' | 'recv' | null ]
 //
+var timerIsPaused = () => {
+    var viewRecvButton = document.getElementById('viewRecvButton');
+    var viewSentButton = document.getElementById('viewSentButton');
+    return(((viewRecvButton.className.indexOf('Selected') >= 0 ||
+	    viewSentButton.className.indexOf('Selected') >= 0 ) &&
+	    !index.waitingForTxid) ? false : true);
+}
+
 function beginTheBeguine(mode) {
     if (!index.acctCheckTimer) {
 	console.log('init acctCheckTimer');
 	var count = 0;
 	index.acctCheckTimer = setInterval(function() {
+	    if (timerIsPaused())
+		console.log('timerIsPaused!');
 	    common.checkForMetaMask(true, function(err, w3) {
 		var acct = (!err && !!w3) ? w3.eth.accounts[0] : null;
 		if (acct != index.account) {
 		    console.log('MetaMask account changed!');
 		    console.log('acct = ' + acct + ', index.account = ' + index.account);
 		    beginTheBeguine(null);
-		} else if (!!acct && ++count > 5 && !index.waitingForTxid) {
+		} else if (!!acct && ++count > 5 && !timerIsPaused()) {
 		    count = 0;
 		    console.log('MetaMask account unchanged...' + count);
 		    ether.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
@@ -1015,7 +1025,10 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
     var listTableBody = document.getElementById('listAreaDiv');
     console.log('makeMsgListEntry[' + listIdx + '] = msgNo(' + msgNo + '), result.length = ' + (!!result ? result.length : 0));
     if (!result || listIdx >= result.length) {
-	addToMsgList(listIdx, '', '', '', '', '', '', listTableBody);
+	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
+	var addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
+	addToMsgList(listIdx, '', addr, '', '', '', '', listTableBody);
 	(listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 	return;
     }
