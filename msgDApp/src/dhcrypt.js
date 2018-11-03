@@ -20,10 +20,10 @@ var dhcrypt = module.exports = {
 6BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C6\
 2F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5\
 C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF',
-    SIGNATURE_MSG: "Ethereum Message Transport creates a unique encryption key for each pair of Ethereum addresses \
-that are message-endpoints. By signing this message you will create a secret code to unlock your half of each pairwise-key.\n\n\
+    SIGNATURE_MSG: "We create a unique encryption key for each sender/receiver pair of Ethereum addresses. \
+By signing this message you will create a secret code to unlock your half of each pairwise-key.\n\n\
 Your secret code is never shared, transmitted, or even saved on your own computer. That is the reason \
-that you need to sign this message each time you load Ethereum Message Transport.",
+you need to sign this message each time you load Ethereum Message Transport.",
 
 
     //
