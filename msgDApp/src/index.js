@@ -406,7 +406,6 @@ function beginTheBeguine(mode) {
 	    setMenuButtonState('composeButton',       'Disabled');
 	    setMenuButtonState('viewSentButton',      'Disabled');
 	    setMenuButtonState('withdrawButton',      'Disabled');
-	    clearMsgList();
 	    handleUnlockedMetaMask(mode);
 	}
     });
@@ -458,6 +457,7 @@ function handleLockedMetaMask(err) {
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
+    clearMsgList();
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     alert(err);
@@ -561,6 +561,7 @@ function handleUnregisteredAcct() {
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
+    clearMsgList();
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -595,6 +596,7 @@ function handleRegisteredAcct(mode) {
 	else
 	    handleViewSent(index.acctInfo, true);
     } else {
+	clearMsgList();
 	//display "waiting for metamask" in case metamask dialog is hidden
 	var metaMaskModal = document.getElementById('metaMaskModal');
 	metaMaskModal.style.display = 'block';
