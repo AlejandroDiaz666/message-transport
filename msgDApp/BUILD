@@ -9,3 +9,6 @@ you'll need browserify:
 to build:
  npm install
  make
+
+then (for example):
+sudo cp -R *.html *.css bundle/ images/ /var/www/html/ems/
