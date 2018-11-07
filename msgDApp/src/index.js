@@ -787,13 +787,19 @@ function handleRegisterSubmit() {
     var spamFeeInput = document.getElementById('spamFeeInput');
     var spamFee = common.stripNonNumber(spamFeeInput.value);
     spamFeeInput.value = spamFee;
-    console.log('message fee = ' + messageFee + ', spam fee = ' + spamFee);
+    var messageFeeUnits = document.getElementById('messageFeeUnits');
+    var spamFeeUnits = document.getElementById('spamFeeUnits');
+    console.log('message fee = ' + messageFee + ' X ' + messageFeeUnits.value + ', spam fee = ' + spamFee + ' X ' + spamFeeUnits.value);
+    var spamFeeBN = common.numberToBN(spamFee);
+    var messageFeeBN = common.numberToBN(messageFee);
+    messageFeeBN.imul(common.numberToBN(messageFeeUnits.value));
+    spamFeeBN.imul(common.numberToBN(spamFeeUnits.value));
     var publicKey = dhcrypt.publicKey();
     var encryptedPrivateKey = dhcrypt.encryptedPrivateKey();
     //display "waiting for metamask" in case metamask dialog is hidden
     var metaMaskModal = document.getElementById('metaMaskModal');
     metaMaskModal.style.display = 'block';
-    ether.register(common.web3, messageFee, spamFee, publicKey, encryptedPrivateKey, function(err, txid) {
+    ether.register(common.web3, messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey, function(err, txid) {
 	console.log('handleRegisterSubmit: err = ' + err);
 	console.log('handleRegisterSubmit: txid = ' + txid);
 	metaMaskModal.style.display = 'none';

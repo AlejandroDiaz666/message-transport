@@ -108,9 +108,9 @@ var ether = module.exports = {
     },
 
     //cb(err, txid)
-    register: function(web3, messageFee, spamFee, publicKey, encryptedPrivateKey, cb) {
+    register: function(web3, messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey, cb) {
 	var abiRegisterFcn = ether.abiEncodeRegister();
-	var abiParms = ether.abiEncodeRegisterParms(messageFee, spamFee, publicKey, encryptedPrivateKey);
+	var abiParms = ether.abiEncodeRegisterParms(messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey);
         var sendData = "0x" + abiRegisterFcn + abiParms;
 	console.log('sendData = ' + sendData);
 	ether.send(web3, ether.EMT_CONTRACT_ADDR, 0, 'wei', sendData, 0, cb);
@@ -186,9 +186,9 @@ var ether = module.exports = {
 	return(ether.registerABI);
     },
 
-    abiEncodeRegisterParms: function(messageFee, spamFee, publicKey, encryptedPrivateKey) {
-	console.log('abiEncodeRegisterParms: messageFee = ' + messageFee);
-	console.log('abiEncodeRegisterParms: spamFee = ' + spamFee);
+    abiEncodeRegisterParms: function(messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey) {
+	console.log('abiEncodeRegisterParms: messageFee = ' + messageFeeBN.toString(10));
+	console.log('abiEncodeRegisterParms: spamFee = ' + spamFeeBN.toString(10));
 	console.log('abiEncodeRegisterParms: publicKey (' + publicKey.length + ') = ' + publicKey);
 	console.log('abiEncodeRegisterParms: encryptedPrivate (' + encryptedPrivateKey.length + ') = ' + encryptedPrivateKey);
 	if (publicKey.startsWith('0x'))
@@ -198,7 +198,7 @@ var ether = module.exports = {
 	    encryptedPrivateKey = encryptedPrivateKey.substring(2);
 	var encryptedPrivateKeyBytes = common.hexToBytes(encryptedPrivateKey);
 	encoded = ethabi.rawEncode([ 'uint256', 'uint256', 'bytes', 'bytes' ],
-				   [ common.numberToBN(messageFee), common.numberToBN(spamFee), publicKeyBytes, encryptedPrivateKeyBytes ] ).toString('hex');
+				   [ messageFeeBN, spamFeeBN, publicKeyBytes, encryptedPrivateKeyBytes ] ).toString('hex');
 	return(encoded);
     },
 

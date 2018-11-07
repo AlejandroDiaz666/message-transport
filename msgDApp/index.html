@@ -7,9 +7,9 @@
     <meta http-equiv="Expires" content="0"/>
     <link rel="stylesheet" type="text/css" href="style.css">
     <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto:300i" rel="stylesheet">
-    <script type="text/javascript" src="bundle/index_TIMESTAMP_1541380346_.js"></script>
-    <script type="text/javascript" src="bundle/common_TIMESTAMP_1541380346_.js"></script>
-    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1541380346_.js"></script>
+    <script type="text/javascript" src="bundle/index_TIMESTAMP_1541551029_.js"></script>
+    <script type="text/javascript" src="bundle/common_TIMESTAMP_1541551029_.js"></script>
+    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1541551029_.js"></script>
 
 
     <!--
@@ -163,10 +163,28 @@
 	    <table>
 	      <tbody>
 		<tr>
-		  <td>Message fee (Wei):</td><td><input id="messageFeeInput" type="text"></td>
+		  <td>Message fee:</td><td><input id="messageFeeInput" type="text"></td>
+		  <td><select id="messageFeeUnits">
+		      <option value="1">Wei</option>
+		      <option value="1000">Kwei</option>
+		      <option value="1000000">Mwei</option>
+		      <option value="1000000000">Gwei</option>
+		      <option value="1000000000000">Szabo</option>
+		      <option value="1000000000000000">Finney</option>
+		    </select>
+		  </td>
 		</tr>
 		<tr>
-		  <td>Spam fee (Wei):</td><td><input id="spamFeeInput" type="text"></td>
+		  <td>Spam fee:</td><td><input id="spamFeeInput" type="text"></td>
+		  <td><select id="spamFeeUnits">
+		      <option value="1">Wei</option>
+		      <option value="1000">Kwei</option>
+		      <option value="1000000">Mwei</option>
+		      <option value="1000000000">Gwei</option>
+		      <option value="1000000000000">Szabo</option>
+		      <option value="1000000000000000">Finney</option>
+		    </select>
+		  </td>
 		</tr>
 		<tr>
 		  <td></td><td><input id="registerSubmitButton" type="submit" value="Submit"></td>
