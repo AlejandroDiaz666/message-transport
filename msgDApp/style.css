@@ -1,15 +1,31 @@
-body {
-    font-family: 'Roboto', sans-serif;
-    font-size: 100%;
-    background: #a4a4a4;
-    min-width: 480px;
-    min-height: 640px;
-    margin: 0;
-    padding: 20px;
+html {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
 }
-h1 { font-size:22px; }
-h2 { font-size:20px; }
-h3 { font-size:18px; }
+body {
+    padding: 20px;
+    margin: 0px;
+    background-color: rgba(0, 0, 0, 0.5);
+    font-family: 'Roboto', sans-serif;
+}
+h1 {
+    margin: 0px;
+    font-size: 22px;
+}
+h2 {
+    margin: 0px;
+    font-size:20px;
+}
+h3 {
+    margin: 0px;
+    font-size:18px;
+}
+p {
+    margin: 0px;
+}
+
+
 
 /*
   modifiers to make blocks disappear and re-appear.
