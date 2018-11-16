@@ -363,10 +363,6 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
     replaceElemClassFromTo('intro0Div', 'hidden', 'visibleB', null);
     if (!index.introCompletePromise) {
 	index.introCompletePromise = new Promise((resolve, reject) => {
-	    var intro0Prev = document.getElementById('intro0Prev');
-	    intro0Prev.addEventListener('click', function() {
-		replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
-	    });
 	    var intro0Next = document.getElementById('intro0Next');
 	    intro0Next.addEventListener('click', function() {
 		replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
@@ -387,6 +383,24 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 		replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
 		replaceElemClassFromTo('intro1Div', 'hidden', 'visibleB', null);
 	    });
+	    var intro2Next = document.getElementById('intro2Next');
+	    intro2Next.addEventListener('click', function() {
+		replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
+		replaceElemClassFromTo('intro3Div', 'hidden', 'visibleB', null);
+	    });
+	    var intro3Prev = document.getElementById('intro3Prev');
+	    intro3Prev.addEventListener('click', function() {
+		replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
+		replaceElemClassFromTo('intro2Div', 'hidden', 'visibleB', null);
+	    });
+	    var intro3Next = document.getElementById('intro3Next');
+	    intro3Next.addEventListener('click', function() {
+		replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
+		//if we wanted to stop displaying the intro once the user had clicked through
+		//to the end at least one time...
+		//localStorage['FirstIntroCompleteFlag'] = true;
+		resolve(null);
+	    });
 	    var intro0Close = document.getElementById('intro0Close');
 	    intro0Close.addEventListener('click', function() {
 		replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
@@ -400,6 +414,11 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 	    var intro2Close = document.getElementById('intro2Close');
 	    intro2Close.addEventListener('click', function() {
 		replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
+		resolve(null);
+	    });
+	    var intro3Close = document.getElementById('intro3Close');
+	    intro3Close.addEventListener('click', function() {
+		replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
 		//if we wanted to stop displaying the intro once the user had clicked through
 		//to the end at least one time...
 		//localStorage['FirstIntroCompleteFlag'] = true;
@@ -635,6 +654,8 @@ function handleUnregisteredAcct() {
 // handle registered account
 //
 function handleRegisteredAcct(mode) {
+    //once an account has been registered we don't force the intro to run each time the dapp is loaded
+    localStorage['FirstIntroCompleteFlag'] = true;
     var registerButton = document.getElementById('registerButton');
     registerButton.textContent = 'Modify Account';
     var totalReceivedArea = document.getElementById('totalReceivedArea');
