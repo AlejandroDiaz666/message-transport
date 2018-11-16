@@ -363,15 +363,29 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
     replaceElemClassFromTo('intro0Div', 'hidden', 'visibleB', null);
     if (!index.introCompletePromise) {
 	index.introCompletePromise = new Promise((resolve, reject) => {
+	    var intro0Prev = document.getElementById('intro0Prev');
+	    intro0Prev.addEventListener('click', function() {
+		replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
+	    });
 	    var intro0Next = document.getElementById('intro0Next');
 	    intro0Next.addEventListener('click', function() {
 		replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
 		replaceElemClassFromTo('intro1Div', 'hidden', 'visibleB', null);
 	    });
+	    var intro1Prev = document.getElementById('intro1Prev');
+	    intro1Prev.addEventListener('click', function() {
+		replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
+		replaceElemClassFromTo('intro0Div', 'hidden', 'visibleB', null);
+	    });
 	    var intro1Next = document.getElementById('intro1Next');
 	    intro1Next.addEventListener('click', function() {
 		replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
 		replaceElemClassFromTo('intro2Div', 'hidden', 'visibleB', null);
+	    });
+	    var intro2Prev = document.getElementById('intro2Prev');
+	    intro2Prev.addEventListener('click', function() {
+		replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
+		replaceElemClassFromTo('intro1Div', 'hidden', 'visibleB', null);
 	    });
 	    var intro0Close = document.getElementById('intro0Close');
 	    intro0Close.addEventListener('click', function() {

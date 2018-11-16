@@ -121,7 +121,7 @@ p {
 
 #importantInfoButton {
     float: left;
-    margin-left:10px;
+    margin-left: 10px;
     margin-right: auto;
 }
 
@@ -134,6 +134,7 @@ p {
 
 #mainTitleSpan {
     float: left;
+    margin-left: 20px;
 }
 
 #networkAreaDiv, #accountAreaDiv, #balanceAreaDiv, #totalReceivedAreaDiv, #feeBalanceAreaDiv  {
