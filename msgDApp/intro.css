@@ -196,11 +196,11 @@
 }
 .next-btn-bg-intro2 {
     position: absolute;
-    width: 367.767px;
-    height: 48.5978px;
+    width: 300px;
+    height: 49px;
     background-image: none;
     background-color: rgb(54, 169, 211);
-    left: 1175px;
+    left: 1235px;
     top: 50%;
     transform-style: preserve-3d;
     transform: translate3d(-432px, 251px, 0px);
@@ -230,7 +230,7 @@
     transform-style: preserve-3d;
 }
 .next-btn-text-intro2 {
-    transform: translate3d(0px, 261px, 0px);
+    transform: translate3d(75px, 261px, 0px);
     transform-style: preserve-3d;
 }
 .next-btn-text-intro3 {
