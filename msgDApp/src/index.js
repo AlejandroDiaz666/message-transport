@@ -10,6 +10,8 @@ var BN = require("bn.js");
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('content loaded');
+    console.log('window.innerWidth = ' + window.innerWidth);
+    console.log('window.innerHeight = ' + window.innerHeight);
     index.main();
 }, false);
 
