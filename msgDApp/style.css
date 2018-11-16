@@ -32,6 +32,9 @@ p {
   visibleIB: for normal divs (inline-block)
   visibleTC: for buttons (table-cells) for vertical alignment
 */
+.visibleB {
+    display: block;
+}
 .visibleIB {
     display: inline-block;
 }

@@ -27,6 +27,7 @@ var index = module.exports = {
     listEntries: {},
     waitingForTxid: false,
     localStoragePrefix: '',
+    introCompletePromise: null,
 
     main: function() {
 	console.log('index.main');
@@ -86,6 +87,10 @@ function setMainButtonHandlers() {
     withdrawButton.addEventListener('click', function() {
 	if (!!index.acctInfo)
 	    handleWithdraw();
+    });
+    var importantInfoButton = document.getElementById('importantInfoButton');
+    importantInfoButton.addEventListener('click', function() {
+	doFirstIntro(true);
     });
 }
 
@@ -348,6 +353,50 @@ function setPrevNextButtonHandlers() {
 }
 
 
+
+async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
+    if (!ignoreFirstIntroCompleteFlag && !!localStorage['FirstIntroCompleteFlag']) {
+	return(new Promise((resolve, reject) => {
+	    resolve(1);
+	}));
+    }
+    replaceElemClassFromTo('intro0Div', 'hidden', 'visibleB', null);
+    if (!index.introCompletePromise) {
+	index.introCompletePromise = new Promise((resolve, reject) => {
+	    var intro0Next = document.getElementById('intro0Next');
+	    intro0Next.addEventListener('click', function() {
+		replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
+		replaceElemClassFromTo('intro1Div', 'hidden', 'visibleB', null);
+	    });
+	    var intro1Next = document.getElementById('intro1Next');
+	    intro1Next.addEventListener('click', function() {
+		replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
+		replaceElemClassFromTo('intro2Div', 'hidden', 'visibleB', null);
+	    });
+	    var intro0Close = document.getElementById('intro0Close');
+	    intro0Close.addEventListener('click', function() {
+		replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
+		resolve(null);
+	    });
+	    var intro1Close = document.getElementById('intro1Close');
+	    intro1Close.addEventListener('click', function() {
+		replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
+		resolve(null);
+	    });
+	    var intro2Close = document.getElementById('intro2Close');
+	    intro2Close.addEventListener('click', function() {
+		replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
+		//if we wanted to stop displaying the intro once the user had clicked through
+		//to the end at least one time...
+		//localStorage['FirstIntroCompleteFlag'] = true;
+		resolve(null);
+	    });
+	});
+    }
+    return(index.introCompletePromise);
+}
+
+
 //
 // mode = [ 'send' | 'recv' | null ]
 //
@@ -359,7 +408,8 @@ var timerIsPaused = () => {
 	    !index.waitingForTxid) ? false : true);
 }
 
-function beginTheBeguine(mode) {
+async function beginTheBeguine(mode) {
+    await doFirstIntro(false);
     if (!index.acctCheckTimer) {
 	console.log('init acctCheckTimer');
 	var count = 0;
@@ -805,6 +855,9 @@ function handleRegisterSubmit() {
 	metaMaskModal.style.display = 'none';
 	var statusDiv = document.getElementById('statusDiv');
 	waitForTXID(err, txid, 'Register', statusDiv, 'recv', function() {
+	    //once he has registered we stop showing the intro automatically each time the page is loaded
+	    //note: we get the cb from waitForTXID as soon as the tx completes.
+	    localStorage['FirstIntroCompleteFlag'] = true;
 	});
     });
 }

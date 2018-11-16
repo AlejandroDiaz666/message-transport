@@ -6,6 +6,9 @@ ALL:	bundle/index.js         \
 	bundle/common.js        \
 	fake
 
+bundle/SVGAnimation.js: src/SVGAnimation.js
+	browserify src/SVGAnimation.js -o bundle/SVGAnimation.js
+
 bundle/common.js: src/common.js
 	browserify src/common.js -o bundle/common.js
 
@@ -21,5 +24,5 @@ bundle/msgUtil.js: src/msgUtil.js bundle/ether.js bundle/common.js bundle/dhcryp
 bundle/index.js: src/index.js bundle/ether.js bundle/dhcrypt.js bundle/msgUtil.js bundle/common.js
 	browserify src/index.js -o bundle/index.js
 
-fake:	bundle/index.js bundle/common.js bundle/dhcrypt.js bundle/ether.js
+fake:	bundle/index.js bundle/common.js bundle/dhcrypt.js bundle/ether.js bundle/SVGAnimation.js
 	./set_timestamp.sh

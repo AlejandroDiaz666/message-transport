@@ -9,14 +9,16 @@
     <link rel="stylesheet" type="text/css" href="intro.css">
     <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto:300i" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Lato:100,100italic,300,300italic,italic,700,700italic,900,900italic,400" rel="stylesheet" type="text/css">
-    <script type="text/javascript" src="bundle/index_TIMESTAMP_1541551029_.js"></script>
-    <script type="text/javascript" src="bundle/common_TIMESTAMP_1541551029_.js"></script>
-    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1541551029_.js"></script>
+    <script type="text/javascript" src="bundle/index_TIMESTAMP_1542331299_.js"></script>
+    <script type="text/javascript" src="bundle/common_TIMESTAMP_1542331299_.js"></script>
+    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1542331299_.js"></script>
+    <script type="text/javascript" src="bundle/SVGAnimation.js" gwd-groups-version="1.0"></script>
 
 
     <!--
 	little bit of javascript for modal
       -->
+    <!--
     <script>
       window.onload = function() {
         var newMsgModal = document.getElementById('newMsgModal');
@@ -35,6 +37,7 @@
         }
       };
     </script>
+    -->
   </head>
 
   <body>
@@ -43,33 +46,112 @@
     <!--
 	intro page 0
       -->
-    <div id="intro0" class="popup-bg">
-      <div class="note-bg"></div>
+    <div id="intro0Div" class="popup-bg-intro0 hidden">
+      <div class="note-bg-intro0"></div>
       <img src="images/Bigstock_255167290__1_.jpg" class="image1">
-      <div class="next-btn-bg"></div>
-      <div class="back-btn-bg"></div><span class="back-text"><a class="btn-back-hyperlink" href="#">Back</a><a></a></span>
-      <img src="images/dotted-arrow-4-809285.png" class="next-arrow">
-      <img src="images/dotted-arrow-4-809285.png" class="back-arrow">
-      <span class="heading-title"><span class="">Welcome to Kesher EMT (Ethereum Message Transport)</span></span>
+      <div class="next-btn-bg-intro0"></div>
+      <div class="back-btn-bg-intro0"></div><span class="back-text-intro0"><a class="btn-back-hyperlink" href="#">Back</a><a></a></span>
+      <img src="images/dotted-arrow-4-809285.png" class="next-arrow-intro0">
+      <img src="images/dotted-arrow-4-809285.png" class="back-arrow-intro0">
+      <span class="heading-title-intro0"><span class="">Welcome to Kesher EMT (Ethereum Message Transport)</span></span>
       <p class="note-text">Note: this introduction is displayed automatically whenever you load Kesher EMT, until you register your Ethereum address. After that You can show this introduction at any time by clicking on the Important Information button.</p>
-      <div class="para2">
+      <div class="para2-intro0">
 	<ul class="">
           <li>Please read the next few screens for a very brief introduction to Kesher EMT.<br>
           </li>
 	</ul>
       </div>
-      <div class="para1">
+      <div class="para1-intro0">
 	<ul class="">
           <li>Kesher EMT is a DApp for peer-to-peer messaging between Ethereum addresses.<br>
           </li>
 	</ul>
       </div>
-      <p class="next-btn-text"><a class="btn-next-hyperlink" href="#">Kesher EMT is NOT email</a>
+      <p class="next-btn-text-intro0"><a id="intro0Next" class="btn-next-hyperlink" href="#">Kesher EMT is NOT email</a>
       </p>
-      <svg data-gwd-shape="oval" preserveAspectRatio="none" viewBox="0 0 30 29" class="close-btn-bg">
+      <svg data-gwd-shape="oval" preserveAspectRatio="none" viewBox="0 0 30 29" class="close-btn-bg-intro0">
 	<ellipse cx="50%" cy="50%" rx="14.5" ry="14"></ellipse>
-      </svg><span class="close-btn"><a class="btn-close-hyperlink" href="#">x</a></span>
+      </svg>
+      <span class="close-btn"><a id="intro0Close" class="btn-close-hyperlink" href="#">X</a></span>
     </div>
+
+    <!--
+	intro page 1
+      -->
+    <div id="intro1Div" class="popup-bg-intro0 hidden">
+      <div class="note-bg-intro0"></div>
+      <img src="images/Bigstock_255167290__1_.jpg" class="image1">
+      <div class="next-btn-bg-intro0"></div>
+      <div class="back-btn-bg-intro0"></div><span class="back-text-intro0"><a class="btn-back-hyperlink" href="#">Back</a><a></a></span>
+      <img src="images/dotted-arrow-4-809285.png" class="next-arrow-intro0">
+      <img src="images/dotted-arrow-4-809285.png" class="back-arrow-intro0">
+      <span class="heading-title-intro0"><span class="">Welcome to Kesher EMT (Ethereum Message Transport)</span></span>
+      <p class="note-text">Note: this is different! -- After that You can show this introduction at any time by clicking on the Important Information button.</p>
+      <div class="para2-intro0">
+	<ul class="">
+          <li>Please read the next few screens for a very brief introduction to Kesher EMT.<br>
+          </li>
+	</ul>
+      </div>
+      <div class="para1-intro0">
+	<ul class="">
+          <li>Kesher EMT is a DApp for peer-to-peer messaging between Ethereum addresses.<br>
+          </li>
+	</ul>
+      </div>
+      <p class="next-btn-text-intro0"><a id="intro1Next" class="btn-next-hyperlink" href="#">Kesher EMT is NOT email</a>
+      </p>
+      <svg data-gwd-shape="oval" preserveAspectRatio="none" viewBox="0 0 30 29" class="close-btn-bg-intro0">
+	<ellipse cx="50%" cy="50%" rx="14.5" ry="14"></ellipse>
+      </svg>
+      <span class="close-btn"><a id="intro1Close" class="btn-close-hyperlink" href="#">X</a></span>
+    </div>
+
+
+    <!--
+	intro page 2
+      -->
+  <template id="gwd-group-definitions">
+    <div data-gwd-group-def="text-animation" data-gwd-group-class="heading-para2-group" style="display: none;">
+      <div class="heading-para1-intro2 heading-para2 heading-para2-group">High Grade Encryption
+        <ul class="heading-para2-group-ani heading-para2-group">
+        </ul>
+      </div>
+    </div>
+    <div data-gwd-group-def="para2_animation" data-gwd-group-class="para2-group" style="display: none;">
+      <p class="para2 para2-group">Kesher uses high-grade encryption that you can check:<br>
+        <br>
+        All kesher messages are encrypted using a secret key that is unique to each pair of Ethereum addresses (the sender address and the receiver address) -- and the key changes for every time message is sent. The secret key is never stored on any server,
+        or even on your own computer -- You recompute a code to unlock your half of each secret key by signing a Ethereum message (via Metamask). Since the code is never stored, you do this each time you load the Kesher EMT front-end. Every time you view
+        a message you combine your code with the other party, in a way that changes for every message. Since all the code is open source, you can check out the encryption algorithm for yourself!</p>
+    </div>
+  </template>
+  <div id="intro2Div" class="popup-bg-intro2 hidden">
+    <div class="next-btn-bg-intro2"></div>
+    <div class="back-btn-bg-intro2"></div><span class="back-text-intro2"><a class="btn-back-hyperlink" href="#">Back</a></span>
+    <img src="images/dotted-arrow-4-809285.png" class="next-arrow-intro2">
+    <img src="images/dotted-arrow-4-809285.png" class="back-arrow-intro2">
+    <span class="heading-title-intro2">Kesher EMT</span>
+    <div class="para1-intro2">All Kesher messages are stored via an Ethereum smart contract. The smart contract and the front-end, which provides the user-interface are open-source. The user-interface is hosted via a distributed file-system, IPFS.
+      <ul class="">
+      </ul>
+    </div>
+    <div class="heading-para1-intro2 header-para1-intro2-modified">
+      Completely Decentralized<br>
+      <ul class="">
+      </ul>
+    </div>
+    <p class="next-btn-text-intro2"><a class="btn-next-hyperlink" href="#">Next</a>
+    </p>
+    <svg data-gwd-shape="oval" preserveAspectRatio="none" viewBox="0 0 30 29" class="close-btn-bg-intro2">
+      <ellipse cx="50%" cy="50%" rx="14.5" ry="14"></ellipse>
+    </svg><span class="close-btn"><a id="intro2Close" class="btn-close-hyperlink" href="#">X</a></span>
+    <img src="images/Bigstock_248383423.png" class="image-para1-intro2">
+    <img src="images/Bigstock_239979394.png" class="image-para2-intro2">
+    <div class="heading-para2-text-ani heading-para2-animation-position" data-gwd-group="text-animation"></div>
+    <div class="para2-text-ani para2-animation-position" data-gwd-group="para2_animation"></div>
+  </div>
+
 
 
     <div id="newMsgModal">
