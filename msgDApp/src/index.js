@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('window.innerWidth = ' + window.innerWidth);
     console.log('window.innerHeight = ' + window.innerHeight);
     index.main();
-}, false);
+});
 
 
 var index = module.exports = {
@@ -94,6 +94,11 @@ function setMainButtonHandlers() {
     importantInfoButton.addEventListener('click', function() {
 	doFirstIntro(true);
     });
+    var newMsgModal = document.getElementById('newMsgModal');
+    window.onclick = function(event) {
+        //when user clicks anywhere, close new message modal
+        newMsgModal.style.display = "none";
+    };
 }
 
 
@@ -438,9 +443,10 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 var timerIsPaused = () => {
     var viewRecvButton = document.getElementById('viewRecvButton');
     var viewSentButton = document.getElementById('viewSentButton');
-    return(((viewRecvButton.className.indexOf('Selected') >= 0 ||
-	    viewSentButton.className.indexOf('Selected') >= 0 ) &&
-	    !index.waitingForTxid) ? false : true);
+    return(((index.acctInfo == null                            ||
+	     viewRecvButton.className.indexOf('Selected') >= 0 ||
+	     viewSentButton.className.indexOf('Selected') >= 0 ) &&
+	    (!index.waitingForTxid                             ) ) ? false : true);
 }
 
 async function beginTheBeguine(mode) {
