@@ -390,3 +390,12 @@ DIV.finalresultstable {
     padding: 2px;
     margin: 2px;
 }
+
+
+@media (max-width: 1149px) and (min-width: 384px) {
+    #navButtonsSpan {
+	/* nive nav buttons to below view-sent, view-received */
+	position: relative;
+	margin-top: 13px;
+    }
+}
