@@ -547,15 +547,38 @@
 	width: 298px;
         height: 79px;
     }
+    .next-btn-bg-intro0 {
+        width: 302px;
+        height: 49px;
+        transform: translate3d(-1181px, 250px, 0px);
+        transform-style: preserve-3d;
+    }
+    .next-btn-bg-intro1 {
+        width: 302px;
+        height: 49px;
+        transform: translate3d(-1290px, 236px, 0px);
+        transform-style: preserve-3d;
+    }
+    .next-btn-bg-intro2 {
+        width: 301px;
+        height: 38px;
+        top: 50%;
+        transform: translate3d(-1236px, 237px, 0px);
+        transform-style: preserve-3d;
+    }
     .next-btn-text-intro0 {
         font-size: 22px;
         width: 294px;
         height: 29px;
         transform-origin: 146.984px 14.7187px 0px;
-        transform: translate3d(-749px, 217px, 0px);
+        transform: translate3d(-749px, 260px, 0px);
         transform-style: preserve-3d;
     }
     .next-btn-text-intro1 {
+        left: 22px;
+	transform: translate3d(0px, 245px, 0px);
+    }
+    .next-btn-text-intro2 {
         left: 22px;
 	transform: translate3d(0px, 245px, 0px);
     }
@@ -564,29 +587,8 @@
         transform: translate3d(-555px, 240px, 0px);
         transform-style: preserve-3d;
     }
-    .next-btn-bg-intro0 {
-        width: 302px;
-        height: 49px;
-        transform-origin: 150.765px 24.2949px 0px;
-        transform: translate3d(-1161px, 207px, 0px);
-        transform-style: preserve-3d;
-    }
-    .next-btn-bg-intro1 {
-        width: 302px;
-        height: 49px;
-        transform: translate3d(-1161px, 236px, 0px);
-        transform-style: preserve-3d;
-    }
-    .next-btn-bg-intro2 {
-        transform-origin: 67.5389px 22.2712px 0px;
-        width: 101px;
-        height: 35px;
-        top: 50%;
-        transform: translate3d(-974px, 237px, 0px);
-        transform-style: preserve-3d;
-    }
     .next-arrow-intro0 {
-        transform: translate3d(-1209px, 213px, 0px);
+        transform: translate3d(-1209px, 256px, 0px);
         transform-style: preserve-3d;
     }
     .next-arrow-intro1 {
@@ -617,7 +619,7 @@
     }
     .back-text-intro2 {
         top: 50%;
-        transform: translate3d(-522px, 240px, 0px);
+        transform: translate3d(-557px, 155px, 0px);
         transform-style: preserve-3d;
     }
     .back-text-intro3 {
@@ -626,26 +628,25 @@
         transform-style: preserve-3d;
     }
     .back-btn-bg-intro0 {
-        width: 298px;
+        width: 302px;
         height: 50px;
-        transform-origin: 149.021px 24.9946px 0px;
-        transform: translate3d(-39px, -86px, 0px);
+        transform: translate3d(-58px, 197px, 0px);
         transform-style: preserve-3d;
+	background-color: rgb(0, 0, 0, 0);
     }
-    .back-btn-bg-intro1 {
-        width: 298px;
+    .back-btn-bg-intro1, .back-btn-bg-intro3 {
+        width: 302px;
         height: 50px;
-        transform: translate3d(-39px, -48px, 0px);
+        transform: translate3d(-54px, 177px, 0px);
         transform-style: preserve-3d;
     }
     .back-btn-bg-intro2 {
-        width: 101px;
-        height: 35px;
-        transform-origin: 50.2849px 17.4823px 0px;
-        top: 50%;
-        transform: translate3d(-39px, 237px, 0px);
+        width: 60px;
+        height: 92px;
+        transform: translate3d(-56px, 142px, 0px);
         transform-style: preserve-3d;
     }
+    /*
     .back-btn-bg-intro3 {
         width: 298px;
         height: 50px;
@@ -653,10 +654,12 @@
         transform: translate3d(-39px, -86px, 0px);
         transform-style: preserve-3d;
     }
-    .back-arrow-intro1 {
+   */
+    .back-arrow-intro1, .back-arrow-intro2 {
         transform: translate3d(-431px, 183px, 0px) rotateZ(179.581deg);
         transform-style: preserve-3d;
     }
+    /*
     .back-arrow-intro2 {
         width: 24px;
         height: 24px;
@@ -665,6 +668,7 @@
         transform: translate3d(-426px, 242px, 0px) rotateZ(179.581deg);
         transform-style: preserve-3d;
     }
+   */
     .btn-next-hyperlink {
         transform-origin: 138.504px 12.6063px 0px;
         left: 0px;
@@ -991,6 +995,9 @@
         top: 50%;
         transform: translate3d(-40px, 183px, 0px);
         transform-style: preserve-3d;
+    }
+    .back-btn-bg-intro0 {
+	background-color: rgb(0, 0, 0, 0);
     }
     .back-text-intro0, .back-text-intro1, .back-text-intro2, .back-text-intro3 {
         font-size: 17px;
