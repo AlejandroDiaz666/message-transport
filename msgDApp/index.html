@@ -9,9 +9,9 @@
     <link rel="stylesheet" type="text/css" href="intro.css">
     <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto:300i" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Lato:100,100italic,300,300italic,italic,700,700italic,900,900italic,400" rel="stylesheet" type="text/css">
-    <script type="text/javascript" src="bundle/index_TIMESTAMP_1542471534_.js"></script>
-    <script type="text/javascript" src="bundle/common_TIMESTAMP_1542471534_.js"></script>
-    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1542471534_.js"></script>
+    <script type="text/javascript" src="bundle/index_TIMESTAMP_1542484275_.js"></script>
+    <script type="text/javascript" src="bundle/common_TIMESTAMP_1542484275_.js"></script>
+    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1542484275_.js"></script>
     <script type="text/javascript" src="bundle/SVGAnimation.js" gwd-groups-version="1.0"></script>
   </head>
 
@@ -70,7 +70,7 @@
 	  <li>You get <i>paid</i> for each message you receive</p>
 	</ul>
       </div>
-      <p class="next-btn-text-intro1"><a id="intro1Next" class="btn-next-hyperlink" href="#">How is Turms Different?</a>
+      <p class="next-btn-text-intro1"><a id="intro1Next" class="btn-next-hyperlink" href="#">How it Works</a>
       </p>
       <svg data-gwd-shape="oval" preserveAspectRatio="none" viewBox="0 0 30 29" class="close-btn-bg-intro0">
 	<ellipse cx="50%" cy="50%" rx="14.5" ry="14"></ellipse>
@@ -110,7 +110,7 @@
       <ul class="">
       </ul>
     </div>
-    <p class="next-btn-text-intro2"><a id="intro2Next" class="btn-next-hyperlink" href="#">How to Use Turms</a>
+    <p class="next-btn-text-intro2"><a id="intro2Next" class="btn-next-hyperlink" href="#">Receiving Messages</a>
     </p>
     <svg data-gwd-shape="oval" preserveAspectRatio="none" viewBox="0 0 30 29" class="close-btn-bg-intro2">
       <ellipse cx="50%" cy="50%" rx="14.5" ry="14"></ellipse>
@@ -121,7 +121,6 @@
     <div class="para2-text-ani para2-animation-position" data-gwd-group="para2_animation"></div>
   </div>
 
-
     <!--
 	intro page 3
       -->
@@ -130,7 +129,7 @@
       <div class="back-btn-bg-intro3"></div><span class="back-text-intro3"><a id="intro3Prev" class="btn-back-hyperlink" href="#">Back</a><a></a></span>
       <img src="images/dotted-arrow-4-809285.png" class="next-arrow-intro3">
       <img src="images/dotted-arrow-4-809285.png" class="back-arrow-intro3">
-      <span class="heading-title-intro3"><span class="">How to Use Turms</span></span>
+      <span class="heading-title-intro3"><span class="">Getting Paid to Receive Messages</span></span>
       <div class="heading-para1-intro3">
 	<p>Before you use Turms AMS you need to register your Ethereum address with the Turms AMS smart contract. You will need to set 2 parameters:</p>
       </div>
@@ -140,7 +139,7 @@
 	<br/><p>Pro tip: if you don't want someone to pay your spam fee for the first message that they send to you, you can send them an empty message. You will not have to pay any fee for the empty message; and they will not have to pay your spam fee when they send a message to you.</p>
 	<br/><p>Note: 15% of whatever spam and message fees you charge goes to the Turms AMS token holders. 15% of the spam and message fees is burned; that is, it is destroyed to increase the value of Ether.</p>
       </div>
-      <p class="next-btn-text-intro3"><a id="intro3Next" class="btn-next-hyperlink" href="#">Close</a>
+      <p class="next-btn-text-intro3"><a id="intro3Next" class="btn-next-hyperlink" href="#">Conversation Threading</a>
       </p>
       <svg data-gwd-shape="oval" preserveAspectRatio="none" viewBox="0 0 30 29" class="close-btn-bg-intro0">
 	<ellipse cx="50%" cy="50%" rx="14.5" ry="14"></ellipse>
@@ -148,7 +147,43 @@
       <span class="close-btn"><a id="intro3Close" class="btn-close-hyperlink" href="#">X</a></span>
     </div>
 
+    <!--
+	intro page 4
+      -->
+    <div id="intro4Div" class="popup-bg-intro2 hidden">
+      <div class="next-btn-bg-intro4"></div>
+      <div class="back-btn-bg-intro3"></div><span class="back-text-intro3"><a id="intro4Prev" class="btn-back-hyperlink" href="#">Back</a><a></a></span>
+      <img src="images/dotted-arrow-4-809285.png" class="next-arrow-intro3">
+      <img src="images/dotted-arrow-4-809285.png" class="back-arrow-intro3">
+      <span class="heading-title-intro3"><span class="">Conversation Threading</span></span>
+      <div class="heading-para1-intro3">
+	<p>Message ID's and Ref ID's</p>
+      </div>
+      <div class="para1-intro3">
+	<p>Conversation threading is a feature used by many email clients in which the software aids the user by visually grouping messages with their replies. For an ongoing conversation this creates a chain of messages called a "message thread."</p><br/>
+	<p>In Turms AMS we do not display message threads. :(</p>
+	<p>This is because the is no central "server" to keep track of the relationships between messages.<br/>
+	  Instead:</p>
+	<ul>
+	  <li>Each Turms message needs to be retreived individually from the blockchain</li>
+	  <li>Each Turms message is completely encrypted, including the "subject line"</li>
+	  <li>Each Turms message's unique decrption key needs to be computed separately</li>
+	</ul>
+	<p>To provide a capability similar to Conversation threading each Turms message is identified by a unique Msg. ID, which is encoded in base64 (eg. 'AAAAAAAAAAAAAAAAAAAAAAAA'). When you reply to a
+message, the the reply stores the Msg. ID of the original message as a 'Ref. ID' When the reply is displayed the Ref. ID is also displayed -- and if you click on the Ref ID, then that will bring up the original message. In this way you can trace back through the chain of messages that make up a conversation's message thread.</p>
+      </div>
+      <p class="next-btn-text-intro4"><a id="intro4Next" class="btn-next-hyperlink" href="#">Close</a>
+      </p>
+      <svg data-gwd-shape="oval" preserveAspectRatio="none" viewBox="0 0 30 29" class="close-btn-bg-intro0">
+	<ellipse cx="50%" cy="50%" rx="14.5" ry="14"></ellipse>
+      </svg>
+      <span class="close-btn"><a id="intro4Close" class="btn-close-hyperlink" href="#">X</a></span>
+    </div>
 
+
+    <!--
+	modal: you've received new messages
+      -->
     <div id="newMsgModal">
       <p>
 	You've received

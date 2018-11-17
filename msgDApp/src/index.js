@@ -403,6 +403,16 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 	    var intro3Next = document.getElementById('intro3Next');
 	    intro3Next.addEventListener('click', function() {
 		replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
+		replaceElemClassFromTo('intro4Div', 'hidden', 'visibleB', null);
+	    });
+	    var intro4Prev = document.getElementById('intro4Prev');
+	    intro4Prev.addEventListener('click', function() {
+		replaceElemClassFromTo('intro4Div', 'visibleB', 'hidden', null);
+		replaceElemClassFromTo('intro3Div', 'hidden', 'visibleB', null);
+	    });
+	    var intro4Next = document.getElementById('intro4Next');
+	    intro4Next.addEventListener('click', function() {
+		replaceElemClassFromTo('intro4Div', 'visibleB', 'hidden', null);
 		//if we wanted to stop displaying the intro once the user had clicked through
 		//to the end at least one time...
 		//localStorage['FirstIntroCompleteFlag'] = true;
@@ -426,6 +436,11 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 	    var intro3Close = document.getElementById('intro3Close');
 	    intro3Close.addEventListener('click', function() {
 		replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
+		resolve(null);
+	    });
+	    var intro4Close = document.getElementById('intro4Close');
+	    intro4Close.addEventListener('click', function() {
+		replaceElemClassFromTo('intro4Div', 'visibleB', 'hidden', null);
 		//if we wanted to stop displaying the intro once the user had clicked through
 		//to the end at least one time...
 		//localStorage['FirstIntroCompleteFlag'] = true;
