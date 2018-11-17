@@ -1225,8 +1225,8 @@
         top: 50%;
         width: 204px;
         height: 38px;
-        transform-origin: 51.4232px 19.1165px 0px;
-        transform: translate3d(-585px, 183px, 0px);
+        /* transform-origin: 51.4232px 19.1165px 0px; */
+        transform: translate3d(-642px, 183px, 0px);
         transform-style: preserve-3d;
     }
     .next-btn-bg-intro3 {
