@@ -115,7 +115,7 @@
     transform-origin: 144px 15.9957px 0px;
     color: rgb(54, 169, 211);
 }
-.para1-intro3 {
+.para1-intro3, .para1-intro4 {
     position: absolute;
     font-family: Lato;
     top: 50%;
@@ -440,7 +440,7 @@
     }
     .popup-bg-intro2 {
         width: 327px;
-        height: 560px;
+        height: 609px;
         transform-origin: 163.263px 280.094px 0px;
         transform: translate3d(-160px, -306px, 0px);
         transform-style: preserve-3d;
@@ -504,8 +504,7 @@
         font-size: 12px;
         width: 231px;
         height: 94px;
-        transform-origin: 115.805px 46.7358px 0px;
-        transform: translate3d(78px, -199px, 0px);
+        transform: translate3d(78px, -231px, 0px);
         transform-style: preserve-3d;
     }
     .image-para1-intro2 {
@@ -520,18 +519,29 @@
         left: 1.83%;
         top: 181px;
     }
+    .heading-para1-intro3 {
+        font-size: 15px;
+        width: 290px;
+        height: 30px;
+        top: 40px;
+	left: 20px;
+    }
+    .para1-intro3 {
+        text-align: justify;
+        font-size: 12px;
+        width: 276px;
+        transform: translate3d(22px, -212px, 0px);
+    }
     .note-text-intro0 {
         font-size: 12px;
         left: 18px;
         width: 290px;
         height: 61px;
-        /* transform-origin: 145.016px 30.5873px 0px; */
         top: 421px;
     }
     .note-bg-intro0 {
         width: 327px;
         height: 85px;
-        /* transform-origin: 163.729px 34.0828px 0px; */
         transform: translate3d(0px, 107px, 0px);
         transform-style: preserve-3d;
     }
@@ -547,64 +557,99 @@
 	width: 298px;
         height: 79px;
     }
+    .heading-para1-intro4 {
+        font-size: 15px;
+        width: 185px;
+        height: 30px;
+        top: 40px;
+	left: 76px;
+    }
+    .para1-intro4 {
+        text-align: justify;
+        font-size: 12px;
+        width: 276px;
+        transform: translate3d(22px, -229px, 0px);
+    }
     .next-btn-bg-intro0 {
         width: 302px;
-        height: 49px;
-        transform: translate3d(-1181px, 250px, 0px);
+        height: 38px;
+        transform: translate3d(-1176px, 255px, 0px);
         transform-style: preserve-3d;
     }
     .next-btn-bg-intro1 {
         width: 302px;
-        height: 49px;
-        transform: translate3d(-1290px, 236px, 0px);
+        height: 38px;
+        transform: translate3d(-1290px, 255px, 0px);
         transform-style: preserve-3d;
     }
     .next-btn-bg-intro2 {
+        width: 302px;
+        height: 38px;
+        top: 50%;
+        transform: translate3d(-1234px, 255px, 0px);
+        transform-style: preserve-3d;
+    }
+    .next-btn-bg-intro3 {
+        width: 302px;
+        height: 38px;
+        top: 50%;
+        transform: translate3d(-1194px, 255px, 0px);
+        transform-style: preserve-3d;
+    }
+    .next-btn-bg-intro4 {
         width: 301px;
         height: 38px;
         top: 50%;
-        transform: translate3d(-1236px, 237px, 0px);
+        transform: translate3d(-1370px, 255px, 0px);
         transform-style: preserve-3d;
     }
     .next-btn-text-intro0 {
         font-size: 22px;
         width: 294px;
         height: 29px;
-        transform-origin: 146.984px 14.7187px 0px;
-        transform: translate3d(-749px, 260px, 0px);
+        transform: translate3d(-749px, 258px, 0px);
         transform-style: preserve-3d;
     }
     .next-btn-text-intro1 {
         left: 22px;
-	transform: translate3d(0px, 245px, 0px);
+	transform: translate3d(0px, 258px, 0px);
     }
     .next-btn-text-intro2 {
         left: 22px;
-	transform: translate3d(0px, 245px, 0px);
+	transform: translate3d(0px, 258px, 0px);
+    }
+    .next-btn-text-intro3 {
+        left: 22px;
+	transform: translate3d(0px, 258px, 0px);
     }
     .next-btn-text-intro4 {
         top: 50%;
-        transform: translate3d(-555px, 240px, 0px);
+        transform: translate3d(-555px, 258px, 0px);
         transform-style: preserve-3d;
     }
-    .next-arrow-intro0 {
-        transform: translate3d(-1209px, 256px, 0px);
+    .back-btn-bg-intro0 {
+        width: 302px;
+        height: 40px;
+        transform: translate3d(-53px, 210px, 0px);
+        transform-style: preserve-3d;
+	background-color: rgb(0, 0, 0, 0);
+    }
+    .back-btn-bg-intro1 {
+        width: 302px;
+        height: 40px;
+        transform: translate3d(-53px, 210px, 0px);
         transform-style: preserve-3d;
     }
-    .next-arrow-intro1 {
-        transform: translate3d(-1209px, 241px, 0px);
+    .back-btn-bg-intro2 {
+        width: 302px;
+        height: 40px;
+        transform: translate3d(-53px, 210px, 0px);
         transform-style: preserve-3d;
     }
-    .next-arrow-intro2 {
-        width: 25px;
-        height: 25px;
-        transform-origin: 12.6154px 12.3826px 0px;
-        top: 50%;
-        transform: translate3d(-1213px, 242px, 0px);
-        transform-style: preserve-3d;
-    }
-    .back-arrow-intro0 {
-        transform: translate3d(-351px, 146px, 0px) rotateZ(179.581deg);
+    .back-btn-bg-intro3, .back-btn-bg-intro4 {
+        width: 302px;
+        height: 40px;
+        transform: translate3d(-53px, 210px, 0px);
         transform-style: preserve-3d;
     }
     .back-text-intro0 {
@@ -614,61 +659,62 @@
     }
     .back-text-intro1 {
         font-size: 22px;
-        transform: translate3d(-506px, 187px, 0px);
+        transform: translate3d(-515px, 216px, 0px);
         transform-style: preserve-3d;
     }
     .back-text-intro2 {
-        top: 50%;
-        transform: translate3d(-557px, 155px, 0px);
-        transform-style: preserve-3d;
-    }
-    .back-text-intro3 {
         font-size: 22px;
-        transform: translate3d(-428px, 151px, 0px);
+        transform: translate3d(-515px, 216px, 0px);
         transform-style: preserve-3d;
     }
-    .back-btn-bg-intro0 {
-        width: 302px;
-        height: 50px;
-        transform: translate3d(-58px, 197px, 0px);
-        transform-style: preserve-3d;
-	background-color: rgb(0, 0, 0, 0);
-    }
-    .back-btn-bg-intro1, .back-btn-bg-intro3 {
-        width: 302px;
-        height: 50px;
-        transform: translate3d(-54px, 177px, 0px);
+    .back-text-intro3, .back-text-intro4 {
+        font-size: 22px;
+        transform: translate3d(-515px, 216px, 0px);
         transform-style: preserve-3d;
     }
-    .back-btn-bg-intro2 {
-        width: 60px;
-        height: 92px;
-        transform: translate3d(-56px, 142px, 0px);
+    .next-arrow-intro0 {
+        width: 30px;
+        height: 30px;
+        transform: translate3d(-1204px, 258px, 0px);
         transform-style: preserve-3d;
     }
-    /*
-    .back-btn-bg-intro3 {
-        width: 298px;
-        height: 50px;
-        transform-origin: 149.021px 24.9946px 0px;
-        transform: translate3d(-39px, -86px, 0px);
+    .next-arrow-intro1 {
+        width: 30px;
+        height: 30px;
+        transform: translate3d(-1204px, 258px, 0px);
         transform-style: preserve-3d;
     }
-   */
-    .back-arrow-intro1, .back-arrow-intro2 {
-        transform: translate3d(-431px, 183px, 0px) rotateZ(179.581deg);
-        transform-style: preserve-3d;
-    }
-    /*
-    .back-arrow-intro2 {
-        width: 24px;
-        height: 24px;
-        transform-origin: 11.8368px 12.1686px 0px;
+    .next-arrow-intro2 {
+        width: 30px;
+        height: 30px;
         top: 50%;
-        transform: translate3d(-426px, 242px, 0px) rotateZ(179.581deg);
+        transform: translate3d(-1204px, 258px, 0px);
         transform-style: preserve-3d;
     }
-   */
+    .next-arrow-intro3, .next-arrow-intro4 {
+        width: 30px;
+        height: 30px;
+        transform: translate3d(-1204px, 258px, 0px);
+        transform-style: preserve-3d;
+    }
+    .back-arrow-intro0 {
+        width: 30px;
+        height: 30px;
+        transform: translate3d(-351px, 146px, 0px) rotateZ(179.581deg);
+        transform-style: preserve-3d;
+    }
+    .back-arrow-intro1, .back-arrow-intro2 {
+        width: 30px;
+        height: 30px;
+        transform: translate3d(-431px, 215px, 0px) rotateZ(179.581deg);
+        transform-style: preserve-3d;
+    }
+    .back-arrow-intro3, .back-arrow-intro4 {
+        width: 30px;
+        height: 30px;
+        transform: translate3d(-431px, 215px, 0px) rotateZ(179.581deg);
+        transform-style: preserve-3d;
+    }
     .btn-next-hyperlink {
         transform-origin: 138.504px 12.6063px 0px;
         left: 0px;
@@ -870,7 +916,7 @@
         left: 446px;
         top: 32px;
     }
-    .para1-intro3 {
+    .para1-intro3, .para1-intro4 {
         font-size: 15px;
         width: 610px;
         height: 325px;
