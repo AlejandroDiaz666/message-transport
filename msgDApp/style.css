@@ -1,12 +1,18 @@
-html {
-    width: 100%;
-    height: 100%;
-    margin: 0px;
+:root {
+--clr_maintitletext: white;
+--clr_bodybg: #6495ED;
+--clr_border : 	#00008B; /*#7FFFD4;  */
+--clr_buttonbg :  white;  /*#4CAF50; */
+--clr_buttontext : #00008B;  
+--clr_areabg1: #e3eceb;
+--clr_areatext : #00008B;  
 }
+
+
 body {
     padding: 20px;
     margin: 0px;
-    background-color: rgba(0, 0, 0, 0.5);
+    background: var(--clr_bodybg); 
     font-family: 'Roboto', sans-serif;
 }
 h1 {
@@ -128,13 +134,15 @@ p {
 #topSection {
     display: block;
     font-family: 'Lato', sans-serif;
-    background-color: #e3eceb;
+    background-color: var(--clr_areabg1); 
     margin-top:0px;
 }
 
 #mainTitleSpan {
     float: left;
     margin-left: 20px;
+	color: var(--clr_maintitletext);
+	font-style: italic;
 }
 
 #networkAreaDiv, #accountAreaDiv, #balanceAreaDiv, #totalReceivedAreaDiv, #feeBalanceAreaDiv  {
@@ -145,7 +153,8 @@ p {
     padding-left: 0px;
     margin: 0px;
     min-width: 20%;
-    background-color: #e3eceb;
+
+    background-color: var(--clr_border);
 }
 #networkArea, #accountArea, #balanceArea, #totalReceivedArea, #feeBalanceArea {
     float: right;
@@ -166,8 +175,9 @@ p {
     margin-left: 0px;
     margin-right: 0px;
     height: 100%;
-    background-color: #dbdcdb;
+    background-color: var(--clr_border); 
     position: relative;
+    border-radius: 12px; 
 }
 
 .menuBarButton, .menuBarButtonEnabled, .menuBarButtonDisabled,
@@ -175,12 +185,27 @@ p {
     margin: 5px;
     width: 15%;
     height: 80%;
+    padding : 10px;
+
+    background-color: var(--clr_buttonbg); 
+    border: none;
+    color: var(--clr_buttontext); /*yellow; */
+/*# rer    padding: 20px; */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block; 
+    font-size: 16px;
+
+    border-radius: 12px; 
+
 }
 .menuBarButtonEnabled, .menuBarButtonDisabled {
-    background-color: #dbdcee;
+
+    background-color: var(--clr_buttonbg); /*#4CAC50; */
 }
 .menuBarButtonSelected, .menuBarButtonEnabled:hover {
-    background-color: #dbeeee;
+
+    background-color: var(--clr_buttonbg); /*#4CAC50; */
 }
 
 #navButtonsSpan {
@@ -190,6 +215,20 @@ p {
     top: 50%;
     right: 0%;
     transform: translateY(-50%);
+}
+.navButton {
+    margin: 5px;
+    padding : 4px;
+
+    background-color: var(--clr_buttonbg); 
+    border: none;
+    color: var(--clr_buttontext); /*yellow; */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block; 
+
+    border-radius: 8px; 
+
 }
 #prevUnreadButton {
 }
@@ -209,8 +248,10 @@ p {
     display: table;
     padding: 12px;
     margin: 0px;
-    background-color: #e3eceb;
+    background-color: var(--clr_areabg1); 
     border-collapse: collapse;
+    color: var(--clr_areatext); /*yellow; */
+    width: 100%;
 
 }
 
@@ -218,7 +259,7 @@ p {
 .msgListItemDivNew, .msgListItemDivSelectedNew {
     display: table-row;
     clear: both;
-    background-color: #e3eceb;
+    background-color: var(--clr_areabg1); 
     font-weight: normal;
 }
 .msgListItemDiv,
@@ -244,21 +285,23 @@ p {
     margin: 1px;
     resize: none;
     font-weight: inherit;
+    color: var(--clr_areatext);
 }
 .msgListMsgNoArea {
-    width: 5em;
+    width: 4%; /*5em; */
 }
 .msgListAddrArea {
-    width: 26em;
+    width: 20%; /* 26em; */
 }
 .msgListDateArea {
-    width: 20em;
+    width: 20%; /*20em; */
 }
 .msgListMsgIdArea {
-    width: 20em;
+    width: 17%; /*20em; */
 }
 .msgListSubjectArea {
-    min-width: 20em;
+    min-width: 20em; 
+    width: 37%; 
     overflow: hidden;
     white-space: nowrap;
     text-overflow: elipsis;
@@ -276,8 +319,9 @@ p {
     margin-top: 30px;
     margin-left: 0px;
     margin-right: auto;
-    /* background-color: #a4a4a4; */
-    background-color: #9cd9db;
+    background-color: var(--clr_border);
+    border-radius: 12px; 
+    color: var(--clr_areatext);
 }
 
 #msgInfoAreaDiv {
@@ -288,7 +332,8 @@ p {
     display: table;
     margin: 0px;
     min-width: 90%;
-    background-color: #e3eceb;
+    background-color: var(--clr_areabg1); 
+    color: var(--clr_areatext);
 }
 
 #msgPromptArea, #msgAddrArea, #msgIdArea {
@@ -299,6 +344,7 @@ p {
     padding-left: 0px;
     margin: 0px;
     resize: none;
+    color: var(--clr_areatext);
 }
 #msgPromptArea {
     display: table-cell;
@@ -322,6 +368,8 @@ p {
     padding-left: 6px;
     width: 20em;
     min-width: 10em;
+    border-radius: 8px; 
+    color: var(--clr_buttontext);
 }
 
 #msgDateArea {
@@ -359,6 +407,10 @@ p {
     padding-right: 6px;
     padding-bottom: 0px;
     padding-left: 6px;
+    border-radius: 8px; 
+    color: var(--clr_buttontext); 
+
+
 }
 
 
@@ -370,7 +422,7 @@ p {
     display: block;
     margin: 0px;
     min-width: 90%;
-    background-color: #e3eceb;
+    background-color: var(--clr_areabg1); 
 }
 #msgTextArea {
     padding: 0px;
@@ -391,6 +443,10 @@ DIV.finalresultstable {
     margin: 2px;
 }
 
+#tabularArea {
+  float:right;
+  margin: 10px;
+}
 
 @media (max-width: 1149px) and (min-width: 384px) {
     #navButtonsSpan {
