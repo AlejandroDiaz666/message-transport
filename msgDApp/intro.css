@@ -26,7 +26,7 @@
     top: 50%;
     transform: translate3d(-587px, -338px, 0px);
 }
-.heading-title-intro0, .heading-title-intro2, .heading-title-intro3 {
+.heading-title-intro0, .heading-title-intro1, .heading-title-intro2, .heading-title-intro3 {
     position: absolute;
     font-family: lato;
     font-size: 33px;
@@ -34,21 +34,18 @@
     width: 862px;
     height: 43px;
 }
-.heading-title-intro0 {
+.heading-title-intro0, .heading-title-intro1 {
     top: 48px;
     left: 183px;
-    transform-origin: 430.875px 21.4736px 0px;
 }
 .heading-title-intro2 {
     text-align: center;
     top: 37px;
     left: 183px;
-    transform-origin: 430.875px 21.4736px 0px;
 }
 .heading-title-intro3 {
     top: 48px;
     left: 183px;
-    transform-origin: 430.875px 21.4736px 0px;
 }
 
 .heading-para1-intro2 {
@@ -73,14 +70,13 @@
 }
 .para2-intro0 {
     position: absolute;
-    width: 477px;
     font-family: Lato;
     top: 50%;
-    transform-style: preserve-3d;
     left: 0%;
     height: 77px;
-    transform-origin: 238.489px 38.3483px 0px;
+    width: 477px;
     font-size: 18px;
+    transform-style: preserve-3d;
     transform: translate3d(646px, -83px, 0px);
 }
 .para1-intro1 {
@@ -91,6 +87,17 @@
     left: 596px;
     font-size: 18px;
     top: 190px;
+}
+.para2-intro1 {
+    position: absolute;
+    font-family: Lato;
+    top: 50%;
+    left: 0%;
+    height: 77px;
+    width: 477px;
+    font-size: 18px;
+    transform-style: preserve-3d;
+    transform: translate3d(646px, -83px, 0px);
 }
 .para1-intro2 {
     position: absolute;
@@ -142,7 +149,6 @@
 .note-text-intro1 {
     left: 611px;
     top: 401px;
-    transform-origin: 218.191px 44.539px 0px;
 }
 .note-bg-intro0, .note-bg-intro1 {
     position: absolute;
@@ -452,7 +458,7 @@
 	height: 250px;
 	transform: translate3d(-504px, -246px, 0px);
     }
-    .heading-title-intro0, .heading-title-intro3 {
+    .heading-title-intro0, .heading-title-intro1, .heading-title-intro3 {
         width: 296px;
         height: 48px;
         /* transform-origin: 148.187px 21.4718px 0px; */
@@ -843,7 +849,7 @@
         transform: translate3d(-471px, -91px, 0px);
         transform-style: preserve-3d;
     }
-    .heading-title-intro0 {
+    .heading-title-intro0, .heading-title-intro1 {
         font-size: 20px;
         width: 504px;
         height: 43px;
@@ -865,7 +871,6 @@
         font-size: 20px;
         width: 244px;
         height: 43px;
-        /* transform-origin: 252.072px 21.4673px 0px; */
         left: 155px;
         top: 32px;
     }
@@ -882,6 +887,10 @@
         transform-origin: 196.089px 38.3331px 0px;
         transform: translate3d(420px, -92px, 0px);
         transform-style: preserve-3d;
+    }
+    .heading-title-intro1 {
+	top: 48px;
+	left: 183px;
     }
     .para1-intro1 {
         width: 393px;
@@ -1166,6 +1175,86 @@
     }
 }
 @media (min-width: 1366px) {
+    .para1-intro0 {
+        left: 402px;
+        top: 152px;
+        width: 688px;
+        height: 58px;
+    }
+    .para2-intro0 {
+        width: 688px;
+        height: 77px;
+        transform: translate3d(402px, 132px, 0px);
+        transform-style: preserve-3d;
+    }
+    .note-bg-intro0 {
+        height: 104px;
+        width: 457px;
+        transform-style: preserve-3d;
+        transform: translate3d(526px, 16px, 0px);
+    }
+    .note-text-intro0 {
+        font-size: 17px;
+	left: 536px;
+	top: 362px;
+    }
+    .para1-intro1 {
+	left: 52px;
+	top: 99px;
+	width: 770px;
+	height: 245px;
+    }
+    .para2-intro1 {
+	width: 781px;
+	height: 242px;
+	transform-style: preserve-3d;
+	transform: translate3d(326px, -7px, 0px);
+    }
+    .note-bg-intro1 {
+	width: 309px;
+	height: 110px;
+	transform-style: preserve-3d;
+	transform: translate3d(804px, -190px, 0px);
+    }
+    .note-text-intro1 {
+	width: 280px;
+	height: 89px;
+	left: 819px;
+	top: 154px;
+        font-size: 16px;
+    }
+    .image-intro1 {
+	width: 225px;
+	height: 135px;
+	transform-style: preserve-3d;
+	transform: translate3d(-477px, 66px, 0px);
+    }
+    .heading-title-intro2 {
+        top: 50%;
+        transform-style: preserve-3d;
+        left: 50%;
+        transform: translate3d(-431px, -318px, 0px);
+    }
+    .header-para1-intro2-modified {
+        top: 112px;
+    }
+    .para1-intro2 {
+        transform-style: preserve-3d;
+        transform: translate3d(406px, -179px, 0px);
+    }
+    .image-para1-intro2 {
+        top: 94px;
+    }
+    .image-para2-intro2 {
+        top: 326px;
+    }
+
+    /*
+    .next-btn-text-intro0, .next-btn-text-intro1 {
+        transform-style: preserve-3d;
+        transform: translate3d(0px, 259px, 0px);
+    }
+   */
     .close-btn-bg-intro0, .close-btn-bg-intro2 {
         top: 12px;
         left: 1132px;
@@ -1177,55 +1266,6 @@
         top: 13px;
         left: 1138px;
     }
-    .heading-title-intro2 {
-        top: 50%;
-        transform-style: preserve-3d;
-        left: 50%;
-        transform: translate3d(-431px, -318px, 0px);
-    }
-    .para1-intro2 {
-        transform-style: preserve-3d;
-        transform: translate3d(406px, -179px, 0px);
-    }
-    .header-para1-intro2-modified {
-        top: 112px;
-    }
-    .image-para1-intro2 {
-        top: 94px;
-    }
-    .image-para2-intro2 {
-        top: 326px;
-    }
-    .note-bg-intro0 {
-        height: 104px;
-        transform-style: preserve-3d;
-        transform: translate3d(652px, 3px, 0px);
-        width: 457px;
-        transform-origin: 228.809px 51.7365px 0px;
-    }
-    .note-text-intro0 {
-        font-size: 17px;
-    }
-    .para1-intro0 {
-        left: 646px;
-        top: 190px;
-        width: 464px;
-        height: 58px;
-        transform-origin: 231.88px 29.1894px 0px;
-    }
-    .para2-intro0 {
-        width: 464px;
-        height: 77px;
-        transform-origin: 231.86px 38.3284px 0px;
-        transform: translate3d(646px, -83px, 0px);
-        transform-style: preserve-3d;
-    }
-    /*
-    .next-btn-text-intro0, .next-btn-text-intro1 {
-        transform-style: preserve-3d;
-        transform: translate3d(0px, 259px, 0px);
-    }
-   */
     [data-gwd-group="text-animation"] .heading-para2-group.heading-para2 {
         top: 0px;
     }
