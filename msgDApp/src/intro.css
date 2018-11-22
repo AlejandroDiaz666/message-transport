@@ -4,7 +4,7 @@
     z-index: 2;
     position: absolute;
     background-color: rgb(250, 246, 246);
-    background-image: url("images/popup-bg-intro0.jpg");
+    background-image: url("../images/popup-bg-intro0.jpg");
     width: 1174px;
     height: 677px;
     left: 50%;
@@ -18,7 +18,7 @@
     z-index: 2;
     position: absolute;
     background-color: rgb(250, 246, 246);
-    background-image: url("images/popup-bg-intro2.jpg");
+    background-image: url("../images/popup-bg-intro2.jpg");
     width: 1174px;
     height: 677px;
     left: 50%;
