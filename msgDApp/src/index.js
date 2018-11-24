@@ -554,7 +554,7 @@ function handleLockedMetaMask(err) {
     replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
     replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true).textContent = 'Reply';
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
     //
     var msgTextArea = document.getElementById('msgTextArea');
@@ -658,7 +658,7 @@ function handleUnregisteredAcct() {
     replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
     replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true).textContent = 'Reply';
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
     //
     var msgTextArea = document.getElementById('msgTextArea');
@@ -747,7 +747,7 @@ function handleCompose(acctInfo, toAddr) {
     replaceElemClassFromTo('msgFeeArea',         'hidden',    'visibleTC', true).value = 'Fee: ';
     replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send';
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
     //
     var msgRefButton = document.getElementById('msgRefButton');
@@ -815,7 +815,7 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	replaceElemClassFromTo('msgFeeArea',         'hidden',    'visibleTC', true).value = 'Fee: ';
 	replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', false).textContent = 'Send';
 	replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-	replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+	replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
 	replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
 	//
 	showIdAndRef('', ref, false);
@@ -871,7 +871,7 @@ function handleRegister() {
     replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
     replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true);
     replaceElemClassFromTo('registerDiv',        'hidden',    'visibleIB', true);
-    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
     //
     var msgTextArea = document.getElementById('msgTextArea');
@@ -946,7 +946,7 @@ function handleWithdraw() {
     replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
     replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true);
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
     //
     var msgTextArea = document.getElementById('msgTextArea');
@@ -1002,7 +1002,7 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     //we'll set this to enabled after we have a valid message displayed
     replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Reply';
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'hidden',    'visibleTC', false);
+    replaceElemClassFromTo('markReadButton',     'hidden',    'visibleIB', false);
     if (refreshMsgList)
 	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
     else
@@ -1071,7 +1071,7 @@ function handleViewSent(acctInfo, refreshMsgList) {
     //we'll set this to enabled after we have a valid message displayed
     replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send again';
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleTC', 'hidden',    true);
+    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('nextUnreadButton',   'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('prevUnreadButton',   'visibleIB', 'hidden',    true);
     if (refreshMsgList)

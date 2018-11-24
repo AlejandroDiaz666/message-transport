@@ -3,16 +3,17 @@
 --clr_bodybg: #6495ED;
 --clr_border : 	#00008B; /*#7FFFD4;  */
 --clr_buttonbg :  white;  /*#4CAF50; */
---clr_buttontext : #00008B;  
+--clr_buttonbgsel :  rgb(175, 180, 183);  /*#4CAF50; */
+--clr_buttontext : #00008B;
 --clr_areabg1: #e3eceb;
---clr_areatext : #00008B;  
+--clr_areatext : #00008B;
 }
 
 
 body {
     padding: 20px;
     margin: 0px;
-    background: var(--clr_bodybg); 
+    background: var(--clr_bodybg);
     font-family: 'Roboto', sans-serif;
 }
 h1 {
@@ -134,7 +135,7 @@ p {
 #topSection {
     display: block;
     font-family: 'Lato', sans-serif;
-    background-color: var(--clr_areabg1); 
+    background-color: var(--clr_areabg1);
     margin-top:0px;
 }
 
@@ -175,9 +176,9 @@ p {
     margin-left: 0px;
     margin-right: 0px;
     height: 100%;
-    background-color: var(--clr_border); 
+    background-color: var(--clr_border);
     position: relative;
-    border-radius: 12px; 
+    border-radius: 12px;
 }
 
 .menuBarButton, .menuBarButtonEnabled, .menuBarButtonDisabled,
@@ -186,26 +187,18 @@ p {
     width: 15%;
     height: 80%;
     padding : 10px;
-
-    background-color: var(--clr_buttonbg); 
     border: none;
-    color: var(--clr_buttontext); /*yellow; */
-/*# rer    padding: 20px; */
+    color: var(--clr_buttontext);
     text-align: center;
     text-decoration: none;
-    display: inline-block; 
     font-size: 16px;
-
-    border-radius: 12px; 
-
+    border-radius: 12px;
 }
-.menuBarButtonEnabled, .menuBarButtonDisabled {
-
-    background-color: var(--clr_buttonbg); /*#4CAC50; */
+.menuBarButton, .menuBarButtonEnabled, .menuBarButtonDisabled {
+    background-color: var(--clr_buttonbg);
 }
-.menuBarButtonSelected, .menuBarButtonEnabled:hover {
-
-    background-color: var(--clr_buttonbg); /*#4CAC50; */
+.menuBarButton:hover, .menuBarButtonSelected, .menuBarButtonEnabled:hover {
+    background-color: var(--clr_buttonbgsel);
 }
 
 #navButtonsSpan {
@@ -217,19 +210,25 @@ p {
     transform: translateY(-50%);
 }
 .navButton {
+    /* js sets display via .visibleIB or hidden */
     margin: 5px;
     padding : 4px;
-
-    background-color: var(--clr_buttonbg); 
+    background-color: var(--clr_buttonbg);
+    color: var(--clr_buttontext);
     border: none;
-    color: var(--clr_buttontext); /*yellow; */
     text-align: center;
     text-decoration: none;
-    display: inline-block; 
-
-    border-radius: 8px; 
-
+    border-radius: 8px;
 }
+.navButton:hover {
+    background-color: var(--clr_buttonbgsel);
+}
+.navButton[disabled], .navButton[disabled]:hover, .navButton[disabled]:focus, .navButton[disabled]:active {
+    background-color: var(--clr_buttonbg);
+    opacity: 0.6;
+}
+
+
 #prevUnreadButton {
 }
 #nextUnreadButton {
@@ -248,7 +247,7 @@ p {
     display: table;
     padding: 12px;
     margin: 0px;
-    background-color: var(--clr_areabg1); 
+    background-color: var(--clr_areabg1);
     border-collapse: collapse;
     color: var(--clr_areatext); /*yellow; */
     width: 100%;
@@ -259,7 +258,7 @@ p {
 .msgListItemDivNew, .msgListItemDivSelectedNew {
     display: table-row;
     clear: both;
-    background-color: var(--clr_areabg1); 
+    background-color: var(--clr_areabg1);
     font-weight: normal;
 }
 .msgListItemDiv,
@@ -300,8 +299,8 @@ p {
     width: 17%; /*20em; */
 }
 .msgListSubjectArea {
-    min-width: 20em; 
-    width: 37%; 
+    min-width: 20em;
+    width: 37%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: elipsis;
@@ -320,7 +319,7 @@ p {
     margin-left: 0px;
     margin-right: auto;
     background-color: var(--clr_border);
-    border-radius: 12px; 
+    border-radius: 12px;
     color: var(--clr_areatext);
 }
 
@@ -332,7 +331,7 @@ p {
     display: table;
     margin: 0px;
     min-width: 90%;
-    background-color: var(--clr_areabg1); 
+    background-color: var(--clr_areabg1);
     color: var(--clr_areatext);
 }
 
@@ -368,7 +367,7 @@ p {
     padding-left: 6px;
     width: 20em;
     min-width: 10em;
-    border-radius: 8px; 
+    border-radius: 8px;
     color: var(--clr_buttontext);
 }
 
@@ -407,8 +406,8 @@ p {
     padding-right: 6px;
     padding-bottom: 0px;
     padding-left: 6px;
-    border-radius: 8px; 
-    color: var(--clr_buttontext); 
+    border-radius: 8px;
+    color: var(--clr_buttontext);
 
 
 }
@@ -422,7 +421,7 @@ p {
     display: block;
     margin: 0px;
     min-width: 90%;
-    background-color: var(--clr_areabg1); 
+    background-color: var(--clr_areabg1);
 }
 #msgTextArea {
     padding: 0px;

@@ -8,3 +8,11 @@ for f in bundle/*.js; do
     g=$(echo $f | sed "s/bundle\/\([^\.]*\)\.js/bundle\/\1_TIMESTAMP_${now}_\.js/")
     cp $f $g
 done
+if [ ! -d css ]; then
+    mkdir css
+fi
+rm -f css/*_TIMESTAMP_*
+for f in src/*.css; do
+    g=$(echo $f | sed "s/src\/\([^\.]*\)\.css/css\/\1_TIMESTAMP_${now}_\.css/")
+    cp $f $g
+done
