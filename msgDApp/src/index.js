@@ -1,6 +1,7 @@
 
 var common = require('./common');
 var ether = require('./ether');
+var mtEther = require('./mtEther');
 var dhcrypt = require('./dhcrypt');
 var msgUtil = require('./msgUtil');
 var ethUtils = require('ethereumjs-util');
@@ -128,15 +129,15 @@ function setReplyButtonHandlers() {
 	    var mimeType = '0x1';
 	    var toAddr = msgAddrArea.value;
 	    //the toAddr has already been validated. really.
-	    ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
+	    mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
 		//encrypt the message...
-		var toPublicKey = (!!toAcctInfo) ? toAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+		var toPublicKey = (!!toAcctInfo) ? toAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
 		if (!toPublicKey || toPublicKey == '0x') {
 		    alert('Encryption error: unable to look up destination address in contract!');
 		    handleUnlockedMetaMask(null);
 		    return;
 		}
-		var sentMsgCtrBN = common.numberToBN(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
+		var sentMsgCtrBN = common.numberToBN(index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
 		sentMsgCtrBN.iaddn(1);
 		console.log('setReplyButtonHandlers: toPublicKey = ' + toPublicKey);
 		var ptk = dhcrypt.ptk(toPublicKey, toAddr, common.web3.eth.accounts[0], '0x' + sentMsgCtrBN.toString(16));
@@ -144,9 +145,9 @@ function setReplyButtonHandlers() {
 		var encrypted = dhcrypt.encrypt(ptk, message);
 		console.log('setReplyButtonHandlers: encrypted (length = ' + encrypted.length + ') = ' + encrypted);
 		//in order to figure the message fee we need to see how many messages have been sent from the proposed recipient to me
-		ether.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
+		mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
 		    console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
-		    var fee = (msgCount > 0) ? toAcctInfo[ether.ACCTINFO_MESSAGEFEE] : toAcctInfo[ether.ACCTINFO_SPAMFEE];
+		    var fee = (msgCount > 0) ? toAcctInfo[mtEther.ACCTINFO_MESSAGEFEE] : toAcctInfo[mtEther.ACCTINFO_SPAMFEE];
 		    console.log('fee is ' + fee + ' wei');
 		    //display "waiting for metamask" in case metamask dialog is hidden
 		    var metaMaskModal = document.getElementById('metaMaskModal');
@@ -202,8 +203,8 @@ function setValidateButtonHandler() {
 	    msgTextArea.value = 'Error: invalid Ethereum address.';
 	    replyButton.disabled = true;
 	} else {
-	    ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
-		var toPublicKey = (!!toAcctInfo) ? toAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+	    mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
+		var toPublicKey = (!!toAcctInfo) ? toAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
 		console.log('validateAddrButton.listener: toPublicKey: ' + toPublicKey);
 		if (!toPublicKey || toPublicKey == '0x') {
 		    msgTextArea.value = 'Error: no account was found for this address.';
@@ -216,10 +217,10 @@ function setValidateButtonHandler() {
 		    //in case user erases subject...
 		    msgTextArea.placeholder='Type your message here...';
 		    //see how many messages have been sent from the proposed recipient to me
-		    ether.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
+		    mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
 			console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
-			var fee = (msgCount > 0) ? toAcctInfo[ether.ACCTINFO_MESSAGEFEE] : toAcctInfo[ether.ACCTINFO_SPAMFEE];
-			msgFeeArea.value = 'Fee: ' + ether.convertWeiToComfort(common.web3, fee);
+			var fee = (msgCount > 0) ? toAcctInfo[mtEther.ACCTINFO_MESSAGEFEE] : toAcctInfo[mtEther.ACCTINFO_SPAMFEE];
+			msgFeeArea.value = 'Fee: ' + mtEther.convertWeiToComfort(common.web3, fee);
 		    });
 		}
 	    });
@@ -293,7 +294,7 @@ function setPrevNextButtonHandlers() {
 	}
     });
     index.nextMsgButtonFcn = () => {
-	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
 	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	if (index[msgNoCounter] < maxMsgNo) {
@@ -304,14 +305,14 @@ function setPrevNextButtonHandlers() {
     nextMsgButton.addEventListener('click', index.nextMsgButtonFcn);
     firstButton.addEventListener('click', function() {
 	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
 	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	index[msgNoCounter] = (maxMsgNo > 0) ? 1 : 0;
 	showMsgLoop(index.acctInfo);
     });
     lastButton.addEventListener('click', function() {
 	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
 	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	index[msgNoCounter] = maxMsgNo;
 	showMsgLoop(index.acctInfo);
@@ -339,7 +340,7 @@ function setPrevNextButtonHandlers() {
     prevUnreadButton.addEventListener('click', function() {
 	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	var msgNo = index[msgNoCounter];
-	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
 	var unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo - 1, 1, false);
 	if (unreadMsgNo > 0) {
 	    index[msgNoCounter] = unreadMsgNo;
@@ -349,7 +350,7 @@ function setPrevNextButtonHandlers() {
     nextUnreadButton.addEventListener('click', function() {
 	var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	var msgNo = index[msgNoCounter];
-	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
 	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	var unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
 	if (unreadMsgNo > 0) {
@@ -481,11 +482,11 @@ async function beginTheBeguine(mode) {
 		} else if (!!acct && ++count > 5 && !timerIsPaused()) {
 		    count = 0;
 		    console.log('MetaMask account unchanged...' + count);
-		    ether.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
-			var recvCntNew = parseInt(_acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT]);
-			var sentCntNew = parseInt(_acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
-			var recvCntOld = parseInt(index.acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT]);
-			var sentCntOld = parseInt(index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT]);
+		    mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
+			var recvCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+			var sentCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
+			var recvCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+			var sentCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
 			if (recvCntNew != recvCntOld) {
 			    console.log('beginTheBeguine(timer): recvCnt ' + recvCntOld + ' => ' + recvCntNew);
 			    beginTheBeguine('recv');
@@ -605,9 +606,9 @@ function handleUnlockedMetaMask(mode) {
 	var balanceETH = (balanceSzabo / ether.SZABO_PER_ETH).toFixed(6);
 	balanceArea.value = 'Balance: ' + balanceETH.toString(10) + ' Eth';
     });
-    ether.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
+    mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
 	index.acctInfo = _acctInfo;
-	index.publicKey = (!!index.acctInfo) ? index.acctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+	index.publicKey = (!!index.acctInfo) ? index.acctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
 	console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(index.acctInfo));
 	console.log('handleUnlockedMetaMask: publicKey: ' + index.publicKey);
 	if (!index.publicKey || index.publicKey == '0x') {
@@ -682,14 +683,14 @@ function handleRegisteredAcct(mode) {
     var registerButton = document.getElementById('registerButton');
     registerButton.textContent = 'Modify Account';
     var totalReceivedArea = document.getElementById('totalReceivedArea');
-    totalReceivedArea.value = 'Messages sent: ' + index.acctInfo[ether.ACCTINFO_SENTMESSAGECOUNT] + '; Messages received: ' + index.acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT];
+    totalReceivedArea.value = 'Messages sent: ' + index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT] + '; Messages received: ' + index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT];
     var feeBalanceArea = document.getElementById('feeBalanceArea');
-    var feebalanceWei = index.acctInfo[ether.ACCTINFO_FEEBALANCE];
+    var feebalanceWei = index.acctInfo[mtEther.ACCTINFO_FEEBALANCE];
     //console.log('feeBalanceWei = ' + feebalanceWei);
     feeBalanceArea.value = 'Unclaimed message fees: ' + ether.convertWeiToComfort(common.web3, feebalanceWei);
     //see if new messages have been received. if yes, display new message modal until user clicks anywhere outside
     var noRxMsgs = localStorage[index.localStoragePrefix + 'noRxMsgs'];
-    var currentNoRxMsgs = parseInt(index.acctInfo[ether.ACCTINFO_RECVMESSAGECOUNT]);
+    var currentNoRxMsgs = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
     var deltaRxMsgCount = currentNoRxMsgs - noRxMsgs;
     if (currentNoRxMsgs > 0 && deltaRxMsgCount > 0) {
 	var newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
@@ -708,7 +709,7 @@ function handleRegisteredAcct(mode) {
 	//display "waiting for metamask" in case metamask dialog is hidden
 	var metaMaskModal = document.getElementById('metaMaskModal');
 	metaMaskModal.style.display = 'block';
-	var encryptedPrivateKey = index.acctInfo[ether.ACCTINFO_ENCRYPTEDPRIVATEKEY];
+	var encryptedPrivateKey = index.acctInfo[mtEther.ACCTINFO_ENCRYPTEDPRIVATEKEY];
 	dhcrypt.initDH(encryptedPrivateKey, function(err) {
 	    metaMaskModal.style.display = 'none';
 	    if (!err)
@@ -793,8 +794,8 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	(index.listEntries[index.listIdx].div).className = 'msgListItemDiv';
     index.listIdx = -1;
     //
-    ether.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
-	var toPublicKey = (!!toAcctInfo) ? toAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+    mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
+	var toPublicKey = (!!toAcctInfo) ? toAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
 	if (!toPublicKey || toPublicKey == '0x') {
 	    msgTextArea.value = 'Error: no account was found for this address.';
 	    replyButton.disabled = true;
@@ -828,9 +829,9 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	var statusDiv = document.getElementById('statusDiv');
 	clearStatusDiv(statusDiv);
 	//fees: see how many messages have been sent from the proposed recipient to me
-	ether.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
+	mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
 	    console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
-	    var fee = (msgCount > 0) ? toAcctInfo[ether.ACCTINFO_MESSAGEFEE] : toAcctInfo[ether.ACCTINFO_SPAMFEE];
+	    var fee = (msgCount > 0) ? toAcctInfo[mtEther.ACCTINFO_MESSAGEFEE] : toAcctInfo[mtEther.ACCTINFO_SPAMFEE];
 	    msgFeeArea.value = 'Fee: ' + ether.convertWeiToComfort(common.web3, fee);
 	});
     });
@@ -840,7 +841,7 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 function handleRegister() {
     setMenuButtonState('importantInfoButton', 'Enabled');
     setMenuButtonState('registerButton',      'Selected');
-    var obfuscatedSecret = index.acctInfo[ether.ACCTINFO_OBFUSCATEDSECRET];
+    var obfuscatedSecret = index.acctInfo[mtEther.ACCTINFO_OBFUSCATEDSECRET];
     if (obfuscatedSecret != '0') {
 	setMenuButtonState('viewRecvButton',      'Enabled');
 	setMenuButtonState('composeButton',       'Enabled');
@@ -878,9 +879,9 @@ function handleRegister() {
     msgTextArea.className = (msgTextArea.className).replace('visibleIB', 'hidden');
     msgTextArea.disabled = true;
     var messageFeeInput = document.getElementById('messageFeeInput');
-    messageFeeInput.value = index.acctInfo[ether.ACCTINFO_MESSAGEFEE];
+    messageFeeInput.value = index.acctInfo[mtEther.ACCTINFO_MESSAGEFEE];
     var spamFeeInput = document.getElementById('spamFeeInput');
-    spamFeeInput.value = index.acctInfo[ether.ACCTINFO_SPAMFEE];
+    spamFeeInput.value = index.acctInfo[mtEther.ACCTINFO_SPAMFEE];
     var statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -907,7 +908,7 @@ function handleRegisterSubmit() {
     //display "waiting for metamask" in case metamask dialog is hidden
     var metaMaskModal = document.getElementById('metaMaskModal');
     metaMaskModal.style.display = 'block';
-    ether.register(common.web3, messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey, function(err, txid) {
+    mtEther.register(common.web3, messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey, function(err, txid) {
 	console.log('handleRegisterSubmit: err = ' + err);
 	console.log('handleRegisterSubmit: txid = ' + txid);
 	metaMaskModal.style.display = 'none';
@@ -959,7 +960,7 @@ function handleWithdraw() {
     //display "waiting for metamask" in case metamask dialog is hidden
     var metaMaskModal = document.getElementById('metaMaskModal');
     metaMaskModal.style.display = 'block';
-    ether.withdraw(common.web3, function(err, txid) {
+    mtEther.withdraw(common.web3, function(err, txid) {
 	console.log('txid = ' + txid);
 	metaMaskModal.style.display = 'none';
 	var statusDiv = document.getElementById('statusDiv');
@@ -1119,8 +1120,8 @@ function makeMsgList(msgNo, cb) {
     var batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
     var listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
     var firstMsgNo = batch * 10 + 1;
-    var getMsgLogFcn   = (index.listMode == 'recv') ? msgUtil.getRecvMsgLogs    : msgUtil.getSentMsgLogs;
-    var parseLogsFcn   = (index.listMode == 'recv') ? ether.parseMessageRxEvent : ether.parseMessageTxEvent;
+    var getMsgLogFcn   = (index.listMode == 'recv') ? msgUtil.getRecvMsgLogs      : msgUtil.getSentMsgLogs;
+    var parseLogsFcn   = (index.listMode == 'recv') ? mtEther.parseMessageRxEvent : mtEther.parseMessageTxEvent;
     getMsgLogFcn(common.web3.eth.accounts[0], batch, function(err, result) {
 	if (!!err || !result || result.length < listIdx + 1) {
 	    var msgTextArea = document.getElementById('msgTextArea');
@@ -1139,7 +1140,7 @@ function makeMsgList(msgNo, cb) {
 // make one entry of the sent message list
 // recursive fcn to populate the entire list
 //
-// parseFcn: ether.parseMessageTxEvent or ether.parseMessageRxEvent
+// parseFcn: mtEther.parseMessageTxEvent or mtEther.parseMessageRxEvent
 // result: array of logs (can be null)
 // listIdx: index into list (0 - 9)
 // msgNo: msgNo of this entry
@@ -1149,7 +1150,7 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
     var listTableBody = document.getElementById('listAreaDiv');
     console.log('makeMsgListEntry[' + listIdx + '] = msgNo(' + msgNo + '), result.length = ' + (!!result ? result.length : 0));
     if (!result || listIdx >= result.length) {
-	var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+	var acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
 	var maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	var addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
 	addToMsgList(listIdx, '', addr, '', '', '', '', listTableBody);
@@ -1252,7 +1253,7 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
 //
 function getCurMsgNo(acctInfo) {
     var msgNoCounter     = (index.listMode == 'recv') ? 'recvMessageNo'                 : 'sentMessageNo';
-    var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+    var acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
     var maxMsgNo = parseInt(acctInfo[acctInfoCountIdx]);
     if (index[msgNoCounter] == 0 && maxMsgNo > 0)
 	index[msgNoCounter] = 1;
@@ -1270,7 +1271,7 @@ function getCurMsgNo(acctInfo) {
 //
 var prevAndNextButtonHasOnClick = false;
 function showMsgLoop(acctInfo) {
-    var acctInfoCountIdx = (index.listMode == 'recv') ? ether.ACCTINFO_RECVMESSAGECOUNT : ether.ACCTINFO_SENTMESSAGECOUNT;
+    var acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
     var maxMsgNo = parseInt(acctInfo[acctInfoCountIdx]);
     var msgNo = getCurMsgNo(acctInfo);
     var prevMsgButton = document.getElementById('prevMsgButton');

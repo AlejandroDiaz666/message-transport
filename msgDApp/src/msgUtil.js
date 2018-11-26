@@ -4,6 +4,7 @@
 //
 var common = require('./common');
 var ether = require('./ether');
+var mtEther = require('./mtEther');
 var dhcrypt = require('./dhcrypt');
 var BN = require("bn.js");
 
@@ -33,8 +34,8 @@ var msgUtil = module.exports = {
 	const txOptions = {
 	    fromBlock: 0,
 	    toBlock: 'latest',
-	    address: ether.EMT_CONTRACT_ADDR,
-	    topics: [ether.getMessageTxEventTopic0(),
+	    address: mtEther.EMT_CONTRACT_ADDR,
+	    topics: [mtEther.getMessageTxEventTopic0(),
 		     '0x' + common.leftPadTo(fromAddr.substring(2), 64, '0'),
 		     '0x' + common.leftPadTo(batch.toString(16), 64, '0') ]
 	};
@@ -47,8 +48,8 @@ var msgUtil = module.exports = {
 	const rxOptions = {
 	    fromBlock: 0,
 	    toBlock: 'latest',
-	    address: ether.EMT_CONTRACT_ADDR,
-	    topics: [ether.getMessageRxEventTopic0(),
+	    address: mtEther.EMT_CONTRACT_ADDR,
+	    topics: [mtEther.getMessageRxEventTopic0(),
 		     '0x' + common.leftPadTo(toAddr.substring(2), 64, '0'),
 		     '0x' + common.leftPadTo(batch.toString(16), 64, '0') ]
 	};
@@ -64,8 +65,8 @@ var msgUtil = module.exports = {
 	const msgOptions = {
 	    fromBlock: 0,
 	    toBlock: 'latest',
-	    address: ether.EMT_CONTRACT_ADDR,
-	    topics: [ether.getMessageEventTopic0(), msgId ]
+	    address: mtEther.EMT_CONTRACT_ADDR,
+	    topics: [mtEther.getMessageEventTopic0(), msgId ]
 	};
 	ether.getLogs(msgOptions, function(err, msgResult) {
 	    if (!!err || !msgResult || msgResult.length == 0) {
@@ -75,7 +76,7 @@ var msgUtil = module.exports = {
 		cb(err, '', '', '', '', '', '', '', '', '', '');
 		return;
 	    }
-	    ether.parseMessageEvent(msgResult[0], cb);
+	    mtEther.parseMessageEvent(msgResult[0], cb);
 	});
     },
 
@@ -87,8 +88,8 @@ var msgUtil = module.exports = {
     //
     decryptMsg: function(otherAddr, fromAddr, toAddr, nonce, msgHex, cb) {
 	console.log('decryptMsg: otherAddr = ' + otherAddr);
-	ether.accountQuery(common.web3, otherAddr, function(err, otherAcctInfo) {
-	    var otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo[ether.ACCTINFO_PUBLICKEY] : null;
+	mtEther.accountQuery(common.web3, otherAddr, function(err, otherAcctInfo) {
+	    var otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
 	    if (!!otherPublicKey && otherPublicKey != '0x') {
 		console.log('decryptMsg: otherPublicKey = ' + otherPublicKey);
 		var ptk = dhcrypt.ptk(otherPublicKey, toAddr, fromAddr, nonce);
