@@ -1,12 +1,12 @@
 :root {
---clr_maintitletext: white;
---clr_bodybg: #6495ED;
---clr_border : 	#00008B; /*#7FFFD4;  */
---clr_buttonbg :  white;  /*#4CAF50; */
---clr_buttonbgsel :  rgb(175, 180, 183);  /*#4CAF50; */
---clr_buttontext : #00008B;
---clr_areabg1: #e3eceb;
---clr_areatext : #00008B;
+--clr_maintitletext: #202020;
+--clr_bodybg: #e0e0e0;
+--clr_border : 	#d9d9d9;
+--clr_buttonbg :  #e8f0f0;
+--clr_buttonbgsel :  rgb(175, 180, 183);
+--clr_buttontext : #202020;
+--clr_areabg1: #e8f0f0;
+--clr_areatext : #202020;
 }
 
 
@@ -186,7 +186,7 @@ p {
     margin: 5px;
     width: 15%;
     height: 80%;
-    padding : 10px;
+    padding : 1px;
     border: none;
     color: var(--clr_buttontext);
     text-align: center;
@@ -314,8 +314,8 @@ p {
 */
 #msgAreaDiv  {
     display: block;
-    padding: 20px;
-    margin-top: 30px;
+    padding: 15px;
+    margin-top: 15px;
     margin-left: 0px;
     margin-right: auto;
     background-color: var(--clr_border);
