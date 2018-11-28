@@ -455,12 +455,11 @@
     .image-intro0 {
 	width: 125px;
 	height: 105px;
-	transform: translate3d(-504px, -246px, 0px);
+	transform: translate3d(-504px, -240px, 0px);
     }
     .heading-title-intro0, .heading-title-intro1, .heading-title-intro3 {
         width: 296px;
         height: 48px;
-        /* transform-origin: 148.187px 21.4718px 0px; */
         font-size: 19px;
         text-align: center;
         left: 12px;
@@ -475,37 +474,55 @@
         transform-origin: 147.966px 15.5072px 0px;
     }
     .image-intro1 {
-        width: 231px;
-        height: 150px;
-        transform-origin: 115.614px 74.4485px 0px;
+	width: 169px;
+	height: 101px;
         left: 50%;
         top: 50%;
         transform: translate3d(-117px, -235px, 0px);
         transform-style: preserve-3d;
+	display: none;
     }
     .para1-intro0 {
         font-size: 14px;
         left: 15px;
-        top: 310px;
+        top: 167px;
         width: 295px;
         height: 53px;
-        transform-origin: 147.746px 26.4106px 0px;
     }
     .para2-intro0 {
         font-size: 14px;
         width: 294px;
         height: 58px;
-        /* transform-origin: 146.869px 29.1037px 0px; */
-        transform: translate3d(15px, 44px, 0px);
+        transform: translate3d(15px, 175px, 0px);
+        transform-style: preserve-3d;
+    }
+    .note-text-intro0 {
+        font-size: 12px;
+        left: 18px;
+        width: 290px;
+        height: 61px;
+        top: 387px;
+    }
+    .note-bg-intro0 {
+        width: 327px;
+        height: 85px;
+        transform: translate3d(0px, 73px, 0px);
         transform-style: preserve-3d;
     }
     .para1-intro1 {
-	width: 355px;
+	width: 324px;
 	height: 185px;
 	font-family: Lato;
-	font-size: 15px;
-	left: -4px;
-	top: 208px;
+	font-size: 11px;
+	left: 0px;
+	top: 59px;
+    }
+    .para2-intro1 {
+	width: 324px;
+	height: 185px;
+	font-size: 11px;
+	transform-style: preserve-3d;
+	transform: translate3d(0px, -51px, 0px);
     }
     .para1-intro2 {
         text-align: justify;
@@ -540,30 +557,19 @@
         width: 276px;
         transform: translate3d(22px, -212px, 0px);
     }
-    .note-text-intro0 {
-        font-size: 12px;
-        left: 18px;
-        width: 290px;
-        height: 61px;
-        top: 421px;
-    }
-    .note-bg-intro0 {
-        width: 327px;
-        height: 85px;
-        transform: translate3d(0px, 107px, 0px);
-        transform-style: preserve-3d;
-    }
     .note-text-intro1 {
 	left: 20px;
 	top: 401px;
 	font-family: Lato;
 	font-size: 14px;
 	width: 288px;
+	display: none;
     }
     .note-bg-intro1 {
 	transform: translate3d(16px, 92px, 0px);
 	width: 298px;
         height: 79px;
+	display: none;
     }
     .heading-para1-intro4 {
         font-size: 15px;
