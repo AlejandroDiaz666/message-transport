@@ -11,7 +11,8 @@
 
 
 body {
-    padding: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
     margin: 0px;
     background: var(--clr_bodybg);
     font-family: 'Roboto', sans-serif;
@@ -136,14 +137,14 @@ p {
     display: block;
     font-family: 'Lato', sans-serif;
     background-color: var(--clr_areabg1);
-    margin-top:0px;
+    margin: 5px;
 }
 
 #mainTitleSpan {
     float: left;
     margin-left: 20px;
-	color: var(--clr_maintitletext);
-	font-style: italic;
+    color: var(--clr_maintitletext);
+    font-style: italic;
 }
 
 #networkAreaDiv, #accountAreaDiv, #balanceAreaDiv, #totalReceivedAreaDiv, #feeBalanceAreaDiv  {
