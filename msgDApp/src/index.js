@@ -154,7 +154,7 @@ function setReplyButtonHandlers() {
 		    metaMaskModal.style.display = 'block';
 		    var msgRefButton = document.getElementById('msgRefButton');
 		    var ref = msgRefButton.ref;
-		    ether.sendMessage(common.web3, toAddr, mimeType, ref, encrypted, fee, function(err, txid) {
+		    mtEther.sendMessage(common.web3, toAddr, mimeType, ref, encrypted, fee, function(err, txid) {
 			console.log('txid = ' + txid);
 			metaMaskModal.style.display = 'none';
 			var statusDiv = document.getElementById('statusDiv');
