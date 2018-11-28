@@ -18,11 +18,14 @@ bundle/dhcrypt.js: src/dhcrypt.js bundle/common.js
 bundle/ether.js: src/ether.js bundle/common.js
 	browserify src/ether.js -o bundle/ether.js
 
+bundle/mtEther.js: src/mtEther.js bundle/common.js
+	browserify src/mtEther.js -o bundle/mtEther.js
+
 bundle/msgUtil.js: src/msgUtil.js bundle/ether.js bundle/common.js bundle/dhcrypt.js
 	browserify src/msgUtil.js -o bundle/msgUtil.js
 
-bundle/index.js: src/index.js bundle/ether.js bundle/dhcrypt.js bundle/msgUtil.js bundle/common.js
+bundle/index.js: src/index.js bundle/ether.js bundle/mtEther.js bundle/dhcrypt.js bundle/msgUtil.js bundle/common.js
 	browserify src/index.js -o bundle/index.js
 
-fake:	bundle/index.js bundle/common.js bundle/dhcrypt.js bundle/ether.js bundle/SVGAnimation.js src/style.css src/intro.css
+fake:	bundle/index.js bundle/SVGAnimation.js src/style.css src/intro.css
 	./set_timestamp.sh

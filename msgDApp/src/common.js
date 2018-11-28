@@ -2,6 +2,7 @@
  * common functions -- no local dependancies here!
  */
 var BN = require("bn.js");
+var Buffer = require('buffer/').Buffer;
 
 var common = module.exports = {
 
@@ -91,7 +92,7 @@ var common = module.exports = {
 
 
     hexToBytes: function(hexStr) {
-	console.log('hexToAscii');
+	//console.log('hexToBytes: ' + hexStr);
 	//first ensure passed parm is a string
 	var hex = hexStr.toString();
 	if (hex.startsWith('0x'))
@@ -102,17 +103,37 @@ var common = module.exports = {
 	return bytes;
     },
 
+    bytesToHex: function(byteArray) {
+	var hex = Array.from(byteArray, function(byte) {
+	    return('0' + (byte & 0xFF).toString(16)).slice(-2);
+	}).join('')
+	//console.log('bytesToHex: ' + hex);
+	return(hex);
+    },
 
-    bytesToHex: function(bytesStr) {
-	console.log('bytesToHex');
-	//first ensure passed parm is a string
-	var hex = hexStr.toString();
-	if (hex.startsWith('0x'))
-	    hex = hex.substring(2);
-	var bytes = new Uint8Array(hex.length / 2);
-	for (var i = 0, j = 0; i < hex.length; i += 2)
-	    bytes[j++] = parseInt(hex.substr(i, 2), 16);
-	return bytes;
+
+    strToUtf8Bytes: function(str) {
+	//javascript encodes strings as UCS2... convert to a buffer of UTF8
+	var utf8Buf = Buffer.from(str, 'utf8');
+	return(utf8Buf);
+    },
+
+    Utf8BytesToStr: function(utf8Bytes) {
+	//javascript encodes strings as UCS2, so convert from UTF8
+	var utf8Buf = Buffer.from(utf8Bytes);
+	return(utf8Buf.toString('utf8'));
+    },
+
+    strToUtf8Hex: function(str) {
+	//javascript encodes strings as UCS2, so for convert to a buffer of UTF8
+	var utf8Buf = Buffer.from(str, 'utf8');
+	return(common.bytesToHex(utf8Buf));
+    },
+
+    Utf8HexToStr: function(utf8Hex) {
+	//javascript encodes strings as UCS2. use Buffer.toString to convert from utf8
+	var utf8Buf = Buffer.from(common.hexToBytes(utf8Hex));
+	return(utf8Buf.toString('utf8'));
     },
 
 
@@ -123,6 +144,46 @@ var common = module.exports = {
 	    hex = hex.substring(2);
 	var base64String = Buffer.from(hex, 'hex').toString('base64');
 	return(base64String);
+    },
+
+
+    // html image data used for img tag (<img src='image-data'>) is eg.
+    //  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAMAAAC5zwKfAAACx1BMV...'
+    // that is, ~20 bytes of text, followed by a comma, followed by base64 data. while we could store the whole thing as utf8,
+    // that would be wasteful. so we we create our own custom format. the first byte is the length of the text (utf data), up
+    // to and including the comma. followed by the utf8 encoded text, followed by the image data as a byte-stream.
+    imageToBytes: function(image) {
+	//console.log('imageToBytes: image = ' + image);
+	var utf8Len = image.indexOf(',') + 1;
+	var utf8Str = image.substring(0, utf8Len);
+	//console.log('imageToBytes: utf8Str = ' + utf8Str);
+	var utf8Bytes = new Uint8Array(Buffer.from(utf8Str, 'utf8'));
+	var base64Str = image.substring(utf8Len);
+	var imageBuf = Buffer.from(base64Str, 'base64')
+	//every 4 base64 chars is 24 bits
+	var bytes = new Uint8Array(1 + utf8Len + (base64Str.length / 4) * 3);
+	bytes.set([ utf8Len ]);
+	bytes.set(utf8Bytes, 1);
+	bytes.set(imageBuf, 1 + utf8Bytes.length);
+	//console.log('imageToBytes: bytes = ' + bytes);
+	//console.log('imageToBytes: bytes.length = ' + bytes.length);
+	return(bytes);
+    },
+
+    bytesToImage: function(bytes) {
+	var utf8Bytes = bytes.slice(1, bytes[0] + 1);
+	var utf8Str = Buffer.from(utf8Bytes).toString('utf8');
+	//console.log('bytesToImage: utf8Str = ' + utf8Str);
+	var imageBytes = bytes.slice(bytes[0] + 1);
+	var base64Str = Buffer.from(imageBytes).toString('base64');
+	var image = utf8Str + base64Str;
+	//console.log('bytesToImage: image = ' + image);
+	return(image);
+    },
+
+    hexToImage: function(utf8Hex) {
+	var utf8Buf = Buffer.from(common.hexToBytes(utf8Hex));
+	return(common.bytesToImage(utf8Buf));
     },
 
     leftPadTo: function(str, desiredLen, ch) {
