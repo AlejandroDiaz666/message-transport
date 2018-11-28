@@ -171,8 +171,8 @@
 }
 .image-intro0 {
     position: absolute;
-    width: 233px;
-    height: 313px;
+    width: 250px;
+    height: 210px;
     left: 550px;
     top: 50%;
     transform-style: preserve-3d;
@@ -182,8 +182,6 @@
 }
 .image-intro1 {
     position: absolute;
-    width: 450px;
-    height: 271px;
     left: 550px;
     top: 50%;
     transform-style: preserve-3d;
@@ -455,7 +453,8 @@
         transform-style: preserve-3d;
     }
     .image-intro0 {
-	height: 250px;
+	width: 125px;
+	height: 105px;
 	transform: translate3d(-504px, -246px, 0px);
     }
     .heading-title-intro0, .heading-title-intro1, .heading-title-intro3 {
@@ -842,11 +841,15 @@
         transform: translate3d(-426px, -245px, 0px);
         transform-style: preserve-3d;
     }
+    .image-intro0 {
+	width: 188px;
+	height: 158px;
+	transform: translate3d(-504px, -78px, 0px);
+    }
     .image-intro1 {
-        width: 299px;
-        height: 194px;
-        transform-origin: 149.582px 96.8084px 0px;
-        transform: translate3d(-471px, -91px, 0px);
+	width: 169px;
+	height: 101px;
+        transform: translate3d(-521px, 52px, 0px);
         transform-style: preserve-3d;
     }
     .heading-title-intro0, .heading-title-intro1 {
@@ -875,29 +878,45 @@
         top: 32px;
     }
     .para1-intro0 {
-        width: 393px;
-        height: 58px;
-        transform-origin: 196.7px 29.2019px 0px;
-        left: 418px;
-        top: 93px;
+        width: 521px;
+        height: 177px;
+        left: 289px;
+        top: 81px;
+        font-size: 16px;
     }
     .para2-intro0 {
-        width: 392px;
+        width: 521px;
         height: 77px;
-        transform-origin: 196.089px 38.3331px 0px;
-        transform: translate3d(420px, -92px, 0px);
+        transform: translate3d(289px, 113px, 0px);
         transform-style: preserve-3d;
-    }
-    .heading-title-intro1 {
-	top: 48px;
-	left: 183px;
+        font-size: 16px;
     }
     .para1-intro1 {
-        width: 393px;
-        height: 58px;
-        transform-origin: 196.7px 29.2019px 0px;
-        left: 370px;
-        top: 85px;
+        width: 598px;
+        height: 208px;
+        left: 7px;
+        top: 64px;
+	font-size: 14px;
+    }
+    .para2-intro1 {
+	height: 77px;
+	width: 603px;
+	font-size: 14px;
+	transform-style: preserve-3d;
+	transform: translate3d(201px, -11px, 0px);
+    }
+    .note-text-intro1 {
+        font-size: 14px;
+        width: 265px;
+        height: 95px;
+        top: 119px;
+        left: 570px;
+    }
+    .note-bg-intro1 {
+        width: 279px;
+        height: 92px;
+        transform: translate3d(563px, -130px, 0px);
+        transform-style: preserve-3d;
     }
     .heading-para1-intro2 {
         width: 393px;
@@ -944,32 +963,15 @@
     }
     .note-text-intro0 {
         font-size: 16px;
-        width: 357px;
+        width: 405px;
         height: 95px;
-        transform-origin: 178.504px 47.5302px 0px;
-        top: 241px;
-        left: 439px;
+        top: 270px;
+        left: 364px;
     }
     .note-bg-intro0 {
-        width: 378px;
-        height: 106px;
-        transform-origin: 189.21px 52.5066px 0px;
-        transform: translate3d(429px, -12px, 0px);
-        transform-style: preserve-3d;
-    }
-    .note-text-intro1 {
-        font-size: 16px;
-        width: 357px;
-        height: 95px;
-        transform-origin: 178.504px 47.5302px 0px;
-        top: 318px;
-        left: 389px;
-    }
-    .note-bg-intro1 {
-        width: 378px;
-        height: 106px;
-        transform-origin: 189.21px 52.5066px 0px;
-        transform: translate3d(380px, 60px, 0px);
+        width: 425px;
+        height: 93px;
+        transform: translate3d(354px, 17px, 0px);
         transform-style: preserve-3d;
     }
     .next-btn-bg-intro0 {
