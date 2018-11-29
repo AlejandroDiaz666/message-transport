@@ -150,7 +150,12 @@ p {
 
 #optionsButtonDiv {
     float:right;
-    margin: 2px;
+}
+#optionsButton {
+    width: 30px;
+    height: 30px;
+    position: relative;
+    top: 70px;
 }
 #tabularArea {
     float:right;
