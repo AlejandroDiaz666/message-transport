@@ -1,13 +1,3 @@
-:root {
---clr_maintitletext: white;
---clr_bodybg: #6495ED;
---clr_border : #00008B;
---clr_buttonbg : white;
---clr_buttonbgsel : rgb(175, 180, 183);
---clr_buttontext : #00008B;
---clr_areabg1: #e3eceb;
---clr_areatext : #00008B;
-}
 
 
 body {
@@ -201,7 +191,7 @@ p {
     margin: 5px;
     width: 15%;
     height: 80%;
-    padding : 10px;
+    padding : var(--pad_menubar);
     border: none;
     color: var(--clr_buttontext);
     text-align: center;
@@ -329,8 +319,8 @@ p {
 */
 #msgAreaDiv  {
     display: block;
-    padding: 20px;
-    margin-top: 30px;
+    padding: var(--pad_msgAreaDiv);
+    margin-top: var(--martop_msgAreaDiv);
     margin-left: 0px;
     margin-right: auto;
     background-color: var(--clr_border);

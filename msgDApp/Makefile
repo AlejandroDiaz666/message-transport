@@ -1,31 +1,31 @@
+SRCDIR := src
+CSSDIR := css
+BUNDLEDIR := bundle
+JSSRCFILES := $(wildcard $(SRCDIR)/*.js)
+BUNDLEFILES := $(patsubst $(SRCDIR)/%.js,$(BUNDLEDIR)/%.js,$(JSSRCFILES))
+CSSTHEMEFILES := $(wildcard $(SRCDIR)/*-theme.css)
+CSSSTYLEFILES := $(patsubst $(SRCDIR)/%-theme.css,$(CSSDIR)/%-style.css,$(CSSTHEMEFILES))
+CSSFILES := $(CSSDIR)/intro.css $(CSSSTYLEFILES)
 
-ALL:	bundle/index.js         \
-	bundle/dhcrypt.js       \
-	bundle/ether.js         \
-	bundle/msgUtil.js       \
-	bundle/common.js        \
-	fake
 
-bundle/SVGAnimation.js: src/SVGAnimation.js
-	browserify src/SVGAnimation.js -o bundle/SVGAnimation.js
+all:	$(BUNDLEFILES) \
+	$(CSSFILES)
+	@echo $(CSSSTYLEFILES)
+	./set_timestamp.sh
 
-bundle/common.js: src/common.js
-	browserify src/common.js -o bundle/common.js
+clean:
+	rm -f css/*
+	rm -f bundle/*
 
-bundle/dhcrypt.js: src/dhcrypt.js bundle/common.js
-	browserify src/dhcrypt.js -o bundle/dhcrypt.js
+$(CSSDIR)/intro.css : $(SRCDIR)/intro.css
+	if [ ! -d css ]; then mkdir css; fi
+	cp $< $@
 
-bundle/ether.js: src/ether.js bundle/common.js
-	browserify src/ether.js -o bundle/ether.js
+$(CSSDIR)/%-style.css : $(SRCDIR)/%-theme.css
+	cat $< > $@
+	cat $(SRCDIR)/style.css >> $@
 
-bundle/mtEther.js: src/mtEther.js bundle/common.js
-	browserify src/mtEther.js -o bundle/mtEther.js
-
-bundle/msgUtil.js: src/msgUtil.js bundle/ether.js bundle/common.js bundle/dhcrypt.js
-	browserify src/msgUtil.js -o bundle/msgUtil.js
+$(BUNDLEDIR)/%.js : $(SRCDIR)/%.js
+	browserify $< -o $@
 
 bundle/index.js: src/index.js bundle/ether.js bundle/mtEther.js bundle/dhcrypt.js bundle/msgUtil.js bundle/common.js
-	browserify src/index.js -o bundle/index.js
-
-fake:	bundle/index.js bundle/SVGAnimation.js src/style.css src/intro.css
-	./set_timestamp.sh

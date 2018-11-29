@@ -45,10 +45,10 @@ var index = module.exports = {
 	var optionsButton = document.getElementById('optionsButton');
 	optionsButton.addEventListener('click', function() {
 	    var themedStyle = document.getElementById('themedStyle');
-	    if (themedStyle.href.indexOf('style') >= 0)
-		themedStyle.href = themedStyle.href.replace('style', 'marys-theme');
+	    if (themedStyle.href.indexOf('marys-style') >= 0)
+		themedStyle.href = themedStyle.href.replace('marys-style', 'wandas-style');
 	    else
-		themedStyle.href = themedStyle.href.replace('marys-theme', 'style');
+		themedStyle.href = themedStyle.href.replace('wandas-style', 'marys-style');
 	});
 	//
 	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')

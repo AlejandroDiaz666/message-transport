@@ -7,6 +7,9 @@
     --clr_buttontext : #202020;
     --clr_areabg1: #e8f0f0;
     --clr_areatext : #202020;
+    --pad_menubar : 1px;
+    --martop_msgAreaDiv : 15px;
+    --pad_msgAreaDiv : 15px;
 }
 
 
@@ -201,7 +204,7 @@ p {
     margin: 5px;
     width: 15%;
     height: 80%;
-    padding : 1px;
+    padding : var(--pad_menubar);
     border: none;
     color: var(--clr_buttontext);
     text-align: center;
@@ -329,8 +332,8 @@ p {
 */
 #msgAreaDiv  {
     display: block;
-    padding: 15px;
-    margin-top: 15px;
+    padding: var(--pad_msgAreaDiv);
+    margin-top: var(--martop_msgAreaDiv);
     margin-left: 0px;
     margin-right: auto;
     background-color: var(--clr_border);
