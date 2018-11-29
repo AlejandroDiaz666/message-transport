@@ -54,7 +54,7 @@ var index = module.exports = {
 	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')
 	if (!!msgNo)
 	    index['recvMessageNo'] = parseInt(msgNo);
-	beginTheBeguine(null);
+	beginTheBeguine('startup');
     },
 
 };
@@ -465,7 +465,7 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 
 
 //
-// mode = [ 'send' | 'recv' | null ]
+// mode = [ 'startup' | 'send' | 'recv' | null ]
 //
 var timerIsPaused = () => {
     var viewRecvButton = document.getElementById('viewRecvButton');
@@ -590,6 +590,9 @@ function handleLockedMetaMask(err) {
 // note: after a transaction is completed we come back to this fcn. the mode parm provides a hint so that
 // we can continue with a relevant part of the display.
 //
+// mode = [ 'startup' | 'send' | 'recv' | null ]
+// startup is converted to recv, but we initialize the current rx msg to first unread.
+//
 function handleUnlockedMetaMask(mode) {
     console.log('handleUnlockedMetaMask: mode = ' + mode);
     //we can be called from the 'continue' link in waitForTXID, so clear waiting flag. this re-enables the interval
@@ -620,11 +623,19 @@ function handleUnlockedMetaMask(mode) {
     mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
 	index.acctInfo = _acctInfo;
 	index.publicKey = (!!index.acctInfo) ? index.acctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
-	console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(index.acctInfo));
-	console.log('handleUnlockedMetaMask: publicKey: ' + index.publicKey);
+	//console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(index.acctInfo));
+	//console.log('handleUnlockedMetaMask: publicKey: ' + index.publicKey);
 	if (!index.publicKey || index.publicKey == '0x') {
 	    handleUnregisteredAcct();
 	} else {
+	    if (mode == 'startup') {
+		var msgNo = index['recvMessageNo'];
+		var maxMsgNo = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+		var unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
+		console.log('handleUnlockedMetaMask: unreadMsgNo = ' + unreadMsgNo);
+		index['recvMessageNo'] = (unreadMsgNo < 0) ? maxMsgNo : unreadMsgNo;
+		mode = 'recv';
+	    }
 	    handleRegisteredAcct(mode);
 	}
     });

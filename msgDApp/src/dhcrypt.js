@@ -35,8 +35,8 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 	//we use a known safe prime and generator.
 	var primeBN = new BN(dhcrypt.PRIME_2048, 16);
 	var dh = crypto.createDiffieHellman(primeBN.toString(16), 'hex', '02', 'hex');
-	console.log('dhcrypt.initDH: prime: ' + dh.getPrime('hex'));
-	console.log('dhcrypt.initDH: generator: ' + dh.getGenerator('hex'));
+	//console.log('dhcrypt.initDH: prime: ' + dh.getPrime('hex'));
+	//console.log('dhcrypt.initDH: generator: ' + dh.getGenerator('hex'));
 	signatureFromAcct(function(err, signature) {
 	    if (!!err) {
 		cb(err, null);
@@ -118,11 +118,11 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 	    encrypted = encrypted.substring(2);
 	var message = 'Unable to decrypt message';
 	try {
-	    console.log('decyrpt: encrypted = ' + encrypted);
+	    //console.log('decyrpt: encrypted = ' + encrypted);
 	    const decipher = crypto.createDecipher('aes256', ptk);
 	    var message = decipher.update(encrypted, 'hex', 'utf8');
 	    message += decipher.final('utf8');
-	    console.log('decyrpt: message = ' + message);
+	    //console.log('decyrpt: message = ' + message);
 	} catch (err) {
 	    message = err + '\n' + encrypted;
 	    console.log('decyrpt: err = ' + err);
@@ -151,7 +151,7 @@ function signatureFromAcct(cb) {
 	    cb(err, null);
 	} else {
 	    //signature is 65 bytes (520 bits)
-	    console.log('dhcrypt.signatureFromAcct: signature (' + signature.length + '): ' + signature);
+	    //console.log('dhcrypt.signatureFromAcct: signature (' + signature.length + '): ' + signature);
 	    if (signature.startsWith('0x'))
 		signature = signature.substring(2);
 	    cb(null, signature);
