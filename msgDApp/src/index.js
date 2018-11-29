@@ -231,7 +231,7 @@ function setValidateButtonHandler() {
 		    mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
 			console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
 			var fee = (msgCount > 0) ? toAcctInfo[mtEther.ACCTINFO_MESSAGEFEE] : toAcctInfo[mtEther.ACCTINFO_SPAMFEE];
-			msgFeeArea.value = 'Fee: ' + mtEther.convertWeiToComfort(common.web3, fee);
+			msgFeeArea.value = 'Fee: ' + ether.convertWeiToComfort(common.web3, fee);
 		    });
 		}
 	    });
