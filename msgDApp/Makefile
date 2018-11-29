@@ -21,7 +21,7 @@ $(CSSDIR)/intro.css : $(SRCDIR)/intro.css
 	if [ ! -d css ]; then mkdir css; fi
 	cp $< $@
 
-$(CSSDIR)/%-style.css : $(SRCDIR)/%-theme.css
+$(CSSDIR)/%-style.css : $(SRCDIR)/%-theme.css $(SRCDIR)/style.css
 	cat $< > $@
 	cat $(SRCDIR)/style.css >> $@
 
