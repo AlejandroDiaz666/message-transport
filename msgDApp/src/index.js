@@ -40,6 +40,17 @@ var index = module.exports = {
 	setMsgRefButtonHandler();
 	setMarkReadButtonHandler();
 	setPrevNextButtonHandlers();
+
+	// temporary theme switcher
+	var optionsButton = document.getElementById('optionsButton');
+	optionsButton.addEventListener('click', function() {
+	    var themedStyle = document.getElementById('themedStyle');
+	    if (themedStyle.href.indexOf('style') >= 0)
+		themedStyle.href = themedStyle.href.replace('style', 'marys-theme');
+	    else
+		themedStyle.href = themedStyle.href.replace('marys-theme', 'style');
+	});
+	//
 	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')
 	if (!!msgNo)
 	    index['recvMessageNo'] = parseInt(msgNo);
