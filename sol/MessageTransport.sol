@@ -1,9 +1,9 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.0;
 
 // ---------------------------------------------------------------------------
 //  Message_Transport
 // ---------------------------------------------------------------------------
-contract K_Message_Transport {
+contract A_MT {
 
   // -------------------------------------------------------------------------
   // events
@@ -43,7 +43,7 @@ contract K_Message_Transport {
   // data storage
   // -------------------------------------------------------------------------
   bool public isLocked;
-  address public owner;
+  address payable public owner;
   address public communityAddr;
   uint messageCount;
   uint communityBalance;
@@ -72,8 +72,9 @@ contract K_Message_Transport {
   // -------------------------------------------------------------------------
   //  EMS constructor
   // -------------------------------------------------------------------------
-  constructor() public {
+  constructor(address _communityAddr) public {
     owner = msg.sender;
+    communityAddr = _communityAddr;
   }
   function setTrust(address _trustedAddr, bool _trust) public ownerOnly {
     trusted[_trustedAddr] = _trust;
@@ -89,7 +90,7 @@ contract K_Message_Transport {
   // -------------------------------------------------------------------------
   // register a simple message account
   // -------------------------------------------------------------------------
-  function register(uint256 _messageFee, uint256 _spamFee, bytes _publicKey, bytes _encryptedPrivateKey) public {
+  function register(uint256 _messageFee, uint256 _spamFee, bytes memory _publicKey, bytes memory _encryptedPrivateKey) public {
     Account storage _account = accounts[msg.sender];
     _account.messageFee = _messageFee;
     _account.spamFee = _spamFee;
@@ -132,7 +133,7 @@ contract K_Message_Transport {
   // -------------------------------------------------------------------------
   // send message
   // -------------------------------------------------------------------------
-  function sendMessage(address _toAddr, uint mimeType, uint _ref, bytes _message) public payable returns (uint _messageId) {
+  function sendMessage(address _toAddr, uint mimeType, uint _ref, bytes memory _message) public payable returns (uint _messageId) {
     Account storage _sendAccount = accounts[msg.sender];
     Account storage _recvAccount = accounts[_toAddr];
     //require(_sendAccount.publicKey != 0);
@@ -162,7 +163,7 @@ contract K_Message_Transport {
     _recvAccount.peerRecvMessageCount[msg.sender] += 1;
   }
 
-  function sendMessage(address _fromAddr, address _toAddr, uint mimeType, uint _ref, bytes _message) public payable trustedOnly returns (uint _messageId) {
+  function sendMessage(address _fromAddr, address _toAddr, uint mimeType, uint _ref, bytes memory _message) public payable trustedOnly returns (uint _messageId) {
     Account storage _sendAccount = accounts[_fromAddr];
     Account storage _recvAccount = accounts[_toAddr];
     //require(_sendAccount.publicKey != 0);
@@ -210,7 +211,8 @@ contract K_Message_Transport {
   function withdrawCommunityFunds() public {
     uint _amount = communityBalance;
     communityBalance = 0;
-    if (!communityAddr.call.gas(contractSendGas).value(_amount)())
+    (bool success, ) = communityAddr.call.gas(contractSendGas).value(_amount)("");
+    if (!success)
       revert();
   }
 
