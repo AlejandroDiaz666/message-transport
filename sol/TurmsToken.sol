@@ -10,7 +10,7 @@ pragma solidity ^0.5.0;
  * constructor, and initially owned by the contract owner. Dividends are awarded token holders thusly:
  *
  *   previous_due + [ p(x) * t(x)/N ] + [ p(x+1) * t(x+1)/N ] + ...
- *   where p(x) is the x'th payment received by the contract
+ *   where p(x) is the x'th income payment received by the contract
  *         t(x) is the number of tokens held by the token-holder at the time of p(x)
  *         N    is the total number of tokens, which never changes
  *
@@ -23,37 +23,37 @@ pragma solidity ^0.5.0;
  *
  * or
  *
- *   current_due = { (t(a) * period_a_fees) +
- *                   (t(b) * period_b_fees) +
- *                   (t(c) * period_c_fees) } / N
+ *   current_due = { (t(a) * period_a_income) +
+ *                   (t(b) * period_b_income) +
+ *                   (t(c) * period_c_income) } / N
  *
  * if we designate current_due * N as current-points, then
  *
- *   currentPoints = {  (t(a) * period_a_fees) +
- *                      (t(b) * period_b_fees) +
- *                      (t(c) * period_c_fees) }
+ *   currentPoints = {  (t(a) * period_a_income) +
+ *                      (t(b) * period_b_income) +
+ *                      (t(c) * period_c_income) }
  *
  * or more succictly, if we recompute current points before a token-holder's number of
  * tokens, T, is about to change:
  *
- *   currentPoints = previous_points + (T * current-period-fees)
+ *   currentPoints = previous_points + (T * current-period-income)
  *
  * when we want to do a payout, we'll calculate:
  *  current_due = current-points / N
  *
  * we'll keep track of a token-holder's current-period-points, which is:
- *   T * current-period-fees
- * by taking a snapshot of fees collected exactly when the current period began; that is, the when the
- * number of tokens last changed. that is, we keep a running count of total fees received
+ *   T * current-period-income
+ * by taking a snapshot of income collected exactly when the current period began; that is, the when the
+ * number of tokens last changed. that is, we keep a running count of total income received
  *
- *   totalFeesReceived = p(x) + p(x+1) + p(x+2)
+ *   totalIncomeReceived = p(x) + p(x+1) + p(x+2)
  *
  * (which happily is the same for all token holders) then, before any token holder changes their number of
  * tokens we compute (for that token holder):
  *
  *  function calcCurPointsForAcct(acct) {
- *    currentPoints[acct] += (totalFeesReceived - lastSnapshot[acct]) * T[acct]
- *    lastSnapshot[acct] = totalFeesReceived
+ *    currentPoints[acct] += (totalIncomeReceived - lastSnapshot[acct]) * T[acct]
+ *    lastSnapshot[acct] = totalIncomeReceived
  *  }
  *
  * in the withdraw fcn, all we need is:
@@ -71,7 +71,7 @@ import './iERC20Token.sol';
 import './iDividendToken.sol';
 
 
-contract XTTA is iERC20Token, iDividendToken, SafeMath {
+contract TTA is iERC20Token, iDividendToken, SafeMath {
 
   event PaymentEvent(address indexed from, uint amount);
   event TransferEvent(address indexed from, address indexed to, uint amount);
@@ -90,7 +90,7 @@ contract XTTA is iERC20Token, iDividendToken, SafeMath {
   uint    public decimals;
   uint           tokenSupply;
   uint public    holdoverBalance;                            // funds received, but not yet distributed
-  uint public    totalFeesReceived;
+  uint public    totalIncomeReceived;
 
   mapping (address => mapping (address => uint)) approvals;  //transfer approvals, from -> to
   mapping (address => tokenHolder) public tokenHolders;
@@ -144,7 +144,7 @@ contract XTTA is iERC20Token, iDividendToken, SafeMath {
       calcCurPointsForAcct(msg.sender);
       tokenHolders[msg.sender].tokens -= _value;
       if (tokenHolders[_to].lastSnapshot == 0)
-	tokenHolders[_to].lastSnapshot = totalFeesReceived;
+	tokenHolders[_to].lastSnapshot = totalIncomeReceived;
       //credit destination acct with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(_to);
       tokenHolders[_to].tokens += _value;
@@ -163,7 +163,7 @@ contract XTTA is iERC20Token, iDividendToken, SafeMath {
       calcCurPointsForAcct(_from);
       tokenHolders[_from].tokens -= _value;
       if (tokenHolders[_to].lastSnapshot == 0)
-	tokenHolders[_to].lastSnapshot = totalFeesReceived;
+	tokenHolders[_to].lastSnapshot = totalIncomeReceived;
       //credit destination acct with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(_to);
       tokenHolders[_to].tokens += _value;
@@ -199,12 +199,12 @@ contract XTTA is iERC20Token, iDividendToken, SafeMath {
   //
   // calc current points for a token holder; that is, points that are due to this token holder for all dividends
   // received by the contract during the current "period". the period began the last time this fcn was called, at which
-  // time we updated the account's snapshot of the running point count, totalFeesReceived. during the period the account's
+  // time we updated the account's snapshot of the running point count, totalIncomeReceived. during the period the account's
   // number of tokens must not have changed. so always call this fcn before changing the number of tokens.
   //
   function calcCurPointsForAcct(address _acct) internal {
-    tokenHolders[_acct].currentPoints += (totalFeesReceived - tokenHolders[_acct].lastSnapshot) * tokenHolders[_acct].tokens;
-    tokenHolders[_acct].lastSnapshot = totalFeesReceived;
+    tokenHolders[_acct].currentPoints += (totalIncomeReceived - tokenHolders[_acct].lastSnapshot) * tokenHolders[_acct].tokens;
+    tokenHolders[_acct].lastSnapshot = totalIncomeReceived;
   }
 
 
@@ -213,7 +213,7 @@ contract XTTA is iERC20Token, iDividendToken, SafeMath {
   //
   function () external payable {
     holdoverBalance += msg.value;
-    totalFeesReceived += msg.value;
+    totalIncomeReceived += msg.value;
   }
 
 
@@ -226,7 +226,7 @@ contract XTTA is iERC20Token, iDividendToken, SafeMath {
     } else {
       //don't call calcCurPointsForAcct here, cuz this is a constant fcn
       uint _currentPoints = tokenHolders[_addr].currentPoints +
-	((totalFeesReceived - tokenHolders[_addr].lastSnapshot) * tokenHolders[_addr].tokens);
+	((totalIncomeReceived - tokenHolders[_addr].lastSnapshot) * tokenHolders[_addr].tokens);
       _amount = _currentPoints / tokenSupply;
     }
   }
