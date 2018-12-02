@@ -67,6 +67,8 @@ function setOptionsButtonHandlers() {
     versionArea.textContent = 'Build: ' + autoVersion.version();
     var optionsButton = document.getElementById('optionsButton');
     optionsButton.addEventListener('click', () => { replaceElemClassFromTo('optionsPanel', 'hidden', 'visibleB', null); });
+    var closeOptionsButton = document.getElementById('closeOptionsButton');
+    closeOptionsButton.addEventListener('click', () => { replaceElemClassFromTo('optionsPanel', 'visibleB', 'hidden', null); });
     var marysThemeButton = document.getElementById('marysThemeButton');
     var wandasThemeButton = document.getElementById('wandasThemeButton');
     marysThemeButton.checked = true;
