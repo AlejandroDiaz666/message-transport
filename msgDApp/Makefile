@@ -11,7 +11,6 @@ CSSFILES := $(CSSDIR)/intro.css $(CSSSTYLEFILES)
 all:	$(BUNDLEDIR)/autoVersion.js \
 	$(BUNDLEFILES) \
 	$(CSSFILES)
-	./autoVersion.sh
 	./set_timestamp.sh
 
 clean:
@@ -26,7 +25,18 @@ $(CSSDIR)/%-style.css : $(SRCDIR)/%-theme.css $(SRCDIR)/style.css
 	cat $< > $@
 	cat $(SRCDIR)/style.css >> $@
 
+.PHONEY :
+	./autoVersion.sh
+
+$(BUNDLEDIR)/autoVersion.js : $(SRCDIR)/autoVersion.js .PHONEY
+
 $(BUNDLEDIR)/%.js : $(SRCDIR)/%.js
 	browserify $< -o $@
 
-bundle/index.js: src/index.js bundle/ether.js bundle/mtEther.js bundle/dhcrypt.js bundle/msgUtil.js bundle/common.js bundle/autoVersion.js
+$(BUNDLEDIR)/index.js: src/index.js \
+	$(BUNDLEDIR)/ether.js \
+	$(BUNDLEDIR)/mtEther.js \
+	$(BUNDLEDIR)/dhcrypt.js \
+	$(BUNDLEDIR)/msgUtil.js \
+	$(BUNDLEDIR)/common.js  \
+	$(BUNDLEDIR)/autoVersion.js
