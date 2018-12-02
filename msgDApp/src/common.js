@@ -3,7 +3,6 @@
  */
 var BN = require("bn.js");
 var Buffer = require('buffer/').Buffer;
-
 var common = module.exports = {
 
     web3:              null,

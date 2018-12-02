@@ -5,13 +5,13 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
     <meta http-equiv="Pragma" content="no-cache"/>
     <meta http-equiv="Expires" content="0"/>
-    <link rel="stylesheet" type="text/css" id="themedStyle" href="css/marys-style_TIMESTAMP_1543514594_.css">
-    <link rel="stylesheet" type="text/css" href="css/intro_TIMESTAMP_1543514594_.css">
+    <link rel="stylesheet" type="text/css" id="themedStyle" href="css/marys-style_TIMESTAMP_1543770384_.css">
+    <link rel="stylesheet" type="text/css" href="css/intro_TIMESTAMP_1543770384_.css">
     <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto:300i" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Lato:100,100italic,300,300italic,italic,700,700italic,900,900italic,400" rel="stylesheet" type="text/css">
-    <script type="text/javascript" src="bundle/index_TIMESTAMP_1543514594_.js"></script>
-    <script type="text/javascript" src="bundle/common_TIMESTAMP_1543514594_.js"></script>
-    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1543514594_.js"></script>
+    <script type="text/javascript" src="bundle/index_TIMESTAMP_1543770384_.js"></script>
+    <script type="text/javascript" src="bundle/common_TIMESTAMP_1543770384_.js"></script>
+    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1543770384_.js"></script>
     <script type="text/javascript" src="bundle/SVGAnimation.js" gwd-groups-version="1.0"></script>
   </head>
 
@@ -241,6 +241,26 @@ message, the message ID of the original message is stored with the reply as a 'R
       </div>
       <div id="optionsButtonDiv">
 	<img id="optionsButton" src="images/options-icon.png">
+	<div id="optionsPanel" class="hidden">
+	  <span id="themeSelectorSpan">
+	    <p>Select look:&nbsp;
+	    <input type="radio" name="themeSelectorInput" value="mary">Mary&apos;s theme</input>
+	    <input type="radio" name="themeSelectorInput" value="mary">Wanda&apos;s theme</input>
+	    </p>
+	  </span>
+	  <span id="nodeSelectorSpan">
+	    <p>Select node for logs:&nbsp;
+	      <select id="logServerSelect">
+		<option value="etherscan.io">etherscan.io</option>
+		<option value="infura.io">infura.io</option>
+		<option value="giveth.io">giveth.io</option>
+		<option value="custom">custom</option>
+	      </select>
+	    </p>
+	  </span>
+	  <textarea id="versionArea" rows="1" readonly="readonly" disabled="disabled">Build: unknown</textarea>
+	  <button id="closeOptionsButton" class="menuBarButton" type="button">Close</button>
+	</div>
       </div>
     </div>
 

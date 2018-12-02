@@ -4,6 +4,7 @@ var ether = require('./ether');
 var mtEther = require('./mtEther');
 var dhcrypt = require('./dhcrypt');
 var msgUtil = require('./msgUtil');
+var autoVersion = require('./autoVersion');
 var ethUtils = require('ethereumjs-util');
 var Buffer = require('buffer/').Buffer;
 var BN = require("bn.js");
@@ -42,13 +43,18 @@ var index = module.exports = {
 	setPrevNextButtonHandlers();
 
 	// temporary theme switcher
+	var versionArea = document.getElementById('versionArea');
+	versionArea.textContent = 'Build: ' + autoVersion.version();
 	var optionsButton = document.getElementById('optionsButton');
 	optionsButton.addEventListener('click', function() {
+	    replaceElemClassFromTo('optionsPanel', 'hidden', 'visibleB', null);
+	    /*
 	    var themedStyle = document.getElementById('themedStyle');
 	    if (themedStyle.href.indexOf('marys-style') >= 0)
 		themedStyle.href = themedStyle.href.replace('marys-style', 'wandas-style');
 	    else
 		themedStyle.href = themedStyle.href.replace('wandas-style', 'marys-style');
+	    */
 	});
 	//
 	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')

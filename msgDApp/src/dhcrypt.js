@@ -134,7 +134,7 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 
 
 //
-// generate a diffie hellman secret
+// generate a secret
 // we auto-generate the secret by signing an arbitrary message with the user's private key. the important point
 // is that the word is generated deterministically (so that we can re-generate it whenever we want). the secret
 // should never be shared or even stored anywhere at all.

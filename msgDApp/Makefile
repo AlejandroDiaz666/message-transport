@@ -10,7 +10,7 @@ CSSFILES := $(CSSDIR)/intro.css $(CSSSTYLEFILES)
 
 all:	$(BUNDLEFILES) \
 	$(CSSFILES)
-	@echo $(CSSSTYLEFILES)
+	./autoVersion.sh
 	./set_timestamp.sh
 
 clean:
