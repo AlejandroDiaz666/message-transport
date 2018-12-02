@@ -8,7 +8,8 @@ CSSSTYLEFILES := $(patsubst $(SRCDIR)/%-theme.css,$(CSSDIR)/%-style.css,$(CSSTHE
 CSSFILES := $(CSSDIR)/intro.css $(CSSSTYLEFILES)
 
 
-all:	$(BUNDLEFILES) \
+all:	$(BUNDLEDIR)/autoVersion.js \
+	$(BUNDLEFILES) \
 	$(CSSFILES)
 	./autoVersion.sh
 	./set_timestamp.sh
@@ -28,4 +29,4 @@ $(CSSDIR)/%-style.css : $(SRCDIR)/%-theme.css $(SRCDIR)/style.css
 $(BUNDLEDIR)/%.js : $(SRCDIR)/%.js
 	browserify $< -o $@
 
-bundle/index.js: src/index.js bundle/ether.js bundle/mtEther.js bundle/dhcrypt.js bundle/msgUtil.js bundle/common.js
+bundle/index.js: src/index.js bundle/ether.js bundle/mtEther.js bundle/dhcrypt.js bundle/msgUtil.js bundle/common.js bundle/autoVersion.js
