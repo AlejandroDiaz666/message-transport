@@ -35,28 +35,13 @@ var index = module.exports = {
 
     main: function() {
 	console.log('index.main');
+	setOptionsButtonHandlers();
 	setMainButtonHandlers();
 	setReplyButtonHandlers();
 	setValidateButtonHandler();
 	setMsgRefButtonHandler();
 	setMarkReadButtonHandler();
 	setPrevNextButtonHandlers();
-
-	// temporary theme switcher
-	var versionArea = document.getElementById('versionArea');
-	versionArea.textContent = 'Build: ' + autoVersion.version();
-	var optionsButton = document.getElementById('optionsButton');
-	optionsButton.addEventListener('click', function() {
-	    replaceElemClassFromTo('optionsPanel', 'hidden', 'visibleB', null);
-	    /*
-	    var themedStyle = document.getElementById('themedStyle');
-	    if (themedStyle.href.indexOf('marys-style') >= 0)
-		themedStyle.href = themedStyle.href.replace('marys-style', 'wandas-style');
-	    else
-		themedStyle.href = themedStyle.href.replace('wandas-style', 'marys-style');
-	    */
-	});
-	//
 	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')
 	if (!!msgNo)
 	    index['recvMessageNo'] = parseInt(msgNo);
@@ -76,6 +61,24 @@ function ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content) {
     this.content = content;
 }
 
+
+function setOptionsButtonHandlers() {
+    var versionArea = document.getElementById('versionArea');
+    versionArea.textContent = 'Build: ' + autoVersion.version();
+    var optionsButton = document.getElementById('optionsButton');
+    optionsButton.addEventListener('click', () => { replaceElemClassFromTo('optionsPanel', 'hidden', 'visibleB', null); });
+    var marysThemeButton = document.getElementById('marysThemeButton');
+    var wandasThemeButton = document.getElementById('wandasThemeButton');
+    marysThemeButton.checked = true;
+    marysThemeButton.addEventListener('click', function() {
+	var themedStyle = document.getElementById('themedStyle');
+	themedStyle.href = themedStyle.href.replace('wandas-style', 'marys-style');
+    });
+    wandasThemeButton.addEventListener('click', function() {
+	var themedStyle = document.getElementById('themedStyle');
+	themedStyle.href = themedStyle.href.replace('marys-style', 'wandas-style');
+    });
+}
 
 function setMainButtonHandlers() {
     var registerButton = document.getElementById('registerButton');
