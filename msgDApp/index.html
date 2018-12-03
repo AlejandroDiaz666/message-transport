@@ -5,13 +5,13 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
     <meta http-equiv="Pragma" content="no-cache"/>
     <meta http-equiv="Expires" content="0"/>
-    <link rel="stylesheet" type="text/css" id="themedStyle" href="css/marys-style_TIMESTAMP_1543868769_.css">
-    <link rel="stylesheet" type="text/css" href="css/intro_TIMESTAMP_1543868769_.css">
+    <link rel="stylesheet" type="text/css" id="themedStyle" href="css/marys-style_TIMESTAMP_1543879853_.css">
+    <link rel="stylesheet" type="text/css" href="css/intro_TIMESTAMP_1543879853_.css">
     <link href="https://fonts.googleapis.com/css?family=Lato:300|Roboto:300i" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Lato:100,100italic,300,300italic,italic,700,700italic,900,900italic,400" rel="stylesheet" type="text/css">
-    <script type="text/javascript" src="bundle/index_TIMESTAMP_1543868769_.js"></script>
-    <script type="text/javascript" src="bundle/common_TIMESTAMP_1543868769_.js"></script>
-    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1543868769_.js"></script>
+    <script type="text/javascript" src="bundle/index_TIMESTAMP_1543879853_.js"></script>
+    <script type="text/javascript" src="bundle/common_TIMESTAMP_1543879853_.js"></script>
+    <script type="text/javascript" src="bundle/ether_TIMESTAMP_1543879853_.js"></script>
     <script type="text/javascript" src="bundle/SVGAnimation.js" gwd-groups-version="1.0"></script>
   </head>
 
@@ -245,19 +245,29 @@ message, the message ID of the original message is stored with the reply as a 'R
 	<div id="optionsPanel" class="hidden">
 	  <button id="closeOptionsButton" class="menuBarButton" type="button">Close</button>
 	  <span id="themeSelectorSpan">
-	    <p>Select look:&nbsp;
-	    <input id="marysThemeButton" type="radio" name="themeSelectorInput" value="mary">Mary&apos;s theme</input>
-	    <input id="wandasThemeButton" type="radio" name="themeSelectorInput" value="mary">Wanda&apos;s theme</input>
+	    <p>Select look:<br/>
+	    <input id="marysThemeButton" type="radio" name="themeSelectorInput" value="mary">Mary&apos;s theme</input><br/>
+	    <input id="wandasThemeButton" type="radio" name="themeSelectorInput" value="mary">Wanda&apos;s theme</input><br/>
 	    </p>
 	  </span>
 	  <span id="nodeSelectorSpan">
-	    <p>Select node for logs:&nbsp;
+	    <p>Select Ethereum node for logs:<br/>
 	      <select id="logServerSelect">
 		<option value="etherscan.io">etherscan.io</option>
 		<option value="infura.io">infura.io</option>
 		<option value="giveth.io">giveth.io</option>
 		<option value="custom">custom</option>
 	      </select>
+	    </p>
+	  </span>
+	  <span id="viewContractSpan">
+	    <p>You can see the Turms AMT contract on<br/>
+	      <a href="etherscan.io">etherscan.io</a>
+	    </p>
+	  </span>
+	  <span id="viewSrcSpan">
+	    <p>An you can see all the Turms AMT source code, as well as download other tools from<br/>
+	      <a href="github.com">github</a>
 	    </p>
 	  </span>
 	  <textarea id="versionArea" rows="1" readonly="readonly" disabled="disabled">Build: unknown</textarea>

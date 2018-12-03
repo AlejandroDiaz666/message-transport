@@ -168,6 +168,9 @@ p {
     position: relative;
     top: 70px;
 }
+#optionsButton:hover {
+    opacity: 0.7;
+}
 #optionsPanel {
     width: 300px;
     height: 400px;
@@ -176,20 +179,22 @@ p {
     left: 100%;
     transform: translateX(-300px);
     font-size: 14px;
-    background-color: white;
     z-index: 2;
     padding: 15px;
+    background-color: var(--clr_optpanelbg);
+    border: 2px solid var(--clr_border);
 }
 #versionArea {
     width: 80%;
     position: absolute;
     top: 100%;
     left: 50%;
-    transform: translate(-50%, -100%);
+    transform: translate(-50%, -24px);
     font-size: 12px;
     text-align: center;
     resize: none;
     overflow: hidden;
+    height: 14px;
 }
 #closeOptionsButton {
     float: right;
@@ -199,16 +204,29 @@ p {
 }
 #themeSelectorSpan {
     position: absolute;
-    top: 60px;
+    top: 50px;
     left: 0%;
-    padding: 5px;
+    padding: 20px;
 }
 #nodeSelectorSpan {
     position: absolute;
-    top: 95px;
+    top: 150px;
     left: 0%;
-    padding: 5px;
+    padding: 20px;
 }
+#viewContractSpan {
+    position: absolute;
+    top: 220px;
+    left: 0%;
+    padding: 20px;
+}
+#viewSrcSpan {
+    position: absolute;
+    top: 300px;
+    left: 0%;
+    padding: 20px;
+}
+
 
 #tabularArea {
     float:right;
