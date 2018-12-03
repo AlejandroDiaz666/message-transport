@@ -34,10 +34,8 @@ var mtEther = module.exports = {
     accountQuery: function(web3, acct, cb) {
 	var ABIArray = JSON.parse(mtEther.EMT_CONTRACT_ABI);
 	var EMTcontract = web3.eth.contract(ABIArray);
-	console.log('accountQuery: contract: ' + EMTcontract);
 	console.log('accountQuery: contract addr: ' + mtEther.EMT_CONTRACT_ADDR);
 	var EMTContractInstance = EMTcontract.at(mtEther.EMT_CONTRACT_ADDR);
-	console.log('accountQuery: contract: ' + EMTContractInstance);
 	EMTContractInstance.accounts(acct, cb);
     },
 

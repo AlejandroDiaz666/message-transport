@@ -46,6 +46,7 @@ var index = module.exports = {
 	if (!!msgNo)
 	    index['recvMessageNo'] = parseInt(msgNo);
 	beginTheBeguine('startup');
+	periodicCheckForAccountChanges();
     },
 
 };
@@ -476,51 +477,65 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 
 
 //
-// mode = [ 'startup' | 'send' | 'recv' | null ]
+// periodically check for metamask account changes
+// also checks for any changes in the number of messages sent or received
+// this fcn reschedules itself
 //
 var timerIsPaused = () => {
+    if (index.waitingForTxid)
+	return(true);
     var viewRecvButton = document.getElementById('viewRecvButton');
     var viewSentButton = document.getElementById('viewSentButton');
-    return(((index.acctInfo == null                            ||
-	     viewRecvButton.className.indexOf('Selected') >= 0 ||
-	     viewSentButton.className.indexOf('Selected') >= 0 ) &&
-	    (!index.waitingForTxid                             ) ) ? false : true);
+    return(((viewRecvButton.className.indexOf('Disabled') >= 0 && viewSentButton.className.indexOf('Disabled') >= 0 ) ||
+	    (viewRecvButton.className.indexOf('Selected') >= 0 || viewSentButton.className.indexOf('Selected') >= 0 ) ) ? false : true);
+}
+//
+function periodicCheckForAccountChanges() {
+    var count = 0;
+    if (timerIsPaused()) {
+	console.log('timerIsPaused!');
+	setTimeout(periodicCheckForAccountChanges, 10000);
+	return;
+    }
+    common.checkForMetaMask(true, function(err, w3) {
+	var acct = (!err && !!w3) ? w3.eth.accounts[0] : null;
+	if (acct != index.account) {
+	    console.log('periodicCheckForAccountChanges: MetaMask account changed!');
+	    console.log('periodicCheckForAccountChanges: MM acct = ' + acct + ', index.account = ' + index.account);
+	    beginTheBeguine(null);
+	    setTimeout(periodicCheckForAccountChanges, 10000);
+	    return;
+	}
+	if (!acct || ++count < 5 || timerIsPaused()) {
+	    setTimeout(periodicCheckForAccountChanges, 10000);
+	    return;
+	}
+	count = 0;
+	console.log('periodicCheckForAccountChanges: MetaMask account unchanged...' + count);
+	mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
+	    var recvCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+	    var sentCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
+	    var recvCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+	    var sentCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
+	    if (recvCntNew != recvCntOld) {
+		console.log('periodicCheckForAccountChanges: recvCnt ' + recvCntOld + ' => ' + recvCntNew);
+		beginTheBeguine('recv');
+	    } else if (sentCntNew != sentCntOld) {
+		console.log('periodicCheckForAccountChanges: sentCnt ' + sentCntOld + ' => ' + sentCntNew);
+		beginTheBeguine('send');
+	    }
+	    setTimeout(periodicCheckForAccountChanges, 10000);
+	    return;
+	});
+    });
 }
 
+
+//
+// mode = [ 'startup' | 'send' | 'recv' | null ]
+//
 async function beginTheBeguine(mode) {
     await doFirstIntro(false);
-    if (!index.acctCheckTimer) {
-	console.log('init acctCheckTimer');
-	var count = 0;
-	index.acctCheckTimer = setInterval(function() {
-	    if (timerIsPaused())
-		console.log('timerIsPaused!');
-	    common.checkForMetaMask(true, function(err, w3) {
-		var acct = (!err && !!w3) ? w3.eth.accounts[0] : null;
-		if (acct != index.account) {
-		    console.log('MetaMask account changed!');
-		    console.log('acct = ' + acct + ', index.account = ' + index.account);
-		    beginTheBeguine(null);
-		} else if (!!acct && ++count > 5 && !timerIsPaused()) {
-		    count = 0;
-		    console.log('MetaMask account unchanged...' + count);
-		    mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
-			var recvCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
-			var sentCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
-			var recvCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
-			var sentCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
-			if (recvCntNew != recvCntOld) {
-			    console.log('beginTheBeguine(timer): recvCnt ' + recvCntOld + ' => ' + recvCntNew);
-			    beginTheBeguine('recv');
-			} else if (sentCntNew != sentCntOld) {
-			    console.log('beginTheBeguine(timer): sentCnt ' + sentCntOld + ' => ' + sentCntNew);
-			    beginTheBeguine('send');
-			}
-		    });
-		}
-	    });
-	}, 10000);
-    }
     common.checkForMetaMask(true, function(err, w3) {
 	var acct = (!err && !!w3) ? w3.eth.accounts[0] : null;
 	console.log('beginTheBeguine: checkForMetaMask acct = ' + acct);
