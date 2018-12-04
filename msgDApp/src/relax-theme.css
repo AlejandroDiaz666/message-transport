@@ -11,4 +11,6 @@
     --pad_menubar : 5px;
     --martop_msgAreaDiv : 20px;
     --pad_msgAreaDiv : 15px;
+    --bor_butselect: 1px solid black;
+    --bor_butnormal: 1px solid var(--clr_buttonbg);
 }

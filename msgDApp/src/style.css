@@ -272,7 +272,6 @@ p {
     width: 15%;
     height: 80%;
     padding : var(--pad_menubar);
-    border: none;
     color: var(--clr_buttontext);
     text-align: center;
     text-decoration: none;
@@ -281,9 +280,11 @@ p {
 }
 .menuBarButton, .menuBarButtonEnabled, .menuBarButtonDisabled {
     background-color: var(--clr_buttonbg);
+    border: var(--bor_butnormal);
 }
 .menuBarButton:hover, .menuBarButtonSelected, .menuBarButtonEnabled:hover {
     background-color: var(--clr_buttonbgsel);
+    border: var(--bor_butselect);
 }
 
 #navButtonsSpan {
@@ -300,17 +301,19 @@ p {
     padding : 4px;
     background-color: var(--clr_buttonbg);
     color: var(--clr_buttontext);
-    border: none;
+    border: var(--bor_butnormal);
     text-align: center;
     text-decoration: none;
     border-radius: 8px;
 }
 .navButton:hover {
     background-color: var(--clr_buttonbgsel);
+    border: var(--bor_butselect);
 }
 .navButton[disabled], .navButton[disabled]:hover, .navButton[disabled]:focus, .navButton[disabled]:active {
     background-color: var(--clr_buttonbg);
     opacity: 0.6;
+    border: 1px solid var(--clr_buttonbg);
 }
 .msgInfoAreaButton:hover {
     border: 1px solid #888;

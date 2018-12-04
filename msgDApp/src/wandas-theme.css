@@ -11,4 +11,6 @@
     --pad_menubar : 10px;
     --martop_msgAreaDiv : 30px;
     --pad_msgAreaDiv : 20px;
+    --bor_butselect: none;
+    --bor_butnormal: none;
 }
