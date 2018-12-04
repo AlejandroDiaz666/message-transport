@@ -204,25 +204,31 @@ p {
 }
 #themeSelectorSpan {
     position: absolute;
-    top: 50px;
+    top: 42px;
     left: 0%;
     padding: 20px;
 }
 #nodeSelectorSpan {
     position: absolute;
-    top: 150px;
+    top: 134px;
+    left: 0%;
+    padding: 20px;
+}
+#onStartGotoSpan {
+    position: absolute;
+    top: 188px;
     left: 0%;
     padding: 20px;
 }
 #viewContractSpan {
     position: absolute;
-    top: 220px;
+    top: 258px;
     left: 0%;
     padding: 20px;
 }
 #viewSrcSpan {
     position: absolute;
-    top: 300px;
+    top: 310px;
     left: 0%;
     padding: 20px;
 }

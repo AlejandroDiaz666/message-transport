@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 var index = module.exports = {
     //current messages to display
-    'recvMessageNo': 1,
-    'sentMessageNo': 1,
+    recvMessageNo: 1,
+    sentMessageNo: 1,
     account: null,
     acctInfo: null,
     acctCheckTimer: null,
@@ -42,9 +42,6 @@ var index = module.exports = {
 	setMsgRefButtonHandler();
 	setMarkReadButtonHandler();
 	setPrevNextButtonHandlers();
-	var msgNo = common.getUrlParameterByName(window.location.href, 'msgNo')
-	if (!!msgNo)
-	    index['recvMessageNo'] = parseInt(msgNo);
 	beginTheBeguine('startup');
 	periodicCheckForAccountChanges();
     },
@@ -79,7 +76,6 @@ function setOptionsButtonHandlers() {
     var relaxThemeButton = document.getElementById('relaxThemeButton');
     var themedStyle = document.getElementById('themedStyle');
     var updateThemeFcn = (theme) => {
-	console.log('got ' + theme);
 	localStorage['theme'] = theme;
 	if (themedStyle.href.indexOf('marys-style') >= 0)
 	    themedStyle.href = themedStyle.href.replace('marys-style', localStorage['theme']);
@@ -89,15 +85,12 @@ function setOptionsButtonHandlers() {
 	    themedStyle.href = themedStyle.href.replace('relax-style', localStorage['theme']);
     };
     if (!!localStorage['theme'] && localStorage['theme'].indexOf('wanda') >= 0) {
-	console.log('start wanda');
 	wandasThemeButton.checked = true;
 	updateThemeFcn('wandas-style');
     } else if (!!localStorage['theme'] && localStorage['theme'].indexOf('relax') >= 0) {
-	console.log('start relax');
 	relaxThemeButton.checked = true;
 	updateThemeFcn('relax-style');
     } else {
-	console.log('start mary');
 	marysThemeButton.checked = true;
 	updateThemeFcn('marys-style');
     }
@@ -118,6 +111,18 @@ function setOptionsButtonHandlers() {
     }
     logServerSelectFcn();
     logServerSelect.addEventListener('change', logServerSelectFcn);
+    //
+    var startFirstUnreadButton = document.getElementById('startFirstUnreadButton');
+    var startLastViewedButton = document.getElementById('startLastViewedButton');
+    if (!localStorage['onStartGoto'])
+	localStorage['onStartGoto'] = 'first-unread';
+    if (localStorage['onStartGoto'].indexOf('last-viewed') >= 0)
+	startLastViewedButton.checked = true;
+    else
+	startFirstUnreadButton.checked = true;
+    var updateStartGotoFcn = (goto) => { localStorage['onStartGoto'] = goto; };
+    startFirstUnreadButton.addEventListener('click', () => { updateStartGotoFcn('first-unread'); });
+    startLastViewedButton.addEventListener('click', () => { updateStartGotoFcn('last-viewed'); });
 }
 
 function setMainButtonHandlers() {
@@ -301,11 +306,11 @@ function setMsgRefButtonHandler() {
 		if (!!err) {
 		    msgTextArea.value = 'Error: ' + err;
 		} else if (fromAddr == common.web3.eth.accounts[0]) {
-		    index['sentMessageNo'] = txCount;
+		    index.sentMessageNo = txCount;
 		    //if we're already in View-Sent mode, then showMsgLoop will update the msg list only if necessary
 		    (viewRecvButton.className == 'menuBarButtonSelected') ? handleViewSent(index.acctInfo, true) : showMsgLoop(index.acctInfo);
 		} else if (toAddr == common.web3.eth.accounts[0]) {
-		    index['recvMessageNo'] = rxCount;
+		    index.recvMessageNo = rxCount;
 		    (viewRecvButton.className != 'menuBarButtonSelected') ? handleViewRecv(index.acctInfo, true) : showMsgLoop(index.acctInfo);
 		}
 	    });
@@ -662,6 +667,24 @@ function handleUnlockedMetaMask(mode) {
     //timer to check for changed rx/tx counts
     index.waitingForTxid = false;
     index.localStoragePrefix = (common.web3.eth.accounts[0]).substring(2, 10) + '-';
+    //
+    if (mode == 'startup') {
+	var recvMsgNo = common.getUrlParameterByName(window.location.href, 'recvMsgNo')
+	var sentMsgNo = common.getUrlParameterByName(window.location.href, 'sentMsgNo')
+	if (!!sentMsgNo)
+	    index.sentMessageNo = parseInt(sentMsgNo);
+	else if (!!localStorage[index.localStoragePrefix + '-sentMessageNo'])
+	    index.sentMessageNo = localStorage[index.localStoragePrefix + '-sentMessageNo'];
+	else
+	    index.sentMessageNo = 1;
+	if (!!recvMsgNo)
+	    index.recvMessageNo = parseInt(recvMsgNo);
+	else if (!!localStorage[index.localStoragePrefix + '-recvMessageNo'] && localStorage['onStartGoto'] == 'last-viewed')
+	    index.recvMessageNo = localStorage[index.localStoragePrefix + '-recvMessageNo'];
+	else
+	    index.recvMessageNo = 1;
+    }
+    //
     var accountArea = document.getElementById('accountArea');
     accountArea.value = 'Your account: ' + common.web3.eth.accounts[0];
     ether.getNetwork(common.web3, function(err, network) {
@@ -691,12 +714,12 @@ function handleUnlockedMetaMask(mode) {
 	if (!index.publicKey || index.publicKey == '0x') {
 	    handleUnregisteredAcct();
 	} else {
-	    if (mode == 'startup') {
-		var msgNo = index['recvMessageNo'];
+	    if (mode == 'startup' && localStorage['onStartGoto'] == 'first-unread') {
+		var msgNo = index.recvMessageNo;
 		var maxMsgNo = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
 		var unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
 		console.log('handleUnlockedMetaMask: unreadMsgNo = ' + unreadMsgNo);
-		index['recvMessageNo'] = (unreadMsgNo < 0) ? maxMsgNo : unreadMsgNo;
+		index.recvMessageNo = (unreadMsgNo < 0) ? maxMsgNo : unreadMsgNo;
 		mode = 'recv';
 	    }
 	    handleRegisteredAcct(mode);
@@ -1058,7 +1081,7 @@ function handleWithdraw() {
 
 //
 // handle View-Recv button
-// if refreshMsgList then call showMsgLoop to look up the message corresponding to the current index['recvMessageNo']
+// if refreshMsgList then call showMsgLoop to look up the message corresponding to the current index.recvMessageNo
 // otherwise just set up the View-Recv mode and return.
 //
 // if refreshing the msg-list, then we only enable view-sent mode after the list is copmlete. if you don't take that
@@ -1127,7 +1150,7 @@ function handleViewRecv(acctInfo, refreshMsgList) {
 
 //
 // handle View-Sent button
-// if refreshMsgList then call showMsgLoop to look up the message corresponding to the current index['sentMessageNo']
+// if refreshMsgList then call showMsgLoop to look up the message corresponding to the current index.sentMessageNo
 // otherwise just set up the View-Sent mode and return.
 //
 // if refreshing the msg-list, then we only enable view-recv mode after the list is copmlete. if you don't take that
@@ -1284,7 +1307,7 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
     index.listEntries[listIdx] = new ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content);
     if (!!msgNo) {
 	div.addEventListener('click', function() {
-	    //re-establish View-Sent of View-Recv mode as appropriate, but no need to refresh the msg list since
+	    //re-establish View-Sent or View-Recv mode as appropriate, but no need to refresh the msg list since
 	    //by definition we are selecting a message from the current list
 	    var msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	    var viewSentButton = document.getElementById('viewSentButton');
@@ -1353,12 +1376,14 @@ function getCurMsgNo(acctInfo) {
 // handle traversing messages via prev, next buttons
 // call this fcn anytime the current msgNo changes. it will validate the msgNo, and then re-display the message list if
 // necessary, and calculate the current listIdx and hightlight the correct listEntry.
+// also saves current msgNo to persistent storage.
 //
 var prevAndNextButtonHasOnClick = false;
 function showMsgLoop(acctInfo) {
     var acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
     var maxMsgNo = parseInt(acctInfo[acctInfoCountIdx]);
     var msgNo = getCurMsgNo(acctInfo);
+    localStorage[index.localStoragePrefix + '-' + index.listMode + 'MessageNo'] = msgNo;
     var prevMsgButton = document.getElementById('prevMsgButton');
     var nextMsgButton = document.getElementById('nextMsgButton');
     var prevPageButton = document.getElementById('prevPageButton');
