@@ -2,14 +2,14 @@
 //
 // fcns related to ethereum, nonspecific to any particular contract
 //
-var common = require('./common');
-var ethUtils = require('ethereumjs-util');
-var ethtx = require('ethereumjs-tx');
-var ethabi = require('ethereumjs-abi');
-var Buffer = require('buffer/').Buffer;
-var BN = require("bn.js");
+const common = require('./common');
+const ethUtils = require('ethereumjs-util');
+const ethtx = require('ethereumjs-tx');
+const ethabi = require('ethereumjs-abi');
+const Buffer = require('buffer/').Buffer;
+const BN = require("bn.js");
 
-var ether = module.exports = {
+const ether = module.exports = {
 
     SZABO_PER_ETH:     1000000,
     GWEI_PER_ETH:      1000000000,
@@ -33,7 +33,7 @@ var ether = module.exports = {
 
     //cb(err, network)
     getNetwork: function(web3, cb) {
-	var network = 'Unknown Network';
+	let network = 'Unknown Network';
 	web3.version.getNetwork((err, netId) => {
 	    switch (netId) {
 	    case "1":
@@ -72,7 +72,7 @@ var ether = module.exports = {
     //convert an amount in wei to a comfortable representation
     //for example: 1000000000000 => '1 gwei'
     convertWeiToComfort: function(web3, wei) {
-	var units =
+	const units =
 	    (wei < ether.WEI_PER_GWEI)   ? 'Wei'   :
 	    (wei < ether.WEI_PER_SZABO)  ? 'Gwei'   :
 	    (wei < ether.WEI_PER_FINNEY) ? 'Szabo'  :
@@ -95,9 +95,9 @@ var ether = module.exports = {
 	} else {
 	    // Check each case
 	    addr = addr.replace('0x','');
-	    var addressHash = common.web3.sha3(addr.toLowerCase());
+	    let addressHash = common.web3.sha3(addr.toLowerCase());
 	    addressHash = addressHash.replace('0x','');
-	    for (var i = 0; i < 40; i++ ) {
+	    for (let i = 0; i < 40; i++ ) {
 		// the nth letter should be uppercase if the nth digit of casemap is 1
 		if ((parseInt(addressHash[i], 16) > 7 && addr[i].toUpperCase() !== addr[i]) || (parseInt(addressHash[i], 16) <= 7 && addr[i].toLowerCase() !== addr[i])) {
 		    console.log('addr = ' + addr + ', addressHash = ' + addressHash);
@@ -126,7 +126,7 @@ var ether = module.exports = {
     // units: 'szabo' | 'finney' | 'ether'
     //
     send: function(web3, to_addr, size, units, data, gasLimit, callback) {
-	var tx = {};
+	const tx = {};
 	tx.from = web3.eth.accounts[0];
 	tx.value = web3.toWei(size, units);
 	tx.to = to_addr,
@@ -150,7 +150,7 @@ var ether = module.exports = {
 	    filter.stopWatching();
 	    return;
 	}
-	var url, options;
+	let url;
 	if (ether.node == 'etherscan.io') {
 	    url = 'https://' + ether.etherscanioHost   +
 		'/api?module=logs&action=getLogs'          +
@@ -170,37 +170,37 @@ var ether = module.exports = {
 		    }
 		}
 	    }
-	    var options = null;
+	    options = null;
 	} else {
 	    url = 'https://' + ether.infuraioHost + '/v3/' + ether.infuraioProjectID;
 	    options.fromBlock = 'earliest';
-	    var paramsStr = JSON.stringify(options);
+	    const paramsStr = JSON.stringify(options);
 	    console.log('ether.getLogs: paramsStr = ' + paramsStr);
-	    var body = '{"jsonrpc":"2.0","method":"eth_getLogs","params":[' + paramsStr + '],"id":1}';
+	    const body = '{"jsonrpc":"2.0","method":"eth_getLogs","params":[' + paramsStr + '],"id":1}';
 	    options = { method: 'post', body: body, headers: { 'Content-Type': 'application/json' } };
 	    console.log('ether.getLogs: body = ' + body);
 	}
 	common.fetch(url, options, function(str, err) {
 	    if (!str || !!err) {
-		var err = "error retreiving events: " + err;
+		const err = "error retreiving events: " + err;
 		console.log('ether.getLogs: ' + err);
 		cb(err, '');
 		return;
 	    }
 	    console.log('ether.getLogs: err = ' + err + ', str = ' + str);
-	    //typical
+	    //typical (etherscan.io)
 	    //  { "status"  : "1",
 	    //    "message" : "OK",
 	    //    "result"  : [...]
 	    //  }
-	    var eventsResp = JSON.parse(str);
+	    const eventsResp = JSON.parse(str);
 	    if (ether.node == 'etherscan.io' && eventsResp.status == 0 && eventsResp.message == 'No records found') {
 		//this is not an err... just no events
 		cb(err, '');
 		return;
 	    }
 	    if (ether.node == 'etherscan.io' && (eventsResp.status != 1 || eventsResp.message != 'OK')) {
-		var err = "error retreiving events: bad status (" + eventsResp.status + ", " + eventsResp.message + ")";
+		const err = "error retreiving events: bad status (" + eventsResp.status + ", " + eventsResp.message + ")";
 		console.log('ether.getLogs: ' + err);
 		cb(err, '');
 		return;

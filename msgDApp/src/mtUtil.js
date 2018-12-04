@@ -2,27 +2,26 @@
 //
 // high level fcns related to interaction w/ EMT contract
 //
-var common = require('./common');
-var ether = require('./ether');
-var mtEther = require('./mtEther');
-var dhcrypt = require('./dhcrypt');
-var BN = require("bn.js");
+const common = require('./common');
+const ether = require('./ether');
+const mtEther = require('./mtEther');
+const dhcrypt = require('./dhcrypt');
+const BN = require("bn.js");
 
-var mtUtil = module.exports = {
+const mtUtil = module.exports = {
 
     // create a shorter base64 message id from a long hex msgId
     // note: every 3 bytes produces 4 base64 chars; so use a multiple of 3 bytes to avoid padding chars, '=='
     abbreviateMsgId: function(msgId) {
-	var idShortHex = common.leftPadTo(common.numberToBN(msgId).toString(16), 36, '0');
+	const idShortHex = common.leftPadTo(common.numberToBN(msgId).toString(16), 36, '0');
 	return(common.hexToBase64(idShortHex));
     },
 
 
     extractSubject: function(message, maxLen) {
-	var subject = '';
 	if (message.startsWith('Subject: '))
 	    message = message.substring(9);
-	var newlineIdx = (message.indexOf('\n') > 0) ? message.indexOf('\n') :  message.length;
+	let newlineIdx = (message.indexOf('\n') > 0) ? message.indexOf('\n') :  message.length;
 	if (newlineIdx > maxLen - 1)
 	    newlineIdx = maxLen - 1;
 	return(message.substring(0, newlineIdx));
@@ -89,12 +88,12 @@ var mtUtil = module.exports = {
     decryptMsg: function(otherAddr, fromAddr, toAddr, nonce, msgHex, cb) {
 	console.log('decryptMsg: otherAddr = ' + otherAddr);
 	mtEther.accountQuery(common.web3, otherAddr, function(err, otherAcctInfo) {
-	    var otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
+	    const otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
 	    if (!!otherPublicKey && otherPublicKey != '0x') {
 		console.log('decryptMsg: otherPublicKey = ' + otherPublicKey);
-		var ptk = dhcrypt.ptk(otherPublicKey, toAddr, fromAddr, nonce);
+		const ptk = dhcrypt.ptk(otherPublicKey, toAddr, fromAddr, nonce);
 		console.log('decryptMsg: ptk = ' + ptk);
-		var decrypted = dhcrypt.decrypt(ptk, msgHex);
+		const decrypted = dhcrypt.decrypt(ptk, msgHex);
 		console.log('decryptMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted);
 		cb(null, decrypted);
 	    } else {

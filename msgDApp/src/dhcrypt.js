@@ -1,16 +1,16 @@
 //
 // fcns related to Diffie-Hellman encryption
 //
-var common = require('./common');
-var ethUtils = require('ethereumjs-util');
-var ethtx = require('ethereumjs-tx');
-var ethabi = require('ethereumjs-abi');
-var Buffer = require('buffer/').Buffer;
-var crypto = require("crypto");
-var BN = require("bn.js");
+const common = require('./common');
+const ethUtils = require('ethereumjs-util');
+const ethtx = require('ethereumjs-tx');
+const ethabi = require('ethereumjs-abi');
+const Buffer = require('buffer/').Buffer;
+const crypto = require("crypto");
+const BN = require("bn.js");
 const keccak = require('keccakjs');
 
-var dhcrypt = module.exports = {
+const dhcrypt = module.exports = {
 
     dh: null,
     epk: null,
@@ -33,8 +33,8 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 	//The DH algorithm begins with a large prime, P, and a generator, G. These don't have to be secret, and they may be
 	//transmitted over an insecure channel. The generator is a small integer and typically has the value 2 or 5.
 	//we use a known safe prime and generator.
-	var primeBN = new BN(dhcrypt.PRIME_2048, 16);
-	var dh = crypto.createDiffieHellman(primeBN.toString(16), 'hex', '02', 'hex');
+	const primeBN = new BN(dhcrypt.PRIME_2048, 16);
+	const dh = crypto.createDiffieHellman(primeBN.toString(16), 'hex', '02', 'hex');
 	//console.log('dhcrypt.initDH: prime: ' + dh.getPrime('hex'));
 	//console.log('dhcrypt.initDH: generator: ' + dh.getGenerator('hex'));
 	signatureFromAcct(function(err, signature) {
@@ -43,11 +43,11 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 	    } else {
 		//console.log('dhcrypt.initDH: signature: ' + signature);
 		//the signature is 65 bytes; strip off last byte for 256 encrption key
-		var keyEncryptionKey = signature.substring(0, 128);
+		const keyEncryptionKey = signature.substring(0, 128);
 		//console.log('dhcrypt.initDH: keyEncryptionKey: ' + keyEncryptionKey);
 		if (!!encryptedPrivateKey) {
 		    //we already have an encrypted private key... need to decrypt it
-		    var privateKey = dhcrypt.decrypt(keyEncryptionKey, encryptedPrivateKey);
+		    let privateKey = dhcrypt.decrypt(keyEncryptionKey, encryptedPrivateKey);
 		    //console.log('dhcrypt.initDH: privateKey: ' + privateKey);
 		    if (privateKey.startsWith('0x'))
 			privateKey = privateKey.substring(2);
@@ -56,11 +56,11 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 		} else {
 		    //generate a new private key, and encrypt it
 		    dh.generateKeys('hex');
-		    var privateKey = dh.getPrivateKey('hex');
+		    const privateKey = dh.getPrivateKey('hex');
 		    //console.log('dhcrypt.initDH: private (' + privateKey.length + '): ' + privateKey);
 		    encryptedPrivateKey = dhcrypt.encrypt(keyEncryptionKey, privateKey);
 		}
-		var publicKey = dh.getPublicKey('hex');
+		//const publicKey = dh.getPublicKey('hex');
 		//console.log('dhcrypt.initDH: public: (' + publicKey.length + '): ' + publicKey);
 		dhcrypt.dh = dh;
 		dhcrypt.epk = encryptedPrivateKey;
@@ -74,7 +74,7 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
     },
 
     publicKey: function() {
-	var publicKey = dhcrypt.dh.getPublicKey('hex');
+	let publicKey = dhcrypt.dh.getPublicKey('hex');
 	//console.log('dhcrypt:publicKey: ' + publicKey);
 	if (!publicKey.startsWith('0x'))
 	    publicKey = '0x' + publicKey;
@@ -106,7 +106,7 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 
     encrypt: function(ptk, message) {
 	const cipher = crypto.createCipher('aes256', ptk);
-	var encrypted = cipher.update(message, 'utf8', 'hex');
+	let encrypted = cipher.update(message, 'utf8', 'hex');
 	encrypted += cipher.final('hex');
 	//console.log('encyrpt: message = ' + message);
 	//console.log('encyrpt: encrypted = ' + encrypted);
@@ -116,11 +116,11 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
     decrypt: function(ptk, encrypted) {
 	if (encrypted.startsWith('0x'))
 	    encrypted = encrypted.substring(2);
-	var message = 'Unable to decrypt message';
+	let message = 'Unable to decrypt message';
 	try {
 	    //console.log('decyrpt: encrypted = ' + encrypted);
 	    const decipher = crypto.createDecipher('aes256', ptk);
-	    var message = decipher.update(encrypted, 'hex', 'utf8');
+	    message = decipher.update(encrypted, 'hex', 'utf8');
 	    message += decipher.final('utf8');
 	    //console.log('decyrpt: message = ' + message);
 	} catch (err) {
@@ -142,7 +142,7 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 // cb(err, signature)
 //
 function signatureFromAcct(cb) {
-    var hexMsg = ethUtils.bufferToHex(dhcrypt.SIGNATURE_MSG);
+    const hexMsg = ethUtils.bufferToHex(dhcrypt.SIGNATURE_MSG);
     //console.log('hexMsg: ' + hexMsg.toString());
     common.web3.personal.sign(hexMsg, common.web3.eth.accounts[0], function(err, signature) {
 	if (!!err) {
