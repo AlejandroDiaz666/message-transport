@@ -3,7 +3,7 @@ var common = require('./common');
 var ether = require('./ether');
 var mtEther = require('./mtEther');
 var dhcrypt = require('./dhcrypt');
-var msgUtil = require('./msgUtil');
+var mtUtil = require('./mtUtil');
 var autoVersion = require('./autoVersion');
 var ethUtils = require('ethereumjs-util');
 var Buffer = require('buffer/').Buffer;
@@ -297,7 +297,7 @@ function setMsgRefButtonHandler() {
     msgRefButton.addEventListener('click', function() {
 	var ref = msgRefButton.ref;
 	if (!!ref) {
-	    msgUtil.getAndParseIdMsg(ref, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
+	    mtUtil.getAndParseIdMsg(ref, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
 		var otherAddr, msgCount;
 		var msgTextArea = document.getElementById('msgTextArea');
 		var viewRecvButton = document.getElementById('viewRecvButton');
@@ -1226,7 +1226,7 @@ function makeMsgList(msgNo, cb) {
     var batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
     var listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
     var firstMsgNo = batch * 10 + 1;
-    var getMsgLogFcn   = (index.listMode == 'recv') ? msgUtil.getRecvMsgLogs      : msgUtil.getSentMsgLogs;
+    var getMsgLogFcn   = (index.listMode == 'recv') ? mtUtil.getRecvMsgLogs       : mtUtil.getSentMsgLogs;
     var parseLogsFcn   = (index.listMode == 'recv') ? mtEther.parseMessageRxEvent : mtEther.parseMessageTxEvent;
     getMsgLogFcn(common.web3.eth.accounts[0], batch, function(err, result) {
 	if (!!err || !result || result.length < listIdx + 1) {
@@ -1272,7 +1272,7 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
 	    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
 	    return;
 	}
-	msgUtil.getAndParseIdMsg(msgId, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
+	mtUtil.getAndParseIdMsg(msgId, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
 	    if (!!err) {
 		err = 'Message ID ' + msgId + ' not found';
 		addToMsgList(listIdx, msgNo, '', '', '', '', err, listTableBody);
@@ -1280,7 +1280,7 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
 		return;
 	    }
 	    var otherAddr = (index.listMode == 'sent') ? toAddr : fromAddr;
-	    msgUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, (err, decrypted) => {
+	    mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, (err, decrypted) => {
 		if (!!err) {
 		    addToMsgList(listIdx, msgNo, '', '', '', '', 'message decryption error', listTableBody);
 		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
@@ -1297,7 +1297,7 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
 
 function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
     console.log('addToMsgList: msgNo = ' + msgNo + ', subject = ' + content.substring(0, 20));
-    var subject = msgUtil.extractSubject(content, 80);
+    var subject = mtUtil.extractSubject(content, 80);
     var div, msgNoArea, addrArea, subjectArea, dateArea, msgIdArea
     (div = document.createElement("div")).id = 'msgListDivIdx-' + listIdx;
     var newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo)) ? '' : 'New';
@@ -1337,7 +1337,7 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
     msgIdArea.rows = 1;
     msgIdArea.readonly = 'readonly';
     msgIdArea.disabled = 'disabled';
-    msgIdArea.value = (!!msgId) ? msgUtil.abbreviateMsgId(msgId) : '';
+    msgIdArea.value = (!!msgId) ? mtUtil.abbreviateMsgId(msgId) : '';
     (subjectArea = document.createElement("textarea")).className = 'msgListSubjectArea';
     subjectArea.rows = 1;
     subjectArea.readonly = 'readonly';
@@ -1580,7 +1580,7 @@ function replaceElemClassFromTo(elemId, from, to, disabled) {
 function showIdAndRef(msgId, ref, enable) {
     if (!!msgId) {
 	var msgIdArea = document.getElementById('msgIdArea');
-	msgIdArea.value = 'Msg ID: ' + msgUtil.abbreviateMsgId(msgId);
+	msgIdArea.value = 'Msg ID: ' + mtUtil.abbreviateMsgId(msgId);
 	msgIdArea.msgId = msgId;
     }
     var msgRefButton = document.getElementById('msgRefButton');
@@ -1590,7 +1590,7 @@ function showIdAndRef(msgId, ref, enable) {
 	msgRefButton.ref = '';
 	msgRefButton.disabled = true;
     } else {
-	msgRefButton.textContent = 'Ref: ' + msgUtil.abbreviateMsgId(ref);
+	msgRefButton.textContent = 'Ref: ' + mtUtil.abbreviateMsgId(ref);
 	msgRefButton.ref = ref;
 	msgRefButton.disabled = (enable) ? false : true;
     }

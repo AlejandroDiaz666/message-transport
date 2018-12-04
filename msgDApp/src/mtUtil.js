@@ -8,7 +8,7 @@ var mtEther = require('./mtEther');
 var dhcrypt = require('./dhcrypt');
 var BN = require("bn.js");
 
-var msgUtil = module.exports = {
+var mtUtil = module.exports = {
 
     // create a shorter base64 message id from a long hex msgId
     // note: every 3 bytes produces 4 base64 chars; so use a multiple of 3 bytes to avoid padding chars, '=='

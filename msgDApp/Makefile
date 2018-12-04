@@ -37,6 +37,6 @@ $(BUNDLEDIR)/index.js: src/index.js \
 	$(BUNDLEDIR)/ether.js \
 	$(BUNDLEDIR)/mtEther.js \
 	$(BUNDLEDIR)/dhcrypt.js \
-	$(BUNDLEDIR)/msgUtil.js \
+	$(BUNDLEDIR)/mtUtil.js  \
 	$(BUNDLEDIR)/common.js  \
 	$(BUNDLEDIR)/autoVersion.js
