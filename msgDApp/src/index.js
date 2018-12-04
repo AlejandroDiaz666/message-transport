@@ -76,22 +76,34 @@ function setOptionsButtonHandlers() {
     });
     var marysThemeButton = document.getElementById('marysThemeButton');
     var wandasThemeButton = document.getElementById('wandasThemeButton');
+    var relaxThemeButton = document.getElementById('relaxThemeButton');
     var themedStyle = document.getElementById('themedStyle');
+    var updateThemeFcn = (theme) => {
+	console.log('got ' + theme);
+	localStorage['theme'] = theme;
+	if (themedStyle.href.indexOf('marys-style') >= 0)
+	    themedStyle.href = themedStyle.href.replace('marys-style', localStorage['theme']);
+	if (themedStyle.href.indexOf('wandas-style') >= 0)
+	    themedStyle.href = themedStyle.href.replace('wandas-style', localStorage['theme']);
+	if (themedStyle.href.indexOf('relax-style') >= 0)
+	    themedStyle.href = themedStyle.href.replace('relax-style', localStorage['theme']);
+    };
     if (!!localStorage['theme'] && localStorage['theme'].indexOf('wanda') >= 0) {
+	console.log('start wanda');
 	wandasThemeButton.checked = true;
-	themedStyle.href = themedStyle.href.replace('marys-style', 'wandas-style');
+	updateThemeFcn('wandas-style');
+    } else if (!!localStorage['theme'] && localStorage['theme'].indexOf('relax') >= 0) {
+	console.log('start relax');
+	relaxThemeButton.checked = true;
+	updateThemeFcn('relax-style');
     } else {
+	console.log('start mary');
 	marysThemeButton.checked = true;
-	themedStyle.href = themedStyle.href.replace('wandas-style', 'marys-style');
+	updateThemeFcn('marys-style');
     }
-    marysThemeButton.addEventListener('click', function() {
-	themedStyle.href = themedStyle.href.replace('wandas-style', 'marys-style');
-	localStorage['theme'] = 'mary';
-    });
-    wandasThemeButton.addEventListener('click', function() {
-	themedStyle.href = themedStyle.href.replace('marys-style', 'wandas-style');
-	localStorage['theme'] = 'wanda';
-    });
+    marysThemeButton.addEventListener('click', () => {	updateThemeFcn('marys-style'); });
+    wandasThemeButton.addEventListener('click', () => { updateThemeFcn('wandas-style'); });
+    relaxThemeButton.addEventListener('click', () => { updateThemeFcn('relax-style'); });
     var logServerSelect = document.getElementById('logServerSelect');
     var logServerSelectFcn = () => {
 	localStorage['logsNode'] = ether.node = logServerSelect.value;
