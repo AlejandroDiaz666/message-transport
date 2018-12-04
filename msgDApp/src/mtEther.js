@@ -214,8 +214,11 @@ var mtEther = module.exports = {
 	var msgHex = '0x' + result.data.slice((2*msgOffset)+64+2, (2*msgOffset)+64+2+(msgLen*2));
 	var blockNumber = parseInt(result.blockNumber);
 	//console.log('parseMessageEvent: blockNumber = ' + blockNumber);
-	var timeStamp = parseInt(result.timeStamp);
-	var date = (new Date(timeStamp * 1000)).toUTCString();
+	var date = 'Block #' + blockNumber.toString(10);
+	if (!!result.timeStamp) {
+	    var timeStamp = parseInt(result.timeStamp);
+	    date = (new Date(timeStamp * 1000)).toUTCString();
+	}
 	//console.log('parseMessageEvent: date = ' + date);
 	cb(null, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date);
     },

@@ -281,7 +281,7 @@ var common = module.exports = {
     },
 
 
-    fetch: function(url, callback) {
+    fetch: function(url, extraOptions, callback) {
 	var timeout = false;
 	var complete = false;
 	var fetch_timer = setTimeout(function() {
@@ -295,7 +295,9 @@ var common = module.exports = {
 	}, 15000);
 	console.log('common.fetch: fetching ' + url);
 	var request = new Request(url);
-	fetch(request, { mode: 'cors'} ).then(function(resp) {
+	var options = { mode: 'cors'};
+	Object.assign(options, extraOptions);
+	fetch(request, options).then(function(resp) {
 	    console.log('common.fetch: got resp = ' + resp + ', status = ' + resp.status + ', (' + resp.statusText + ')');
 	    clearTimeout(fetch_timer);
 	    complete = true;

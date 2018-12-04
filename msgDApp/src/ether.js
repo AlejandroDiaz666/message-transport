@@ -17,13 +17,19 @@ var ether = module.exports = {
     WEI_PER_SZABO:     1000000000000,
     WEI_PER_FINNEY:    1000000000000000,
     WEI_PER_ETH:       1000000000000000000,
+    etherscanioHost: '',
+    //tx status host for user to check status of transactions
+    etherscanioTxStatusHost: '',
     etherscanioHost_kovan: 'api-kovan.etherscan.io',
     etherscanioTxStatusHost_kovan: 'kovan.etherscan.io',
     etherscanioHost_ropsten: 'api-ropsten.etherscan.io',
     etherscanioTxStatusHost_ropsten: 'ropsten.etherscan.io',
     etherscanioHost_main: 'api.etherscan.io',
     etherscanioTxStatusHost_main: 'etherscan.io',
-
+    infuraioHost: 'kovan.infura.io',
+    infuraioProjectID: 'd31bddc6dc8e47d29906cee739e4fe7f',
+    //node = 'etherscanio' | 'infuraio'
+    node: 'etherscanio',
 
     //cb(err, network)
     getNetwork: function(web3, cb) {
@@ -145,43 +151,56 @@ var ether = module.exports = {
     },
     */
     getLogs: function(options, cb) {
-	var url = 'https://' + ether.etherscanioHost   +
-	    '/api?module=logs&action=getLogs'          +
-	    '&fromBlock=' + options.fromBlock          +
-	    '&toBlock=' + options.toBlock              +
-	    '&address=' + options.address              +
-	    '&topic0=' + options.topics[0];
-	if (options.topics.length > 1) {
-	    if (!!options.topics[1])
-		url += '&topic1=' + options.topics[1];
-	    if (options.topics.length > 2) {
-		if (!!options.topics[2])
-		    url += '&topic2=' + options.topics[2];
-		if (options.topics.length > 3) {
-		    if (!!options.topics[3])
-			url += '&topic3=' + options.topics[3];
+	var url, options;
+	if (ether.node == 'etherscanio') {
+	    url = 'https://' + ether.etherscanioHost   +
+		'/api?module=logs&action=getLogs'          +
+		'&fromBlock=' + options.fromBlock          +
+		'&toBlock=' + options.toBlock              +
+		'&address=' + options.address              +
+		'&topic0=' + options.topics[0];
+	    if (options.topics.length > 1) {
+		if (!!options.topics[1])
+		    url += '&topic1=' + options.topics[1];
+		if (options.topics.length > 2) {
+		    if (!!options.topics[2])
+			url += '&topic2=' + options.topics[2];
+		    if (options.topics.length > 3) {
+			if (!!options.topics[3])
+			    url += '&topic3=' + options.topics[3];
+		    }
 		}
 	    }
+	    var options = null;
+	} else {
+	    url = 'https://' + ether.infuraioHost + '/v3/' + ether.infuraioProjectID;
+	    options.fromBlock = 'earliest';
+	    var paramsStr = JSON.stringify(options);
+	    console.log('ether.getLogs: paramsStr = ' + paramsStr);
+	    var body = '{"jsonrpc":"2.0","method":"eth_getLogs","params":[' + paramsStr + '],"id":1}';
+	    options = { method: 'post', body: body, headers: { 'Content-Type': 'application/json' } };
+	    console.log('ether.getLogs: body = ' + body);
 	}
-	common.fetch(url, function(str, err) {
+	common.fetch(url, options, function(str, err) {
 	    if (!str || !!err) {
 		var err = "error retreiving events: " + err;
 		console.log('ether.getLogs: ' + err);
 		cb(err, '');
 		return;
 	    }
+	    console.log('ether.getLogs: err = ' + err + ', str = ' + str);
 	    //typical
 	    //  { "status"  : "1",
 	    //    "message" : "OK",
 	    //    "result"  : [...]
 	    //  }
 	    var eventsResp = JSON.parse(str);
-	    if (eventsResp.status == 0 && eventsResp.message == 'No records found') {
+	    if (ether.node == 'etherscanio' && eventsResp.status == 0 && eventsResp.message == 'No records found') {
 		//this is not an err... just no events
 		cb(err, '');
 		return;
 	    }
-	    if (eventsResp.status != 1 || eventsResp.message != 'OK') {
+	    if (ether.node == 'etherscanio' && (eventsResp.status != 1 || eventsResp.message != 'OK')) {
 		var err = "error retreiving events: bad status (" + eventsResp.status + ", " + eventsResp.message + ")";
 		console.log('ether.getLogs: ' + err);
 		cb(err, '');

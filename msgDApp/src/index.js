@@ -81,6 +81,14 @@ function setOptionsButtonHandlers() {
 	var themedStyle = document.getElementById('themedStyle');
 	themedStyle.href = themedStyle.href.replace('marys-style', 'wandas-style');
     });
+    var logServerSelect = document.getElementById('logServerSelect');
+    logServerSelect.addEventListener('change', function() {
+	ether.node = logServerSelect.value;
+	//infura logs do not provide date
+	var msgListHeaderDate = document.getElementById('msgListHeaderDate');
+	msgListHeaderDate.textContent = (ether.node == 'infuraio') ? 'Block' : 'Date';
+	beginTheBeguine('startup');
+    });
 }
 
 function setMainButtonHandlers() {
