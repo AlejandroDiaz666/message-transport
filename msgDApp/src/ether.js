@@ -142,15 +142,14 @@ var ether = module.exports = {
     //options: {
     //	fromBlock, toBlock, address, topics[]
     //
-    //this is the more correct way to get logs.... except that it's not reliable :(
-    /*
     getLogs: function(options, cb) {
-        const filter = common.web3.eth.filter(options);
-	filter.get(cb);
-	filter.stopWatching();
-    },
-    */
-    getLogs: function(options, cb) {
+	console.log('getLogs: ether.node = ' + ether.node);
+	if (ether.node == 'metamask') {
+            const filter = common.web3.eth.filter(options);
+	    filter.get(cb);
+	    filter.stopWatching();
+	    return;
+	}
 	var url, options;
 	if (ether.node == 'etherscan.io') {
 	    url = 'https://' + ether.etherscanioHost   +

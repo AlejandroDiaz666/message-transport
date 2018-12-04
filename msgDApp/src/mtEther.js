@@ -254,8 +254,11 @@ var mtEther = module.exports = {
 	var msgId = result.data;
 	var blockNumber = parseInt(result.blockNumber);
 	//console.log('parseMessageTxEvent: blockNumber = ' + blockNumber);
-	var timeStamp = parseInt(result.timeStamp);
-	var date = (new Date(timeStamp * 1000)).toUTCString();
+	var date = 'Block #' + blockNumber.toString(10);
+	if (!!result.timeStamp) {
+	    var timeStamp = parseInt(result.timeStamp);
+	    date = (new Date(timeStamp * 1000)).toUTCString();
+	}
 	//console.log('parseMessageTxEvent: date = ' + date);
 	cb(null, fromAddr, txCount, msgId, blockNumber, date);
     },
@@ -290,8 +293,11 @@ var mtEther = module.exports = {
 	var msgId = result.data;
 	var blockNumber = parseInt(result.blockNumber);
 	//console.log('parseMessageRxEvent: blockNumber = ' + blockNumber);
-	var timeStamp = parseInt(result.timeStamp);
-	var date = (new Date(timeStamp * 1000)).toUTCString();
+	var date = 'Block #' + blockNumber.toString(10);
+	if (!!result.timeStamp) {
+	    var timeStamp = parseInt(result.timeStamp);
+	    date = (new Date(timeStamp * 1000)).toUTCString();
+	}
 	//console.log('parseMessageRxEvent: date = ' + date);
 	cb(null, toAddr, rxCount, msgId, blockNumber, date);
     },

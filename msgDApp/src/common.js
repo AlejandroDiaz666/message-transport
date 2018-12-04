@@ -30,7 +30,7 @@ var common = module.exports = {
 	} else if (typeof window.web3 !== 'undefined') {
 	    // Legacy dapp browsers...
 	    common.web3 = new Web3(web3.currentProvider);
-	    console.log('found old metamask. prvider: ' + web3.currentProvider.toString());
+	    console.log('found old metamask. provider: ' + web3.currentProvider.toString());
 	    web3.version.getNetwork((err, netId) => {
 		if (!!err)
 		    cb(err,null)

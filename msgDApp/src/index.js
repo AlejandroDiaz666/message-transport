@@ -100,15 +100,13 @@ function setOptionsButtonHandlers() {
     var logServerSelect = document.getElementById('logServerSelect');
     var logServerSelectFcn = () => {
 	localStorage['logsNode'] = ether.node = logServerSelect.value;
-	//infura logs do not provide date
+	//only etherscan.io provides timestamp
 	var msgListHeaderDate = document.getElementById('msgListHeaderDate');
-	msgListHeaderDate.textContent = (ether.node.indexOf('infura.io') >= 0) ? 'Block' : 'Date';
+	msgListHeaderDate.textContent = (ether.node.indexOf('etherscan.io') >= 0) ? 'Date' : 'Block';
     };
-    if (!!localStorage['logsNode'] && localStorage['logsNode'].indexOf('infura.io') >= 0) {
-	logServerSelect.value = 'infura.io';
-    } else {
-	logServerSelect.value = 'etherscan.io';
-    }
+    if (!localStorage['logsNode'])
+	localStorage['logsNode'] = 'etherscan.io';
+    logServerSelect.value = localStorage['logsNode'];
     logServerSelectFcn();
     logServerSelect.addEventListener('change', logServerSelectFcn);
     //
