@@ -69,26 +69,43 @@ function setOptionsButtonHandlers() {
     var optionsButton = document.getElementById('optionsButton');
     optionsButton.addEventListener('click', () => { replaceElemClassFromTo('optionsPanel', 'hidden', 'visibleB', null); });
     var closeOptionsButton = document.getElementById('closeOptionsButton');
-    closeOptionsButton.addEventListener('click', () => { replaceElemClassFromTo('optionsPanel', 'visibleB', 'hidden', null); });
+    closeOptionsButton.addEventListener('click', () => {
+	replaceElemClassFromTo('optionsPanel', 'visibleB', 'hidden', null);
+	if (!!index.listMode)
+	    beginTheBeguine(index.listMode);
+    });
     var marysThemeButton = document.getElementById('marysThemeButton');
     var wandasThemeButton = document.getElementById('wandasThemeButton');
-    marysThemeButton.checked = true;
-    marysThemeButton.addEventListener('click', function() {
-	var themedStyle = document.getElementById('themedStyle');
+    var themedStyle = document.getElementById('themedStyle');
+    if (!!localStorage['theme'] && localStorage['theme'].indexOf('wanda') >= 0) {
+	wandasThemeButton.checked = true;
+	themedStyle.href = themedStyle.href.replace('marys-style', 'wandas-style');
+    } else {
+	marysThemeButton.checked = true;
 	themedStyle.href = themedStyle.href.replace('wandas-style', 'marys-style');
+    }
+    marysThemeButton.addEventListener('click', function() {
+	themedStyle.href = themedStyle.href.replace('wandas-style', 'marys-style');
+	localStorage['theme'] = 'mary';
     });
     wandasThemeButton.addEventListener('click', function() {
-	var themedStyle = document.getElementById('themedStyle');
 	themedStyle.href = themedStyle.href.replace('marys-style', 'wandas-style');
+	localStorage['theme'] = 'wanda';
     });
     var logServerSelect = document.getElementById('logServerSelect');
-    logServerSelect.addEventListener('change', function() {
-	ether.node = logServerSelect.value;
+    var logServerSelectFcn = () => {
+	localStorage['logsNode'] = ether.node = logServerSelect.value;
 	//infura logs do not provide date
 	var msgListHeaderDate = document.getElementById('msgListHeaderDate');
-	msgListHeaderDate.textContent = (ether.node == 'infuraio') ? 'Block' : 'Date';
-	beginTheBeguine('startup');
-    });
+	msgListHeaderDate.textContent = (ether.node.indexOf('infura.io') >= 0) ? 'Block' : 'Date';
+    };
+    if (!!localStorage['logsNode'] && localStorage['logsNode'].indexOf('infura.io') >= 0) {
+	logServerSelect.value = 'infura.io';
+    } else {
+	logServerSelect.value = 'etherscan.io';
+    }
+    logServerSelectFcn();
+    logServerSelect.addEventListener('change', logServerSelectFcn);
 }
 
 function setMainButtonHandlers() {

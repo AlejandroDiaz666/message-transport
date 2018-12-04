@@ -28,8 +28,8 @@ var ether = module.exports = {
     etherscanioTxStatusHost_main: 'etherscan.io',
     infuraioHost: 'kovan.infura.io',
     infuraioProjectID: 'd31bddc6dc8e47d29906cee739e4fe7f',
-    //node = 'etherscanio' | 'infuraio'
-    node: 'etherscanio',
+    //node = 'etherscan.io' | 'infura.io'
+    node: 'etherscan.io',
 
     //cb(err, network)
     getNetwork: function(web3, cb) {
@@ -152,7 +152,7 @@ var ether = module.exports = {
     */
     getLogs: function(options, cb) {
 	var url, options;
-	if (ether.node == 'etherscanio') {
+	if (ether.node == 'etherscan.io') {
 	    url = 'https://' + ether.etherscanioHost   +
 		'/api?module=logs&action=getLogs'          +
 		'&fromBlock=' + options.fromBlock          +
@@ -195,12 +195,12 @@ var ether = module.exports = {
 	    //    "result"  : [...]
 	    //  }
 	    var eventsResp = JSON.parse(str);
-	    if (ether.node == 'etherscanio' && eventsResp.status == 0 && eventsResp.message == 'No records found') {
+	    if (ether.node == 'etherscan.io' && eventsResp.status == 0 && eventsResp.message == 'No records found') {
 		//this is not an err... just no events
 		cb(err, '');
 		return;
 	    }
-	    if (ether.node == 'etherscanio' && (eventsResp.status != 1 || eventsResp.message != 'OK')) {
+	    if (ether.node == 'etherscan.io' && (eventsResp.status != 1 || eventsResp.message != 'OK')) {
 		var err = "error retreiving events: bad status (" + eventsResp.status + ", " + eventsResp.message + ")";
 		console.log('ether.getLogs: ' + err);
 		cb(err, '');
