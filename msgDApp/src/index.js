@@ -671,17 +671,19 @@ function handleUnlockedMetaMask(mode) {
     index.waitingForTxid = false;
     index.localStoragePrefix = (common.web3.eth.accounts[0]).substring(2, 10) + '-';
     //
+    let recvMsgNoFromURL = null;
+    let sentMsgNoFromURL = null;
     if (mode == 'startup') {
-	const recvMsgNo = common.getUrlParameterByName(window.location.href, 'recvMsgNo')
-	const sentMsgNo = common.getUrlParameterByName(window.location.href, 'sentMsgNo')
-	if (!!sentMsgNo)
-	    index.sentMessageNo = parseInt(sentMsgNo);
+	recvMsgNoFromURL = common.getUrlParameterByName(window.location.href, 'recvMsgNo')
+	sentMsgNoFromURL = common.getUrlParameterByName(window.location.href, 'sentMsgNo')
+	if (!!sentMsgNoFromURL)
+	    index.sentMessageNo = parseInt(sentMsgNoFromURL);
 	else if (!!localStorage[index.localStoragePrefix + '-sentMessageNo'])
 	    index.sentMessageNo = localStorage[index.localStoragePrefix + '-sentMessageNo'];
 	else
 	    index.sentMessageNo = 1;
-	if (!!recvMsgNo)
-	    index.recvMessageNo = parseInt(recvMsgNo);
+	if (!!recvMsgNoFromURL)
+	    index.recvMessageNo = parseInt(recvMsgNoFromURL);
 	else if (!!localStorage[index.localStoragePrefix + '-recvMessageNo'] && localStorage['onStartGoto'] == 'last-viewed')
 	    index.recvMessageNo = localStorage[index.localStoragePrefix + '-recvMessageNo'];
 	else
@@ -717,7 +719,7 @@ function handleUnlockedMetaMask(mode) {
 	    if (!index.publicKey || index.publicKey == '0x') {
 		handleUnregisteredAcct();
 	    } else {
-		if (mode == 'startup' && localStorage['onStartGoto'] == 'first-unread') {
+		if (mode == 'startup' && localStorage['onStartGoto'] == 'first-unread' && !recvMsgNoFromURL) {
 		    const msgNo = index.recvMessageNo;
 		    const maxMsgNo = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
 		    const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
