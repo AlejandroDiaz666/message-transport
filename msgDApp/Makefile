@@ -17,6 +17,18 @@ clean:
 	rm -f css/*
 	rm -f bundle/*
 
+deploy:
+	rm -rf amt/*
+	if [ ! -d amt ]; then mkdir amt; fi
+	mkdir amt/css
+	mkdir amt/images
+	mkdir amt/bundle
+	cp index.html amt/
+	cp images/* amt/images/
+	cp css/*_TIMESTAMP*.css amt/css/
+	cp bundle/SVGAnimation.js amt/bundle/
+	cp bundle/index_TIMESTAMP*.js amt/bundle/
+
 $(CSSDIR)/intro.css : $(SRCDIR)/intro.css
 	if [ ! -d css ]; then mkdir css; fi
 	cp $< $@
