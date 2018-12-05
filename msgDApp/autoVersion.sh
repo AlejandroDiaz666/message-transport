@@ -7,4 +7,5 @@
 #
 BRANCH=$(git branch | grep "*" | cut -d " " -f 2)
 VER=$(git describe --tags --long)
+echo "${BRANCH}-${VER}" > src/autoVersion.txt
 echo "var autoVersion = module.exports = { version() { return \"$BRANCH $VER\"; } }" > src/autoVersion.js

@@ -6,6 +6,7 @@ BUNDLEFILES := $(patsubst $(SRCDIR)/%.js,$(BUNDLEDIR)/%.js,$(JSSRCFILES))
 CSSTHEMEFILES := $(wildcard $(SRCDIR)/*-theme.css)
 CSSSTYLEFILES := $(patsubst $(SRCDIR)/%-theme.css,$(CSSDIR)/%-style.css,$(CSSTHEMEFILES))
 CSSFILES := $(CSSDIR)/intro.css $(CSSSTYLEFILES)
+VERSION := $(shell cat src/autoVersion.txt)
 
 
 all:	$(BUNDLEDIR)/autoVersion.js \
@@ -28,6 +29,8 @@ deploy:
 	cp css/*_TIMESTAMP*.css amt/css/
 	cp bundle/SVGAnimation.js amt/bundle/
 	cp bundle/index_TIMESTAMP*.js amt/bundle/
+	./autoVersion.sh
+	tar -czf amt-$(VERSION).tar.gz amt
 
 $(CSSDIR)/intro.css : $(SRCDIR)/intro.css
 	if [ ! -d css ]; then mkdir css; fi
@@ -41,6 +44,7 @@ $(CSSDIR)/%-style.css : $(SRCDIR)/%-theme.css $(SRCDIR)/style.css
 	./autoVersion.sh
 
 $(BUNDLEDIR)/autoVersion.js : $(SRCDIR)/autoVersion.js .PHONEY
+	cp $< $@
 
 $(BUNDLEDIR)/%.js : $(SRCDIR)/%.js
 	browserify $< -o $@
