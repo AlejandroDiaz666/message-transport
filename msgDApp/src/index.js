@@ -32,6 +32,7 @@ const index = module.exports = {
     waitingForTxid: false,
     localStoragePrefix: '',
     introCompletePromise: null,
+    periodicAcctCheckCount: 0,
 
     main: function() {
 	console.log('index.main');
@@ -530,7 +531,7 @@ const timerIsPaused = () => {
 }
 //
 function periodicCheckForAccountChanges() {
-    let count = 0;
+    console.log('periodicCheckForAccountChanges: enter');
     if (timerIsPaused()) {
 	console.log('timerIsPaused!');
 	setTimeout(periodicCheckForAccountChanges, 10000);
@@ -545,23 +546,28 @@ function periodicCheckForAccountChanges() {
 	    setTimeout(periodicCheckForAccountChanges, 10000);
 	    return;
 	}
-	if (!acct || ++count < 5 || timerIsPaused()) {
+	if (!acct || ++index.periodicAcctCheckCount < 5 || timerIsPaused()) {
 	    setTimeout(periodicCheckForAccountChanges, 10000);
 	    return;
 	}
-	count = 0;
-	console.log('periodicCheckForAccountChanges: MetaMask account unchanged...' + count);
+	index.periodicAcctCheckCount = 0;
+	console.log('periodicCheckForAccountChanges: MetaMask account unchanged...');
 	mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
-	    const recvCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
-	    const sentCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
-	    const recvCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
-	    const sentCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
-	    if (recvCntNew != recvCntOld) {
-		console.log('periodicCheckForAccountChanges: recvCnt ' + recvCntOld + ' => ' + recvCntNew);
-		beginTheBeguine('recv');
-	    } else if (sentCntNew != sentCntOld) {
-		console.log('periodicCheckForAccountChanges: sentCnt ' + sentCntOld + ' => ' + sentCntNew);
-		beginTheBeguine('send');
+	    console.log('index.acctInfo = ' + index.acctInfo + '_acctInfo = ' + _acctInfo);
+	    if ((!!_acctInfo && !index.acctInfo) || (!_acctInfo && !!index.acctInfo)) {
+		beginTheBeguine('null');
+	    } else if (!!index.acctInfo && !!_acctInfo) {
+		const recvCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+		const sentCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
+		const recvCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+		const sentCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
+		if (recvCntNew != recvCntOld) {
+		    console.log('periodicCheckForAccountChanges: recvCnt ' + recvCntOld + ' => ' + recvCntNew);
+		    beginTheBeguine('recv');
+		} else if (sentCntNew != sentCntOld) {
+		    console.log('periodicCheckForAccountChanges: sentCnt ' + sentCntOld + ' => ' + sentCntNew);
+		    beginTheBeguine('send');
+		}
 	    }
 	    setTimeout(periodicCheckForAccountChanges, 10000);
 	    return;
@@ -684,18 +690,6 @@ function handleUnlockedMetaMask(mode) {
     //
     const accountArea = document.getElementById('accountArea');
     accountArea.value = 'Your account: ' + common.web3.eth.accounts[0];
-    ether.getNetwork(common.web3, function(err, network) {
-	const networkArea = document.getElementById('networkArea');
-	if (!!err) {
-	    networkArea.value = 'Error: ' + err;
-	} else {
-	    networkArea.value = 'Network: ' + network;
-	    if (network.startsWith('Mainnet'))
-		networkArea.className = (networkArea.className).replace('attention', '');
-	    else if (networkArea.className.indexOf(' attention' < 0))
-		networkArea.className += ' attention';
-	}
-    });
     ether.getBalance(common.web3, 'szabo', function(err, balance) {
 	const balanceArea = document.getElementById('balanceArea');
 	const balanceSzabo = parseInt(balance);
@@ -703,24 +697,37 @@ function handleUnlockedMetaMask(mode) {
 	const balanceETH = (balanceSzabo / ether.SZABO_PER_ETH).toFixed(6);
 	balanceArea.value = 'Balance: ' + balanceETH.toString(10) + ' Eth';
     });
-    mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
-	index.acctInfo = _acctInfo;
-	index.publicKey = (!!index.acctInfo) ? index.acctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
-	//console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(index.acctInfo));
-	//console.log('handleUnlockedMetaMask: publicKey: ' + index.publicKey);
-	if (!index.publicKey || index.publicKey == '0x') {
-	    handleUnregisteredAcct();
+    ether.getNetwork(common.web3, function(err, network) {
+	const networkArea = document.getElementById('networkArea');
+	if (!!err) {
+	    networkArea.value = 'Error: ' + err;
 	} else {
-	    if (mode == 'startup' && localStorage['onStartGoto'] == 'first-unread') {
-		const msgNo = index.recvMessageNo;
-		const maxMsgNo = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
-		const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
-		console.log('handleUnlockedMetaMask: unreadMsgNo = ' + unreadMsgNo);
-		index.recvMessageNo = (unreadMsgNo < 0) ? maxMsgNo : unreadMsgNo;
-		mode = 'recv';
-	    }
-	    handleRegisteredAcct(mode);
+	    networkArea.value = 'Network: ' + network;
+	    mtEther.setNetwork(network);
+	    if (network.startsWith('Mainnet'))
+		networkArea.className = (networkArea.className).replace('attention', '');
+	    else if (networkArea.className.indexOf(' attention' < 0))
+		networkArea.className += ' attention';
 	}
+	mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
+	    index.acctInfo = _acctInfo;
+	    index.publicKey = (!!index.acctInfo) ? index.acctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
+	    //console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(index.acctInfo));
+	    //console.log('handleUnlockedMetaMask: publicKey: ' + index.publicKey);
+	    if (!index.publicKey || index.publicKey == '0x') {
+		handleUnregisteredAcct();
+	    } else {
+		if (mode == 'startup' && localStorage['onStartGoto'] == 'first-unread') {
+		    const msgNo = index.recvMessageNo;
+		    const maxMsgNo = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+		    const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
+		    console.log('handleUnlockedMetaMask: unreadMsgNo = ' + unreadMsgNo);
+		    index.recvMessageNo = (unreadMsgNo < 0) ? maxMsgNo : unreadMsgNo;
+		    mode = 'recv';
+		}
+		handleRegisteredAcct(mode);
+	    }
+	});
     });
 }
 

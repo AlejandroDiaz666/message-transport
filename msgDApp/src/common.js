@@ -16,17 +16,16 @@ const common = module.exports = {
 	    // Modern dapp browsers...
             common.web3 = new Web3(ethereum);
 	    //console.log('checkForMetaMask: found new metamask');
-	    //provider: ' + common.web3.currentProvider.toString());
             try {
 		// Request account access if needed
 		await ethereum.enable();
 		cb(null, common.web3);
-            } catch (error) {
+	    } catch (error) {
 		// User denied account access...
-		console.log('checkForMetaMask: err = ' + error.toString());
+	        console.log('checkForMetaMask: err = ' + error.toString());
 		common.web3 = null;
 		cb('You must enable the MetaMask plugin to use this utility', null);
-            }
+	    }
 	} else if (typeof window.web3 !== 'undefined') {
 	    // Legacy dapp browsers...
 	    common.web3 = new Web3(web3.currentProvider);
@@ -34,8 +33,6 @@ const common = module.exports = {
 	    web3.version.getNetwork((err, netId) => {
 		if (!!err)
 		    cb(err,null)
-		else if (false && netId != "1")
-		    cb('MetaMask must be set to mainnet!', null);
 		else if (!!requireAcct && !web3.eth.accounts[0])
 		    cb('To use this utility, a MetaMask account must be unlocked', null);
 		else
