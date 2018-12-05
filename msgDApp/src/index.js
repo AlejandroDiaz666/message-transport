@@ -69,8 +69,12 @@ function setOptionsButtonHandlers() {
     const closeOptionsButton = document.getElementById('closeOptionsButton');
     closeOptionsButton.addEventListener('click', () => {
 	replaceElemClassFromTo('optionsPanel', 'visibleB', 'hidden', null);
-	if (!!index.listMode)
-	    beginTheBeguine(index.listMode);
+	if (localStorage['logsNode'] != ether.node) {
+	    //if node changed...
+	    ether.node = localStorage['logsNode'];
+	    if (!!index.acctInfo && !!index.listMode)
+		makeMsgList(getCurMsgNo(index.acctInfo), () => { showMsgLoop(index.acctInfo); });
+	}
     });
     const marysThemeButton = document.getElementById('marysThemeButton');
     const wandasThemeButton = document.getElementById('wandasThemeButton');
@@ -99,16 +103,10 @@ function setOptionsButtonHandlers() {
     wandasThemeButton.addEventListener('click', () => { updateThemeFcn('wandas-style'); });
     relaxThemeButton.addEventListener('click', () => { updateThemeFcn('relax-style'); });
     const logServerSelect = document.getElementById('logServerSelect');
-    const logServerSelectFcn = () => {
-	localStorage['logsNode'] = ether.node = logServerSelect.value;
-	//only etherscan.io provides timestamp
-	const msgListHeaderDate = document.getElementById('msgListHeaderDate');
-	msgListHeaderDate.textContent = (ether.node.indexOf('etherscan.io') >= 0) ? 'Date' : 'Block';
-    };
+    const logServerSelectFcn = () => { localStorage['logsNode'] = logServerSelect.value; };
     if (!localStorage['logsNode'])
-	localStorage['logsNode'] = 'etherscan.io';
-    logServerSelect.value = localStorage['logsNode'];
-    logServerSelectFcn();
+	localStorage['logsNode'] = ether.node;
+    logServerSelect.value = ether.node = localStorage['logsNode'];
     logServerSelect.addEventListener('change', logServerSelectFcn);
     //
     const startFirstUnreadButton = document.getElementById('startFirstUnreadButton');
@@ -581,6 +579,9 @@ function periodicCheckForAccountChanges() {
 //
 async function beginTheBeguine(mode) {
     await doFirstIntro(false);
+    //listMode starts off here null. it will be set in handleViewRecv and handleViewSent. it's used
+    //as a flag by button handlers to indicate that it's ok to redraw the list.
+    index.listMode = null;
     common.checkForMetaMask(true, function(err, w3) {
 	const acct = (!err && !!w3) ? w3.eth.accounts[0] : null;
 	console.log('beginTheBeguine: checkForMetaMask acct = ' + acct);
@@ -1231,6 +1232,9 @@ function handleViewSent(acctInfo, refreshMsgList) {
 function makeMsgList(msgNo, cb) {
     clearMsgList();
     console.log('makeMsgList: msgNo = ' + msgNo + ', index.listIdx = ' + index.listIdx);
+    //only etherscan.io provides timestamp
+    const msgListHeaderDate = document.getElementById('msgListHeaderDate');
+    msgListHeaderDate.textContent = (ether.node.indexOf('etherscan.io') >= 0) ? 'Date' : 'Block';
     const batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
     const listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
     const firstMsgNo = batch * 10 + 1;
@@ -1384,6 +1388,12 @@ function getCurMsgNo(acctInfo) {
 // necessary, and calculate the current listIdx and hightlight the correct listEntry.
 // also saves current msgNo to persistent storage.
 //
+// note: makeMsgList creates and displays the list; showMsgLoop performs any special processing for the currently selected
+// list entry. when traversing the list showMsgLoop re-displays the current entry (index.listIdx), and highlights the new
+// entry (index[msgNoCounter]). usually you call showMsgLoop in the callback from makeMsgList. however, showMsgLoop also checks
+// to make sure that the current message is within the list. if it is not, then showMsgLoop internally calls makeMsgList, and
+// then calls itself to display the new list.
+//
 function showMsgLoop(acctInfo) {
     const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
     const maxMsgNo = parseInt(acctInfo[acctInfoCountIdx]);
@@ -1431,11 +1441,15 @@ function showMsgLoop(acctInfo) {
 	}
     }
     console.log('showMsgLoop: index[msgNoCounter] = ' + msgNo + ', maxMsgNo = ' + maxMsgNo);
-    if (msgNo != 0) {
-	const listIdx = (msgNo - 1) % 10;
-	console.log('showMsgLoop: calling showMsgDetail(msgNo = ' + msgNo + ')');
-	showMsgDetail(index.listEntries[listIdx].msgId, index.listEntries[listIdx].msgNo, index.listEntries[listIdx].addr,
-		      index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].content);
+    const viewRecvButton = document.getElementById('viewRecvButton');
+    const viewSentButton = document.getElementById('viewSentButton');
+    if (viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) {
+	if (msgNo != 0) {
+	    const listIdx = (msgNo - 1) % 10;
+	    console.log('showMsgLoop: calling showMsgDetail(msgNo = ' + msgNo + ')');
+	    showMsgDetail(index.listEntries[listIdx].msgId, index.listEntries[listIdx].msgNo, index.listEntries[listIdx].addr,
+			  index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].content);
+	}
     }
 }
 
