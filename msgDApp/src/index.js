@@ -10,6 +10,8 @@ const Buffer = require('buffer/').Buffer;
 const BN = require("bn.js");
 
 
+
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('content loaded');
     console.log('window.innerWidth = ' + window.innerWidth);
@@ -246,6 +248,7 @@ function setReplyButtonHandlers() {
     });
 }
 
+
 function setValidateButtonHandler() {
     const msgAddrArea = document.getElementById('msgAddrArea');
     const msgFeeArea = document.getElementById('msgFeeArea');
@@ -256,37 +259,47 @@ function setValidateButtonHandler() {
 	msgTextArea.disabled = true;
 	msgFeeArea.value = 'Fee: ';
     });
+    const validatedAddress = (toAddr) => {
+	mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
+	    const toPublicKey = (!!toAcctInfo) ? toAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
+	    console.log('validateAddrButton.listener: toPublicKey: ' + toPublicKey);
+	    if (!toPublicKey || toPublicKey == '0x') {
+		msgTextArea.value = 'Error: no account was found for this address.';
+		replyButton.disabled = true;
+	    } else {
+		msgTextArea.disabled = false;
+		msgTextArea.readonly = "";
+		replyButton.disabled = false;
+		msgTextArea.value = 'Subject: ';
+		//in case user erases subject...
+		msgTextArea.placeholder='Type your message here...';
+		//see how many messages have been sent from the proposed recipient to me
+		mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
+		    console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
+		    const fee = (msgCount > 0) ? toAcctInfo[mtEther.ACCTINFO_MESSAGEFEE] : toAcctInfo[mtEther.ACCTINFO_SPAMFEE];
+		    msgFeeArea.value = 'Fee: ' + ether.convertWeiToComfort(common.web3, fee);
+		});
+	    }
+	});
+    };
     //validateAddrButton is only enabled in compose mode
     const validateAddrButton = document.getElementById('validateAddrButton');
     validateAddrButton.addEventListener('click', function() {
-	const toAddr = msgAddrArea.value;
-	console.log('toAddr = ' + toAddr);
-	if (!ether.validateAddr(toAddr)) {
-	    msgTextArea.value = 'Error: invalid Ethereum address.';
-	    replyButton.disabled = true;
-	} else {
-	    mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
-		const toPublicKey = (!!toAcctInfo) ? toAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
-		console.log('validateAddrButton.listener: toPublicKey: ' + toPublicKey);
-		if (!toPublicKey || toPublicKey == '0x') {
-		    msgTextArea.value = 'Error: no account was found for this address.';
-		    replyButton.disabled = true;
-		} else {
-		    msgTextArea.disabled = false;
-		    msgTextArea.readonly = "";
-		    replyButton.disabled = false;
-		    msgTextArea.value = 'Subject: ';
-		    //in case user erases subject...
-		    msgTextArea.placeholder='Type your message here...';
-		    //see how many messages have been sent from the proposed recipient to me
-		    mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
-			console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
-			const fee = (msgCount > 0) ? toAcctInfo[mtEther.ACCTINFO_MESSAGEFEE] : toAcctInfo[mtEther.ACCTINFO_SPAMFEE];
-			msgFeeArea.value = 'Fee: ' + ether.convertWeiToComfort(common.web3, fee);
-		    });
-		}
-	    });
+	const toAddrIn = msgAddrArea.value;
+	console.log('toAddrIn = ' + toAddrIn);
+	if (ether.validateAddr(toAddrIn)) {
+	    validatedAddress(toAddrIn);
+	    return;
 	}
+	ether.ensLookup(toAddrIn, function(err, addr) {
+	    if (!!err || !addr) {
+		msgTextArea.value = (!!err) ? err : 'Error: invalid Ethereum address.';
+		replyButton.disabled = true;
+		return;
+	    }
+	    msgAddrArea.value = toAddrIn + ' (' + addr + ')';
+	    validatedAddress(addr);
+	});
     });
 }
 

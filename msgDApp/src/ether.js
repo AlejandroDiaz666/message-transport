@@ -8,6 +8,7 @@ const ethtx = require('ethereumjs-tx');
 const ethabi = require('ethereumjs-abi');
 const Buffer = require('buffer/').Buffer;
 const BN = require("bn.js");
+var ENS = require('ethereum-ens');
 
 const ether = module.exports = {
 
@@ -30,6 +31,8 @@ const ether = module.exports = {
     infuraioProjectID: 'd31bddc6dc8e47d29906cee739e4fe7f',
     //node = 'etherscan.io' | 'infura.io'
     node: 'etherscan.io',
+    ens: null,
+
 
     //cb(err, network)
     getNetwork: function(web3, cb) {
@@ -206,6 +209,22 @@ const ether = module.exports = {
 		return;
 	    }
 	    cb(null, eventsResp.result);
+	});
+    },
+
+
+    //cb(err, addr)
+    ensLookup: function(addrIn, cb) {
+	if (!ether.ens)
+	    ether.ens = new ENS(common.web3.currentProvider);
+	if (addrIn.startsWith('0x') || !addrIn.endsWith('.eth')) {
+	    cb('Error: invalid Ethereum address.', null);
+	    return;
+	}
+	ether.ens.resolver(addrIn).addr().then((addr) => {
+	    cb(null, addr);
+	}, (err) => {
+	    cb(err, null);
 	});
     },
 
