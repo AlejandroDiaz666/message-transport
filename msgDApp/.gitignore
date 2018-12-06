@@ -2,3 +2,6 @@
 css/*
 bundle/*
 src/autoVersion.js
+src/autoVersion.txt
+amt/*
+amt*.tar.gz
