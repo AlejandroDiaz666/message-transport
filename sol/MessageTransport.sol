@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 // ---------------------------------------------------------------------------
 //  Message_Transport
 // ---------------------------------------------------------------------------
-contract B_MT {
+contract C_MT {
 
   // -------------------------------------------------------------------------
   // events
@@ -44,9 +44,9 @@ contract B_MT {
   // -------------------------------------------------------------------------
   bool public isLocked;
   address payable public owner;
-  address public communityAddr;
+  address public tokenAddr;
   uint messageCount;
-  uint communityBalance;
+  uint retainedFeesBalance;
   uint contractSendGas = 100000;
   mapping (address => bool) public trusted;
   mapping (address => Account) public accounts;
@@ -56,15 +56,15 @@ contract B_MT {
   // modifiers
   // -------------------------------------------------------------------------
   modifier ownerOnly {
-    require(msg.sender == owner);
+    require(msg.sender == owner, "owner only");
     _;
   }
   modifier unlockedOnly {
-    require(!isLocked);
+    require(!isLocked, "unlocked only");
     _;
   }
   modifier trustedOnly {
-    require(trusted[msg.sender] == true);
+    require(trusted[msg.sender] == true, "trusted only");
     _;
   }
 
@@ -72,9 +72,9 @@ contract B_MT {
   // -------------------------------------------------------------------------
   //  EMS constructor
   // -------------------------------------------------------------------------
-  constructor(address _communityAddr) public {
+  constructor(address _tokenAddr) public {
     owner = msg.sender;
-    communityAddr = _communityAddr;
+    tokenAddr = _tokenAddr;
   }
   function setTrust(address _trustedAddr, bool _trust) public ownerOnly {
     trusted[_trustedAddr] = _trust;
@@ -142,9 +142,9 @@ contract B_MT {
     //after you introduce yourself to someone this way their subsequent message to you won't
     //incur your spamFee.
     if (msg.data.length > 4 + 20 + 32) {
-      require(msg.value >= _recvAccount.messageFee);
+      require(msg.value >= _recvAccount.messageFee, "fee is insufficient");
       if (_sendAccount.peerRecvMessageCount[_toAddr] == 0)
-	require(msg.value >= _recvAccount.spamFee);
+	require(msg.value >= _recvAccount.spamFee, "spam fee is insufficient");
       ++messageCount;
       _recvAccount.recvMessageCount += 1;
       _sendAccount.sentMessageCount += 1;
@@ -157,9 +157,9 @@ contract B_MT {
       emit InviteEvent(_toAddr, msg.sender);
       _messageId = 0;
     }
-    uint _communityAmount = (msg.value * 30) / 100;
-    communityBalance += _communityAmount;
-    _recvAccount.feeBalance += (msg.value - _communityAmount);
+    uint _retainAmount = (msg.value * 30) / 100;
+    retainedFeesBalance += _retainAmount;
+    _recvAccount.feeBalance += (msg.value - _retainAmount);
     _recvAccount.peerRecvMessageCount[msg.sender] += 1;
   }
 
@@ -172,9 +172,9 @@ contract B_MT {
     //after you introduce yourself to someone this way their subsequent message to you won't
     //incur your spamFee.
     if (msg.data.length > 4 + 20 + 20 + 32) {
-      require(msg.value >= _recvAccount.messageFee);
+      require(msg.value >= _recvAccount.messageFee, "fee is insufficient");
       if (_sendAccount.peerRecvMessageCount[_toAddr] == 0)
-	require(msg.value >= _recvAccount.spamFee);
+	require(msg.value >= _recvAccount.spamFee, "spam fee is insufficient");
       ++messageCount;
       _recvAccount.recvMessageCount += 1;
       _sendAccount.sentMessageCount += 1;
@@ -187,9 +187,9 @@ contract B_MT {
       emit InviteEvent(_toAddr, msg.sender);
       _messageId = 0;
     }
-    uint _communityAmount = (msg.value * 30) / 100;
-    communityBalance += _communityAmount;
-    _recvAccount.feeBalance += (msg.value - _communityAmount);
+    uint _retainAmount = (msg.value * 30) / 100;
+    retainedFeesBalance += _retainAmount;
+    _recvAccount.feeBalance += (msg.value - _retainAmount);
     _recvAccount.peerRecvMessageCount[msg.sender] += 1;
   }
 
@@ -205,15 +205,15 @@ contract B_MT {
 
 
   // -------------------------------------------------------------------------
-  // pay community funds to the community
-  // can send to a contract if contractSendGas is sufficient
+  // pay retained fees funds to token contract; burn half.
+  // make sure contractSendGas is sufficient
   // -------------------------------------------------------------------------
-  function withdrawCommunityFunds() public {
-    uint _amount = communityBalance / 2;
+  function withdrawRetainedFees() public {
+    uint _amount = retainedFeesBalance / 2;
     address(0).transfer(_amount);
-    _amount = communityBalance - _amount;
-    communityBalance = 0;
-    (bool paySuccess, ) = communityAddr.call.gas(contractSendGas).value(_amount)("");
+    _amount = retainedFeesBalance - _amount;
+    retainedFeesBalance = 0;
+    (bool paySuccess, ) = tokenAddr.call.gas(contractSendGas).value(_amount)("");
     if (!paySuccess)
       revert();
   }
