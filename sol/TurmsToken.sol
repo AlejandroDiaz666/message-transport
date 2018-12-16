@@ -232,8 +232,8 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
 
 
   //
-  // this payable function is for payment in Dai and/or Eth
-  // the
+  // this payable function is for payment in Dai and optionally also Eth
+  // caller must have already approved the Dai transfer
   //
   function payDai(uint256 _daiAmount) external payable {
     holdoverEthBalance += msg.value;
