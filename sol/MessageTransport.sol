@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 // ---------------------------------------------------------------------------
 //  Message_Transport
 // ---------------------------------------------------------------------------
-contract A_MT {
+contract B_MT {
 
   // -------------------------------------------------------------------------
   // events
@@ -157,7 +157,7 @@ contract A_MT {
       emit InviteEvent(_toAddr, msg.sender);
       _messageId = 0;
     }
-    uint _communityAmount = msg.value / 10;
+    uint _communityAmount = (msg.value * 30) / 100;
     communityBalance += _communityAmount;
     _recvAccount.feeBalance += (msg.value - _communityAmount);
     _recvAccount.peerRecvMessageCount[msg.sender] += 1;
@@ -187,7 +187,7 @@ contract A_MT {
       emit InviteEvent(_toAddr, msg.sender);
       _messageId = 0;
     }
-    uint _communityAmount = msg.value / 10;
+    uint _communityAmount = (msg.value * 30) / 100;
     communityBalance += _communityAmount;
     _recvAccount.feeBalance += (msg.value - _communityAmount);
     _recvAccount.peerRecvMessageCount[msg.sender] += 1;
@@ -209,10 +209,12 @@ contract A_MT {
   // can send to a contract if contractSendGas is sufficient
   // -------------------------------------------------------------------------
   function withdrawCommunityFunds() public {
-    uint _amount = communityBalance;
+    uint _amount = communityBalance / 2;
+    address(0).transfer(_amount);
+    _amount = communityBalance - _amount;
     communityBalance = 0;
-    (bool success, ) = communityAddr.call.gas(contractSendGas).value(_amount)("");
-    if (!success)
+    (bool paySuccess, ) = communityAddr.call.gas(contractSendGas).value(_amount)("");
+    if (!paySuccess)
       revert();
   }
 

@@ -2,12 +2,13 @@ pragma solidity ^0.5.0;
 
 /**
  *
- * Version D
+ * Version E
  * @author Alejandro Diaz <Alejandro.Diaz.666@protonmail.com>
  *
  * Overview:
- * This is an implimentation of a dividend-paying token. A fixed number of tokens are minted in the
- * constructor, and initially owned by the contract owner. Dividends are awarded token holders thusly:
+ * This is an implimentation of a multi-dividend-paying token. the token supports income/dividends
+ * of Eth and also Dai. A fixed number of tokens are minted in the constructor, and initially owned
+ * by the contract owner. Dividends are awarded token holders thusly:
  *
  *   previous_due + [ p(x) * t(x)/N ] + [ p(x+1) * t(x+1)/N ] + ...
  *   where p(x) is the x'th income payment received by the contract
@@ -71,38 +72,42 @@ import './iERC20Token.sol';
 import './iDividendToken.sol';
 
 
-contract TTA is iERC20Token, iDividendToken, SafeMath {
+contract ETT is iERC20Token, iDividendToken, SafeMath {
 
   event PaymentEvent(address indexed from, uint amount);
   event TransferEvent(address indexed from, address indexed to, uint amount);
   event ApprovalEvent(address indexed from, address indexed to, uint amount);
 
   struct tokenHolder {
-    uint tokens;        // num tokens currently held in this acct, aka balance
-    uint currentPoints; // updated before token balance changes, or before a withdrawal. credit for owning tokens
-    uint lastSnapshot;  // snapshot of global TotalPoints, last time we updated this acct's currentPoints
+    uint tokens;           // num tokens currently held in this acct, aka balance
+    uint currentEthPoints; // updated before token balance changes, or before a withdrawal. credit for owning tokens
+    uint lastEthSnapshot;  // snapshot of global TotalPoints (Eth), last time we updated this acct's currentEthPoints
+    uint currentDaiPoints; // updated before token balance changes, or before a withdrawal. credit for owning tokens
+    uint lastDaiSnapshot;  // snapshot of global TotalPoints (Dai), last time we updated this acct's currentDaiPoints
   }
 
   bool    public isLocked;
+  address public daiToken;
   address payable public owner;
   string  public symbol;
   string  public name;
   uint    public decimals;
   uint           tokenSupply;
-  uint public    holdoverBalance;                            // funds received, but not yet distributed
-  uint public    totalIncomeReceived;
+  uint public    holdoverEthBalance;                            // funds received, but not yet distributed
+  uint public    totalEthReceived;
+  uint public    holdoverDaiBalance;                            // funds received, but not yet distributed
+  uint public    totalDaiReceived;
 
   mapping (address => mapping (address => uint)) approvals;  //transfer approvals, from -> to
   mapping (address => tokenHolder) public tokenHolders;
 
-
   modifier ownerOnly {
-    require(msg.sender == owner);
+    require(msg.sender == owner, "owner only");
     _;
   }
 
   modifier unlockedOnly {
-    require(!isLocked);
+    require(!isLocked, "unlocked only");
     _;
   }
 
@@ -117,7 +122,8 @@ contract TTA is iERC20Token, iDividendToken, SafeMath {
   //
   //constructor
   //
-  constructor(uint256 _tokenSupplysupply, uint256 _decimals, string memory _name, string memory _symbol) public {
+  constructor(address _daiToken, uint256 _tokenSupplysupply, uint256 _decimals, string memory _name, string memory _symbol) public {
+    daiToken = _daiToken;
     tokenSupply = _tokenSupplysupply;
     decimals = _decimals;
     name = _name;
@@ -143,8 +149,11 @@ contract TTA is iERC20Token, iDividendToken, SafeMath {
       //first credit sender with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(msg.sender);
       tokenHolders[msg.sender].tokens -= _value;
-      if (tokenHolders[_to].lastSnapshot == 0)
-	tokenHolders[_to].lastSnapshot = totalIncomeReceived;
+      //if destination is a new tokenholder then we are setting his "last" snapshot to the current totalPoints
+      if (tokenHolders[_to].lastEthSnapshot == 0)
+	tokenHolders[_to].lastEthSnapshot = totalEthReceived;
+      if (tokenHolders[_to].lastDaiSnapshot == 0)
+	tokenHolders[_to].lastDaiSnapshot = totalDaiReceived;
       //credit destination acct with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(_to);
       tokenHolders[_to].tokens += _value;
@@ -162,8 +171,11 @@ contract TTA is iERC20Token, iDividendToken, SafeMath {
       //first credit source acct with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(_from);
       tokenHolders[_from].tokens -= _value;
-      if (tokenHolders[_to].lastSnapshot == 0)
-	tokenHolders[_to].lastSnapshot = totalIncomeReceived;
+      //if destination is a new tokenholder then we are setting his "last" snapshot to the current totalPoints
+      if (tokenHolders[_to].lastEthSnapshot == 0)
+	tokenHolders[_to].lastEthSnapshot = totalEthReceived;
+      if (tokenHolders[_to].lastDaiSnapshot == 0)
+	tokenHolders[_to].lastDaiSnapshot = totalDaiReceived;
       //credit destination acct with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(_to);
       tokenHolders[_to].tokens += _value;
@@ -199,12 +211,14 @@ contract TTA is iERC20Token, iDividendToken, SafeMath {
   //
   // calc current points for a token holder; that is, points that are due to this token holder for all dividends
   // received by the contract during the current "period". the period began the last time this fcn was called, at which
-  // time we updated the account's snapshot of the running point count, totalIncomeReceived. during the period the account's
+  // time we updated the account's snapshot of the running point count, totalEthReceived. during the period the account's
   // number of tokens must not have changed. so always call this fcn before changing the number of tokens.
   //
   function calcCurPointsForAcct(address _acct) internal {
-    tokenHolders[_acct].currentPoints += (totalIncomeReceived - tokenHolders[_acct].lastSnapshot) * tokenHolders[_acct].tokens;
-    tokenHolders[_acct].lastSnapshot = totalIncomeReceived;
+    tokenHolders[_acct].currentEthPoints += (totalEthReceived - tokenHolders[_acct].lastEthSnapshot) * tokenHolders[_acct].tokens;
+    tokenHolders[_acct].lastEthSnapshot = totalEthReceived;
+    tokenHolders[_acct].currentDaiPoints += (totalDaiReceived - tokenHolders[_acct].lastDaiSnapshot) * tokenHolders[_acct].tokens;
+    tokenHolders[_acct].lastDaiSnapshot = totalDaiReceived;
   }
 
 
@@ -212,22 +226,38 @@ contract TTA is iERC20Token, iDividendToken, SafeMath {
   // default payable function. funds receieved here become dividends.
   //
   function () external payable {
-    holdoverBalance += msg.value;
-    totalIncomeReceived += msg.value;
+    holdoverEthBalance += msg.value;
+    totalEthReceived += msg.value;
+  }
+
+
+  //
+  // this payable function is for payment in Dai and/or Eth
+  // the
+  //
+  function payDai(uint256 _daiAmount) external payable {
+    holdoverEthBalance += msg.value;
+    totalEthReceived += msg.value;
+    require(transferFrom(msg.sender, address(this), _daiAmount), "failed to transfer dai");
+    holdoverDaiBalance += _daiAmount;
+    totalDaiReceived += _daiAmount;
   }
 
 
   //
   // check my dividends
   //
-  function checkDividends(address _addr) view public returns(uint _amount) {
-    if (tokenHolders[_addr].lastSnapshot == 0) {
-      _amount = 0;
+  function checkDividends(address _addr) view public returns(uint _ethAmount, uint _daiAmount) {
+    if (tokenHolders[_addr].lastEthSnapshot == 0) {
+      _ethAmount = _daiAmount = 0;
     } else {
       //don't call calcCurPointsForAcct here, cuz this is a constant fcn
-      uint _currentPoints = tokenHolders[_addr].currentPoints +
-	((totalIncomeReceived - tokenHolders[_addr].lastSnapshot) * tokenHolders[_addr].tokens);
-      _amount = _currentPoints / tokenSupply;
+      uint _currentEthPoints = tokenHolders[_addr].currentEthPoints +
+	((totalEthReceived - tokenHolders[_addr].lastEthSnapshot) * tokenHolders[_addr].tokens);
+      _ethAmount = _currentEthPoints / tokenSupply;
+      uint _currentDaiPoints = tokenHolders[_addr].currentDaiPoints +
+	((totalDaiReceived - tokenHolders[_addr].lastDaiSnapshot) * tokenHolders[_addr].tokens);
+      _daiAmount = _currentDaiPoints / tokenSupply;
     }
   }
 
@@ -235,13 +265,22 @@ contract TTA is iERC20Token, iDividendToken, SafeMath {
   //
   // withdraw my dividends
   //
-  function withdrawDividends() public returns (uint _amount) {
+  function withdrawEthDividends() public returns (uint _amount) {
     calcCurPointsForAcct(msg.sender);
-    _amount = tokenHolders[msg.sender].currentPoints / tokenSupply;
+    _amount = tokenHolders[msg.sender].currentEthPoints / tokenSupply;
     uint _pointsUsed = _amount * tokenSupply;
-    tokenHolders[msg.sender].currentPoints -= _pointsUsed;
-    holdoverBalance -= _amount;
+    tokenHolders[msg.sender].currentEthPoints -= _pointsUsed;
+    holdoverEthBalance -= _amount;
     msg.sender.transfer(_amount);
+  }
+
+  function withdrawDaiDividends() public returns (uint _amount) {
+    calcCurPointsForAcct(msg.sender);
+    _amount = tokenHolders[msg.sender].currentDaiPoints / tokenSupply;
+    uint _pointsUsed = _amount * tokenSupply;
+    tokenHolders[msg.sender].currentDaiPoints -= _pointsUsed;
+    holdoverDaiBalance -= _amount;
+    require(iERC20Token(daiToken).transfer(msg.sender, _amount), "failed to transfer dai");
   }
 
 
