@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 /**
  *
- * Version E
+ * Version F
  * @author Alejandro Diaz <Alejandro.Diaz.666@protonmail.com>
  *
  * Overview:
@@ -92,7 +92,7 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   string  public symbol;
   string  public name;
   uint    public decimals;
-  uint           tokenSupply;
+  uint           totalSupply;                                   // total token supply. never changes
   uint public    holdoverEthBalance;                            // funds received, but not yet distributed
   uint public    totalEthReceived;
   uint public    holdoverDaiBalance;                            // funds received, but not yet distributed
@@ -124,11 +124,12 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   //
   constructor(address _daiToken, uint256 _tokenSupplysupply, uint256 _decimals, string memory _name, string memory _symbol) public {
     daiToken = _daiToken;
-    tokenSupply = _tokenSupplysupply;
+    totalSupply = _tokenSupplysupply;
     decimals = _decimals;
     name = _name;
     symbol = _symbol;
     owner = msg.sender;
+    tokenHolders[owner].tokens = totalSupply;
   }
 
   function lock() public ownerOnly {
@@ -139,9 +140,6 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   //
   // ERC-20
   //
-  function totalSupply() public view returns (uint supply) {
-    supply = tokenSupply;
-  }
 
   function transfer(address _to, uint _value) public onlyPayloadSize(2*32) returns (bool success) {
     //prevent wrap
@@ -254,10 +252,10 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
       //don't call calcCurPointsForAcct here, cuz this is a constant fcn
       uint _currentEthPoints = tokenHolders[_addr].currentEthPoints +
 	((totalEthReceived - tokenHolders[_addr].lastEthSnapshot) * tokenHolders[_addr].tokens);
-      _ethAmount = _currentEthPoints / tokenSupply;
+      _ethAmount = _currentEthPoints / totalSupply;
       uint _currentDaiPoints = tokenHolders[_addr].currentDaiPoints +
 	((totalDaiReceived - tokenHolders[_addr].lastDaiSnapshot) * tokenHolders[_addr].tokens);
-      _daiAmount = _currentDaiPoints / tokenSupply;
+      _daiAmount = _currentDaiPoints / totalSupply;
     }
   }
 
@@ -267,8 +265,8 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   //
   function withdrawEthDividends() public returns (uint _amount) {
     calcCurPointsForAcct(msg.sender);
-    _amount = tokenHolders[msg.sender].currentEthPoints / tokenSupply;
-    uint _pointsUsed = _amount * tokenSupply;
+    _amount = tokenHolders[msg.sender].currentEthPoints / totalSupply;
+    uint _pointsUsed = _amount * totalSupply;
     tokenHolders[msg.sender].currentEthPoints -= _pointsUsed;
     holdoverEthBalance -= _amount;
     msg.sender.transfer(_amount);
@@ -276,8 +274,8 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
 
   function withdrawDaiDividends() public returns (uint _amount) {
     calcCurPointsForAcct(msg.sender);
-    _amount = tokenHolders[msg.sender].currentDaiPoints / tokenSupply;
-    uint _pointsUsed = _amount * tokenSupply;
+    _amount = tokenHolders[msg.sender].currentDaiPoints / totalSupply;
+    uint _pointsUsed = _amount * totalSupply;
     tokenHolders[msg.sender].currentDaiPoints -= _pointsUsed;
     holdoverDaiBalance -= _amount;
     require(iERC20Token(daiToken).transfer(msg.sender, _amount), "failed to transfer dai");

@@ -4,7 +4,6 @@ pragma solidity ^0.5.0;
 // https://github.com/ethereum/EIPs/issues/20
 
 contract iERC20Token {
-  function totalSupply() public view returns (uint supply);
   function balanceOf( address who ) public view returns (uint value);
   function allowance( address owner, address spender ) public view returns (uint remaining);
 
@@ -14,4 +13,10 @@ contract iERC20Token {
 
   event Transfer( address indexed from, address indexed to, uint value);
   event Approval( address indexed owner, address indexed spender, uint value);
+
+  //these are implimented via automatic getters
+  //function name() public view returns (string _name);
+  //function symbol() public view returns (string _symbol);
+  //function decimals() public view returns (uint8 _decimals);
+  //function totalSupply() public view returns (uint256 _totalSupply);
 }
