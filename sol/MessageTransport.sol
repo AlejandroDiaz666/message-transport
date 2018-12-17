@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 // ---------------------------------------------------------------------------
 //  Message_Transport
 // ---------------------------------------------------------------------------
-contract C_MT {
+contract D_MT {
 
   // -------------------------------------------------------------------------
   // events
@@ -134,36 +134,14 @@ contract C_MT {
   // send message
   // -------------------------------------------------------------------------
   function sendMessage(address _toAddr, uint mimeType, uint _ref, bytes memory _message) public payable returns (uint _messageId) {
-    Account storage _sendAccount = accounts[msg.sender];
-    Account storage _recvAccount = accounts[_toAddr];
-    //require(_sendAccount.publicKey != 0);
-    //require(_recvAccount.publicKey != 0);
-    //if message text is empty then no fees are necessary, and we don't create a log entry.
-    //after you introduce yourself to someone this way their subsequent message to you won't
-    //incur your spamFee.
-    if (msg.data.length > 4 + 20 + 32) {
-      require(msg.value >= _recvAccount.messageFee, "fee is insufficient");
-      if (_sendAccount.peerRecvMessageCount[_toAddr] == 0)
-	require(msg.value >= _recvAccount.spamFee, "spam fee is insufficient");
-      ++messageCount;
-      _recvAccount.recvMessageCount += 1;
-      _sendAccount.sentMessageCount += 1;
-      emit MessageEvent(messageCount, msg.sender, _toAddr, _sendAccount.sentMessageCount, _recvAccount.recvMessageCount, mimeType, _ref, _message);
-      emit MessageTxEvent(msg.sender, (_sendAccount.sentMessageCount - 1) / 10, _sendAccount.sentMessageCount, messageCount);
-      emit MessageRxEvent(_toAddr, (_recvAccount.recvMessageCount - 1) / 10, _recvAccount.recvMessageCount, messageCount);
-      //return message id, which a calling function might want to log
-      _messageId = messageCount;
-    } else {
-      emit InviteEvent(_toAddr, msg.sender);
-      _messageId = 0;
-    }
-    uint _retainAmount = (msg.value * 30) / 100;
-    retainedFeesBalance += _retainAmount;
-    _recvAccount.feeBalance += (msg.value - _retainAmount);
-    _recvAccount.peerRecvMessageCount[msg.sender] += 1;
+    uint256 _noDataLength = 4 + 20 + 32 + 32;
+    _messageId = doSendMessage(_noDataLength, msg.sender, _toAddr, mimeType, _ref, _message);
   }
-
   function sendMessage(address _fromAddr, address _toAddr, uint mimeType, uint _ref, bytes memory _message) public payable trustedOnly returns (uint _messageId) {
+    uint256 _noDataLength = 4 + 20 + 20 + 32 + 32;
+    _messageId = doSendMessage(_noDataLength, _fromAddr, _toAddr, mimeType, _ref, _message);
+  }
+  function doSendMessage(uint256 _noDataLength, address _fromAddr, address _toAddr, uint mimeType, uint _ref, bytes memory _message) internal returns (uint _messageId) {
     Account storage _sendAccount = accounts[_fromAddr];
     Account storage _recvAccount = accounts[_toAddr];
     //require(_sendAccount.publicKey != 0);
@@ -171,7 +149,7 @@ contract C_MT {
     //if message text is empty then no fees are necessary, and we don't create a log entry.
     //after you introduce yourself to someone this way their subsequent message to you won't
     //incur your spamFee.
-    if (msg.data.length > 4 + 20 + 20 + 32) {
+    if (msg.data.length > _noDataLength) {
       require(msg.value >= _recvAccount.messageFee, "fee is insufficient");
       if (_sendAccount.peerRecvMessageCount[_toAddr] == 0)
 	require(msg.value >= _recvAccount.spamFee, "spam fee is insufficient");
@@ -192,6 +170,7 @@ contract C_MT {
     _recvAccount.feeBalance += (msg.value - _retainAmount);
     _recvAccount.peerRecvMessageCount[msg.sender] += 1;
   }
+
 
   // -------------------------------------------------------------------------
   // withdraw accumulated message & spam fees
