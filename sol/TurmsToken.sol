@@ -283,7 +283,7 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
 
 
   //only available before the contract is locked
-  function haraKiri() public ownerOnly unlockedOnly {
+  function killContract() public ownerOnly unlockedOnly {
     selfdestruct(owner);
   }
 
