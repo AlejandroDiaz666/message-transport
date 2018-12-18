@@ -246,17 +246,13 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   // check my dividends
   //
   function checkDividends(address _addr) view public returns(uint _ethAmount, uint _daiAmount) {
-    if (tokenHolders[_addr].lastEthSnapshot == 0) {
-      _ethAmount = _daiAmount = 0;
-    } else {
-      //don't call calcCurPointsForAcct here, cuz this is a constant fcn
-      uint _currentEthPoints = tokenHolders[_addr].currentEthPoints +
-	((totalEthReceived - tokenHolders[_addr].lastEthSnapshot) * tokenHolders[_addr].tokens);
-      _ethAmount = _currentEthPoints / totalSupply;
-      uint _currentDaiPoints = tokenHolders[_addr].currentDaiPoints +
-	((totalDaiReceived - tokenHolders[_addr].lastDaiSnapshot) * tokenHolders[_addr].tokens);
-      _daiAmount = _currentDaiPoints / totalSupply;
-    }
+    //don't call calcCurPointsForAcct here, cuz this is a constant fcn
+    uint _currentEthPoints = tokenHolders[_addr].currentEthPoints +
+      ((totalEthReceived - tokenHolders[_addr].lastEthSnapshot) * tokenHolders[_addr].tokens);
+    _ethAmount = _currentEthPoints / totalSupply;
+    uint _currentDaiPoints = tokenHolders[_addr].currentDaiPoints +
+      ((totalDaiReceived - tokenHolders[_addr].lastDaiSnapshot) * tokenHolders[_addr].tokens);
+    _daiAmount = _currentDaiPoints / totalSupply;
   }
 
 
