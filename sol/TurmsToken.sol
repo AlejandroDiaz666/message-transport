@@ -87,11 +87,11 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   }
 
   bool    public isLocked;
+  uint8   public decimals;
   address public daiToken;
   address payable public owner;
   string  public symbol;
   string  public name;
-  uint    public decimals;
   uint           totalSupply;                                   // total token supply. never changes
   uint public    holdoverEthBalance;                            // funds received, but not yet distributed
   uint public    totalEthReceived;
