@@ -113,7 +113,7 @@ const mtEther = module.exports = {
 	    keccak256.update("MessageRxEvent(address,uint256,uint256,uint256)");
 	    mtEther.messageRxEventTopic0 = '0x' + keccak256.digest('hex');
 	}
-	console.log('MessageTxEventTopic0 = ' + mtEther.messageRxEventTopic0);
+	console.log('MessageRxEventTopic0 = ' + mtEther.messageRxEventTopic0);
 	return(mtEther.messageRxEventTopic0);
     },
 
@@ -175,6 +175,7 @@ const mtEther = module.exports = {
     //cb(null, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date)
     //pass in in a single result object
     //note: numbers may be in hex or dec. hex if preceeded by 0x. topics and data are always hex.
+    //note: this is a synchronous fcn
     parseMessageEvent: function(result, cb) {
 	//event MessageEvent(uint indexed _id, address _fromAddr, address _toAddr, uint _txCount, uint _rxCount, uint _mimeType, uint _ref, bytes message);
 	//typical
@@ -239,6 +240,7 @@ const mtEther = module.exports = {
     //cb(err, fromAddr, txCount, id, blockNumber, date);
     //pass in in a single result object
     //note: numbers may be in hex or dec. hex if preceeded by 0x. topics and data are always hex.
+    //note: this is a synchronous fcn
     parseMessageTxEvent: function(result, cb) {
 	//typical
 	//                  { "address" : "0x800bf6d2bb0156fd21a84ae20e1b9479dea0dca9",
@@ -278,6 +280,7 @@ const mtEther = module.exports = {
     //cb(null, toAddr, rxCount, id, blockNumber, date);
     //pass in in a single result object
     //note: numbers may be in hex or dec. hex if preceeded by 0x. topics and data are always hex.
+    //note: this is a synchronous fcn
     parseMessageRxEvent: function(result, cb) {
 	//typical
 	//                  { "address" : "0x800bf6d2bb0156fd21a84ae20e1b9479dea0dca9",

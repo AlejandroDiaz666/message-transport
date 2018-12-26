@@ -31,6 +31,7 @@ const index = module.exports = {
     listIdx: -1,
     listMode: null,
     listEntries: {},
+    msgListElems: [],
     waitingForTxid: false,
     localStoragePrefix: '',
     introCompletePromise: null,
@@ -142,6 +143,7 @@ function setMainButtonHandlers() {
     });
     const viewSentButton = document.getElementById('viewSentButton');
     viewSentButton.addEventListener('click', function() {
+	console.log('viewSentButton: got click');
 	if (!!index.acctInfo)
 	    handleViewSent(index.acctInfo, true);
     });
@@ -335,18 +337,20 @@ function setMarkReadButtonHandler() {
 	    console.log('setMarkReadButtonHandlr: we should never be here!');
 	    return;
 	}
-	const msgNo = index.listEntries[index.listIdx].msgNo;
-	const div = index.listEntries[index.listIdx].div;
-	let flag = common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo);
-	flag = (flag) ? false : true;
-	common.setIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo, flag);
-	const newSuffix = (flag) ? '' : 'New';
-	div.className = 'msgListItemDivSelected' + newSuffix;
-	//modify the markReadButton text, in case the nextMsgButton has no effect
-	markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
-	const nextMsgButton = document.getElementById('nextMsgButton');
-	if (!nextMsgButton.disabled)
-	    index.nextMsgButtonFcn();
+	if (!!index.listEntries[index.listIdx]) {
+	    const msgNo = index.listEntries[index.listIdx].msgNo;
+	    const div = index.listEntries[index.listIdx].div;
+	    let flag = common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo);
+	    flag = (flag) ? false : true;
+	    common.setIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo, flag);
+	    const newSuffix = (flag) ? '' : 'New';
+	    div.className = 'msgListItemDivSelected' + newSuffix;
+	    //modify the markReadButton text, in case the nextMsgButton has no effect
+	    markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
+	    const nextMsgButton = document.getElementById('nextMsgButton');
+	    if (!nextMsgButton.disabled)
+		index.nextMsgButtonFcn();
+	}
     });
 }
 
@@ -660,7 +664,8 @@ function handleLockedMetaMask(err) {
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
-    clearMsgList();
+    const listTableBody = document.getElementById('listAreaDiv');
+    clearMsgList(listTableBody);
     const statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
     alert(err);
@@ -796,7 +801,8 @@ function handleUnregisteredAcct() {
     msgTextArea.disabled = true;
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
-    clearMsgList();
+    const listTableBody = document.getElementById('listAreaDiv');
+    clearMsgList(listTableBody);
     const statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -833,7 +839,8 @@ function handleRegisteredAcct(mode) {
 	else
 	    handleViewSent(index.acctInfo, true);
     } else {
-	clearMsgList();
+	const listTableBody = document.getElementById('listAreaDiv');
+	clearMsgList(listTableBody);
 	//display "waiting for metamask" in case metamask dialog is hidden
 	const metaMaskModal = document.getElementById('metaMaskModal');
 	metaMaskModal.style.display = 'block';
@@ -1243,14 +1250,16 @@ function handleViewSent(acctInfo, refreshMsgList) {
 // this fcn displays the group of 10 messages that include the passed msgNo
 //
 function makeMsgList(msgNo, cb) {
-    clearMsgList();
+    const listTableBody = document.getElementById('listAreaDiv');
+    const batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
+    const listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
+    const firstMsgNo = batch * 10 + 1;
+    clearMsgList(listTableBody);
+    makeMsgListElems(listTableBody, firstMsgNo);
     console.log('makeMsgList: msgNo = ' + msgNo + ', index.listIdx = ' + index.listIdx);
     //only etherscan.io provides timestamp
     const msgListHeaderDate = document.getElementById('msgListHeaderDate');
     msgListHeaderDate.textContent = (ether.node.indexOf('etherscan.io') >= 0) ? 'Date' : 'Block';
-    const batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
-    const listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
-    const firstMsgNo = batch * 10 + 1;
     const getMsgLogFcn   = (index.listMode == 'recv') ? mtUtil.getRecvMsgLogs       : mtUtil.getSentMsgLogs;
     const parseLogsFcn   = (index.listMode == 'recv') ? mtEther.parseMessageRxEvent : mtEther.parseMessageTxEvent;
     getMsgLogFcn(common.web3.eth.accounts[0], batch, function(err, result) {
@@ -1260,8 +1269,8 @@ function makeMsgList(msgNo, cb) {
 	    msgTextArea.value = (!!err) ? 'Error: ' + err : (msgNo > 0) ? 'Error: Unable to retreive message logs' : 'No messages';
 	    result = null;
 	}
-	console.log('makeMsgList: calling makeMsgListEntry(0, ' + firstMsgNo + ')');
-	makeMsgListEntry(parseLogsFcn, result, 0, firstMsgNo, cb);
+	console.log('makeMsgList: calling makeMsgListEntries(msgIds = ' + result + ' listIdx = 0, firstMsgNo = ' + firstMsgNo + ')');
+	makeMsgListEntries(parseLogsFcn, result, 0, firstMsgNo, cb);
     });
 }
 
@@ -1277,6 +1286,7 @@ function makeMsgList(msgNo, cb) {
 // msgNo: msgNo of this entry
 // cb: callback when all done
 //
+/*
 function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
     const listTableBody = document.getElementById('listAreaDiv');
     console.log('makeMsgListEntry[' + listIdx + '] = msgNo(' + msgNo + '), result.length = ' + (!!result ? result.length : 0));
@@ -1318,16 +1328,73 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
 	});
     });
 }
+*/
 
 
-function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
-    console.log('addToMsgList: msgNo = ' + msgNo + ', subject = ' + content.substring(0, 20));
-    const subject = mtUtil.extractSubject(content, 80);
-    let div, msgNoArea, addrArea, subjectArea, dateArea, msgIdArea;
-    (div = document.createElement("div")).id = 'msgListDivIdx-' + listIdx;
+//
+// make some entries of the recv/sent message list
+// recursive fcn to populate the entire list
+//
+// parseFcn: mtEther.parseMessageTxEvent or mtEther.parseMessageRxEvent
+// msgIds: array of up to 10 message ID's (can be null)
+// listIdx: index into list (0 - 9)
+// msgNo: msgNo of this entry
+// cb: callback when all done
+//
+function makeMsgListEntries(parseFcn, msgIds, listIdx, msgNo, cb) {
+    console.log('makeMsgListEntries: msgIds = ' + msgIds + ', listIdx = 0, msgNo = ' + msgNo + ')');
+    if (!msgIds || listIdx >= msgIds.length) {
+	const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
+	const maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
+	for (; listIdx < 9; ++listIdx, ++msgNo) {
+	    const addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
+	    const msgNoDsp = (msgNo <= maxMsgNo) ? msgNo : '';
+	    addToMsgList(listIdx, msgNoDsp, addr, '', '', '', '');
+	}
+	cb();
+	return;
+    }
+    const threeMsgIds = [];
+    const msgCookies = {};
+    for (let i = 0; i < 3 && listIdx < msgIds.length; ++i, ++listIdx, ++msgNo) {
+	console.log('makeMsgListEntries: msgId = ' + msgIds[listIdx] + ', msgNo = ' + msgNo + ' goes to listIdx = ' + listIdx);
+	const msgCookie = { idx: listIdx, no: msgNo };
+	const msgId = msgIds[listIdx];
+	threeMsgIds.push(msgId);
+	msgCookies[msgId] = msgCookie;
+    }
+    //gets up to 3 log entries; second cb when all done
+    mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
+	if (!!err) {
+	    err = 'Message ID ' + msgId + ' not found';
+	    addToMsgList(msgCookie.idx, msgCookie.no, '', '', '', '', err);
+	    return;
+	}
+	const otherAddr = (index.listMode == 'sent') ? toAddr : fromAddr;
+	mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, (err, decrypted) => {
+	    if (!!err) {
+		addToMsgList(msgCookie.idx, msgCookie.no, '', '', '', '', 'message decryption error');
+	    } else {
+		console.log('makeMsgListEntries: adding msgId = ' + msgId + ', msgNo = ' + msgCookie.no + ' at listIdx = ' + msgCookie.idx);
+		addToMsgList(msgCookie.idx, msgCookie.no, otherAddr, date, msgId, ref, decrypted);
+	    }
+	});
+    }, function() {
+	console.log('makeMsgListEntries: got doneCb. listIdx = ' + listIdx);
+	(listIdx <= 9) ? makeMsgListEntries(parseFcn, msgIds, listIdx, msgNo, cb) : cb();
+    });
+}
+
+
+
+function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content) {
+    console.log('addToMsgList: idx = ' + listIdx + ', msgNo = ' + msgNo + ', subject = ' + content.substring(0, 20));
+    const newPrefix = (index.listIdx == listIdx) ? 'msgListItemDivSelected' : 'msgListItemDiv';
     const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo)) ? '' : 'New';
-    div.className = 'msgListItemDiv' + newSuffix;
+    let div = index.msgListElems[listIdx].div;
+    div.className = newPrefix + newSuffix;
     index.listEntries[listIdx] = new ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content);
+    /*
     if (!!msgNo) {
 	div.addEventListener('click', function() {
 	    //re-establish View-Sent or View-Recv mode as appropriate, but no need to refresh the msg list since
@@ -1343,37 +1410,13 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content, table) {
 	    showMsgLoop(index.acctInfo);
 	});
     }
-    (msgNoArea = document.createElement("textarea")).className = 'msgListMsgNoArea';
-    msgNoArea.rows = 1;
-    msgNoArea.readonly = 'readonly';
-    msgNoArea.disabled = 'disabled';
-    msgNoArea.value = msgNo.toString(10);
-    (addrArea = document.createElement("textarea")).className = 'msgListAddrArea';
-    addrArea.rows = 1;
-    addrArea.readonly = 'readonly';
-    addrArea.disabled = 'disabled';
-    addrArea.value = addr;
-    (dateArea = document.createElement("textarea")).className = 'msgListDateArea';
-    dateArea.rows = 1;
-    dateArea.readonly = 'readonly';
-    dateArea.disabled = 'disabled';
-    dateArea.value = date;
-    (msgIdArea = document.createElement("textarea")).className = 'msgListMsgIdArea';
-    msgIdArea.rows = 1;
-    msgIdArea.readonly = 'readonly';
-    msgIdArea.disabled = 'disabled';
-    msgIdArea.value = (!!msgId) ? mtUtil.abbreviateMsgId(msgId) : '';
-    (subjectArea = document.createElement("textarea")).className = 'msgListSubjectArea';
-    subjectArea.rows = 1;
-    subjectArea.readonly = 'readonly';
-    subjectArea.disabled = 'disabled';
-    subjectArea.value = subject;
-    div.appendChild(msgNoArea);
-    div.appendChild(addrArea);
-    div.appendChild(dateArea);
-    div.appendChild(msgIdArea);
-    div.appendChild(subjectArea);
-    table.appendChild(div);
+    */
+    const subject = mtUtil.extractSubject(content, 80);
+    index.msgListElems[listIdx].msgNoArea.value = msgNo.toString(10);
+    index.msgListElems[listIdx].addrArea.value = addr;
+    index.msgListElems[listIdx].dateArea.value = date;
+    index.msgListElems[listIdx].msgIdArea.value = (!!msgId) ? mtUtil.abbreviateMsgId(msgId) : '';
+    index.msgListElems[listIdx].subjectArea.value = subject;
 }
 
 
@@ -1422,7 +1465,7 @@ function showMsgLoop(acctInfo) {
     nextPageButton.disabled = (msgNo < (Math.floor((maxMsgNo - 1) / 10) * 10) + 1) ? false : true;
     //check msgNo outside of listEntries.... if yes, regenerate listEntries, and call us again; in this case we disable the navButtons and other view-list
     //mode until after the list is regenerated.
-    const minListMsgNo = index.listEntries[0].msgNo;
+    const minListMsgNo = index.msgListElems[0].msgNo;
     if (msgNo != 0 && (msgNo < minListMsgNo || msgNo >= minListMsgNo + 10)) {
 	console.log('showMsgLoop: regenerating msg list!');
 	setMenuButtonState('viewRecvButton', 'Disabled');
@@ -1441,14 +1484,16 @@ function showMsgLoop(acctInfo) {
     console.log('showMsgLoop: listIdx = ' + listIdx + ', index.listIdx = ' + index.listIdx);
     if (listIdx != index.listIdx) {
 	if (index.listIdx >= 0) {
-	    const oldMsgNo = index.listEntries[index.listIdx].msgNo;
+	    const oldMsgNo = index.msgListElems[index.listIdx].msgNo;
 	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', oldMsgNo)) ? '' : 'New';
-	    (index.listEntries[index.listIdx].div).className = 'msgListItemDiv' + newSuffix;
+	    (index.msgListElems[index.listIdx].div).className = 'msgListItemDiv' + newSuffix;
 	}
 	index.listIdx = listIdx;
 	if (index.listIdx >= 0) {
 	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo)) ? '' : 'New';
-	    (index.listEntries[index.listIdx].div).className = 'msgListItemDivSelected' + newSuffix;
+	    console.log('showMsgLoop: changing index.msgListElems[' + index.listIdx + '].div).className from ' + index.msgListElems[index.listIdx].div.className);
+	    console.log('showMsgLoop: to msgListItemDivSelected' + newSuffix);
+	    (index.msgListElems[index.listIdx].div).className = 'msgListItemDivSelected' + newSuffix;
 	    const markReadButton = document.getElementById('markReadButton');
 	    markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
 	}
@@ -1460,8 +1505,9 @@ function showMsgLoop(acctInfo) {
 	if (msgNo != 0) {
 	    const listIdx = (msgNo - 1) % 10;
 	    console.log('showMsgLoop: calling showMsgDetail(msgNo = ' + msgNo + ')');
-	    showMsgDetail(index.listEntries[listIdx].msgId, index.listEntries[listIdx].msgNo, index.listEntries[listIdx].addr,
-			  index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].content);
+	    if (!!index.listEntries[listIdx])
+		showMsgDetail(index.listEntries[listIdx].msgId, index.listEntries[listIdx].msgNo, index.listEntries[listIdx].addr,
+			      index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].content);
 	}
     }
 }
@@ -1580,16 +1626,102 @@ function clearStatusDiv(statusDiv) {
 }
 
 
-function clearMsgList() {
-    const listTableBody = document.getElementById('listAreaDiv');
-    while (listTableBody.hasChildNodes()) {
-	const child = listTableBody.lastChild;
+function clearMsgList(table) {
+    /*
+    while (table.hasChildNodes()) {
+	const child = table.lastChild;
 	if (!!child.id && child.id.startsWith("msgListHeader"))
 	    break;
-	listTableBody.removeChild(child);
+	table.removeChild(child);
+    }
+    */
+    for (let i = 0; i < index.msgListElems.length; ++i) {
+	index.msgListElems[i].msgNo = -1;
+	index.msgListElems[i].msgNoArea.value = '';
+	index.msgListElems[i].addrArea.value = '';
+	index.msgListElems[i].dateArea.value = '';
+	index.msgListElems[i].msgIdArea.value = '';
+	index.msgListElems[i].subjectArea.value = '';
     }
     index.listIdx = -1;
 }
+
+
+function makeMsgListElems(table, firstMsgNo) {
+    if (index.msgListElems.length > 0) {
+	for (let i = 0, msgNo = firstMsgNo; i < 10; ++i, ++msgNo) {
+	    index.msgListElems[i].msgNo = msgNo;
+	    /*
+	    index.msgListElems[i].msgNoArea.value = '';
+	    index.msgListElems[i].addrArea.value = '';
+	    index.msgListElems[i].dateArea.value = '';
+	    index.msgListElems[i].msgIdArea.value = '';
+	    index.msgListElems[i].subjectArea.value = '';
+	    */
+	}
+	return;
+    }
+    index.msgListElems = [];
+    for (let i = 0, msgNo = firstMsgNo; i < 10; ++i, ++msgNo) {
+	let div, msgNoArea, addrArea, subjectArea, dateArea, msgIdArea;
+	(div = document.createElement("div")).id = 'msgListDivIdx-' + i.toString(10);
+	div.className = 'msgListItemDiv';
+	(msgNoArea = document.createElement("textarea")).id = 'msgList-' + i.toString(10) + 'msgNoArea';
+	msgNoArea.className = 'msgListMsgNoArea';
+	msgNoArea.rows = 1;
+	msgNoArea.readonly = 'readonly';
+	msgNoArea.disabled = 'disabled';
+	msgNoArea.value = '';
+	(addrArea = document.createElement("textarea")).id = 'msgList-' + i.toString(10) + 'addrArea';
+	addrArea.className = 'msgListAddrArea';
+	addrArea.rows = 1;
+	addrArea.readonly = 'readonly';
+	addrArea.disabled = 'disabled';
+	addrArea.value = '';
+	(dateArea = document.createElement("textarea")).id = 'msgList-' + i.toString(10) + 'dateArea';
+	dateArea.className = 'msgListDateArea';
+	dateArea.rows = 1;
+	dateArea.readonly = 'readonly';
+	dateArea.disabled = 'disabled';
+	dateArea.value = '';
+	(msgIdArea = document.createElement("textarea")).id = 'msgList-' + i.toString(10) + 'msgIdArea';
+	msgIdArea.className = 'msgListMsgIdArea';
+	msgIdArea.rows = 1;
+	msgIdArea.readonly = 'readonly';
+	msgIdArea.disabled = 'disabled';
+	msgIdArea.value = '';
+	(subjectArea = document.createElement("textarea")).id = 'msgList-' + i.toString(10) + 'subjectArea';
+	subjectArea.className = 'msgListSubjectArea';
+	subjectArea.rows = 1;
+	subjectArea.readonly = 'readonly';
+	subjectArea.disabled = 'disabled';
+	subjectArea.value = '';
+	index.msgListElems.push({ div: div, msgNoArea: msgNoArea, addrArea: addrArea, dateArea: dateArea, msgIdArea: msgIdArea, subjectArea: subjectArea, msgNo: msgNo });
+	div.appendChild(msgNoArea);
+	div.appendChild(addrArea);
+	div.appendChild(dateArea);
+	div.appendChild(msgIdArea);
+	div.appendChild(subjectArea);
+	table.appendChild(div);
+	div.addEventListener('click', function() {
+	    const msgNo = index.msgListElems[i].msgNo;
+	    if (msgNo > 0) {
+		//re-establish View-Sent or View-Recv mode as appropriate, but no need to refresh the msg list since
+		//by definition we are selecting a message from the current list
+		const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+		const viewSentButton = document.getElementById('viewSentButton');
+		const viewRecvButton = document.getElementById('viewRecvButton');
+		index[msgNoCounter] = msgNo;
+		if (index.listMode == 'recv' && viewRecvButton.className != 'menuBarButtonSelected')
+		    handleViewRecv(index.acctInfo, false);
+		else if (index.listMode == 'sent' && viewSentButton.className != 'menuBarButtonSelected')
+		    handleViewSent(index.acctInfo, false);
+		showMsgLoop(index.acctInfo);
+	    }
+	});
+    }
+}
+
 
 
 //state = 'Disabled' | 'Enabled' | 'Selected'
