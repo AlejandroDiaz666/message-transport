@@ -28,54 +28,31 @@ const mtUtil = module.exports = {
     },
 
 
-    //cb(err, result)
     //cb(err, msgIds)
-    getSentMsgLogs: function(fromAddr, batch, cb) {
-	const txOptions = {
-	    fromBlock: 0,
-	    toBlock: 'latest',
-	    address: mtEther.EMT_CONTRACT_ADDR,
-	    topics: [mtEther.getMessageTxEventTopic0(),
-		     '0x' + common.leftPadTo(fromAddr.substring(2), 64, '0'),
-		     '0x' + common.leftPadTo(batch.toString(16), 64, '0') ]
-	};
-	//ether.getLogs(txOptions, cb);
+    getSentMsgIds: function(fromAddr, batch, cb) {
 	const msgIds = [];
-	ether.getLogs(txOptions, function(err, results) {
-	    for (let i = 0; i < results.length; ++i) {
-		//synchronous fcn
-		mtEther.parseMessageTxEvent(results[i], function(err, fromAddr, txCount, id, blockNumber, date) {
-		    msgIds.push(id);
-		});
+	const startIdxBn = new BN(batch).imuln(10);
+	mtEther.getSentMsgIds(common.web3, fromAddr, startIdxBn, 10, function(err, lastIdx, results) {
+	    if (!err) {
+		for (let i = 0; i < results.length; ++i)
+		    msgIds.push(common.numberToHex256(results[i]));
 	    }
 	    cb(err, msgIds);
 	});
     },
 
 
-    //cb(err, result)
     //cb(err, msgIds)
-    getRecvMsgLogs: function(toAddr, batch, cb) {
-	const rxOptions = {
-	    fromBlock: 0,
-	    toBlock: 'latest',
-	    address: mtEther.EMT_CONTRACT_ADDR,
-	    topics: [mtEther.getMessageRxEventTopic0(),
-		     '0x' + common.leftPadTo(toAddr.substring(2), 64, '0'),
-		     '0x' + common.leftPadTo(batch.toString(16), 64, '0') ]
-	};
-	//ether.getLogs(rxOptions, cb);
+    getRecvMsgIds: function(toAddr, batch, cb) {
 	const msgIds = [];
-	ether.getLogs(rxOptions, function(err, results) {
-	    for (let i = 0; i < results.length; ++i) {
-		//synchronous fcn
-		mtEther.parseMessageRxEvent(results[i], function(err, toAddr, rxCount, id, blockNumber, date) {
-		    msgIds.push(id);
-		});
+	const startIdxBn = new BN(batch).imuln(10);
+	mtEther.getRecvMsgIds(common.web3, toAddr, startIdxBn, 10, function(err, lastIdx, results) {
+	    if (!err) {
+		for (let i = 0; i < results.length; ++i)
+		    msgIds.push(common.numberToHex256(results[i]));
 	    }
 	    cb(err, msgIds);
 	});
-
     },
 
 
@@ -125,7 +102,7 @@ const mtUtil = module.exports = {
 		    options.topics.push(msgIds[1]);
 		if (options.topics.length > 2) {
 		    if (!!msgIds[2])
-		    options.topics.push(msgIds[2]);
+			options.topics.push(msgIds[2]);
 		}
 	    }
 	}
@@ -165,7 +142,7 @@ const mtUtil = module.exports = {
     decryptMsg: function(otherAddr, fromAddr, toAddr, nonce, msgHex, cb) {
 	console.log('decryptMsg: otherAddr = ' + otherAddr);
 	mtEther.accountQuery(common.web3, otherAddr, function(err, otherAcctInfo) {
-	    const otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
+	    const otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo.publicKey : null;
 	    if (!!otherPublicKey && otherPublicKey != '0x') {
 		console.log('decryptMsg: otherPublicKey = ' + otherPublicKey);
 		const ptk = dhcrypt.ptk(otherPublicKey, toAddr, fromAddr, nonce);

@@ -45,7 +45,7 @@ const common = module.exports = {
     },
 
 
-    //number can be a numver or a string, with or without '0x'
+    //number can be a number or a string, with or without '0x'
     numberToBN: function(number) {
 	//first ensure passed parm is a string
 	let numberStr = number.toString();
@@ -53,8 +53,18 @@ const common = module.exports = {
 	if (numberStr.startsWith('0x')) {
 	    base = 16;
 	    numberStr = numberStr.substring(2);
+	} else if (numberStr.indexOf('.') == 1) {
+	    const expIdx = numberStr.indexOf('e+');
+	    if (expIdx >= 0) {
+		//console.log('numberToBN: idx of e+ = ' + expIdx);
+		//console.log('numberToBN: numberStr.substring(2, expIdx) = ' + numberStr.substring(2, expIdx));
+		let endPart = numberStr.substring(2, expIdx);
+		numberStr = numberStr.substring(0, 1) + numberStr.substring(2, expIdx);
+	    }
 	}
-	return(new BN(numberStr, base));
+	const bn = new BN(numberStr, base);
+	//console.log('numberToBN: converted from ' + number + ' to 0x' + bn.toString(16));
+	return(bn);
     },
 
     stripNonNumber: function(number) {
@@ -69,10 +79,22 @@ const common = module.exports = {
 	return(numberStr);
     },
 
+
+    //number can be a number or a string, with or without '0x'
+    //Hex256 string will be '0x' followed by 64 hex digits
+    numberToHex256: function(number) {
+	if (typeof(number) === 'number')
+	    return('0x' + common.leftPadTo(number.toString(16), 64, '0'));
+	const bn = common.numberToBN(number);
+	return(common.BNToHex256(bn));
+    },
+
+
     //Hex256 string will be '0x' followed by 64 hex digits
     BNToHex256: function(xBN) {
 	return('0x' + common.leftPadTo(xBN.toString(16), 64, '0'));
     },
+
 
     hexToAscii: function(hexStr) {
 	console.log('hexToAscii');

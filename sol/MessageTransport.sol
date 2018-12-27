@@ -3,15 +3,17 @@ pragma solidity ^0.5.0;
 // ---------------------------------------------------------------------------
 //  Message_Transport
 // ---------------------------------------------------------------------------
-contract D_MT {
+import './SafeMath.sol';
+contract MessageTransport is SafeMath {
 
   // -------------------------------------------------------------------------
   // events
   // -------------------------------------------------------------------------
   event InviteEvent(address indexed _toAddr, address indexed _fromAddr);
-  event MessageEvent(uint indexed _id, address _fromAddr, address _toAddr, uint _txCount, uint _rxCount, uint _mimeType, uint _ref, bytes message);
-  event MessageTxEvent(address indexed _fromAddr, uint indexed _batch, uint indexed _txCount, uint _id);
-  event MessageRxEvent(address indexed _toAddr, uint indexed _batch, uint indexed _rxCount, uint _id);
+  event MessageEvent(uint indexed _id1, uint indexed _id2, uint indexed _id3,
+		     address _fromAddr, address _toAddr, uint _txCount, uint _rxCount, uint _mimeType, uint _ref, bytes message);
+  event MessageTxEvent(address indexed _fromAddr, uint indexed _txCount, uint _id);
+  event MessageRxEvent(address indexed _toAddr, uint indexed _rxCount, uint _id);
 
 
   // -------------------------------------------------------------------------
@@ -36,6 +38,8 @@ contract D_MT {
     bytes publicKey;           // encryption parameter
     bytes encryptedPrivateKey; // encryption parameter
     mapping (address => uint256) peerRecvMessageCount;
+    mapping (uint256 => uint256) recvIds;
+    mapping (uint256 => uint256) sentIds;
   }
 
 
@@ -108,6 +112,41 @@ contract D_MT {
   }
 
 
+  //
+  // note that array will always have _maxResults entries. ignore messageID = 0
+  //
+  function getRecvMsgs(address _to, uint256 _startIdx, uint256 _maxResults) public view returns(uint256 _idx, uint256[] memory _messageIds) {
+    uint _count = 0;
+    Account storage _recvAccount = accounts[_to];
+    uint256 _recvMessageCount = _recvAccount.recvMessageCount;
+    _messageIds = new uint256[](_maxResults);
+    mapping(uint256 => uint256) storage _recvIds = _recvAccount.recvIds;
+    //note first messageID is at recvIds[0];
+    for (_idx = _startIdx; _idx < _recvMessageCount; ++_idx) {
+      _messageIds[_count] = _recvIds[_idx];
+      if (++_count >= _maxResults)
+	break;
+    }
+  }
+
+  //
+  // note that array will always have _maxResults entries. ignore messageID = 0
+  //
+  function getSentMsgs(address _from, uint256 _startIdx, uint256 _maxResults) public view returns(uint256 _idx, uint256[] memory _messageIds) {
+    uint _count = 0;
+    Account storage _sentAccount = accounts[_from];
+    uint256 _sentMessageCount = _sentAccount.sentMessageCount;
+    _messageIds = new uint256[](_maxResults);
+    mapping(uint256 => uint256) storage _sentIds = _sentAccount.sentIds;
+    //note first messageID is at recvIds[0];
+    for (_idx = _startIdx; _idx < _sentMessageCount; ++_idx) {
+      _messageIds[_count] = _sentIds[_idx];
+      if (++_count >= _maxResults)
+	break;
+    }
+  }
+
+
   // -------------------------------------------------------------------------
   // get the required fee in order to send a message (or spam message)
   // this is handy for contract calls
@@ -144,8 +183,6 @@ contract D_MT {
   function doSendMessage(uint256 _noDataLength, address _fromAddr, address _toAddr, uint mimeType, uint _ref, bytes memory _message) internal returns (uint _messageId) {
     Account storage _sendAccount = accounts[_fromAddr];
     Account storage _recvAccount = accounts[_toAddr];
-    //require(_sendAccount.publicKey != 0);
-    //require(_recvAccount.publicKey != 0);
     //if message text is empty then no fees are necessary, and we don't create a log entry.
     //after you introduce yourself to someone this way their subsequent message to you won't
     //incur your spamFee.
@@ -153,22 +190,24 @@ contract D_MT {
       require(msg.value >= _recvAccount.messageFee, "fee is insufficient");
       if (_sendAccount.peerRecvMessageCount[_toAddr] == 0)
 	require(msg.value >= _recvAccount.spamFee, "spam fee is insufficient");
-      ++messageCount;
-      _recvAccount.recvMessageCount += 1;
-      _sendAccount.sentMessageCount += 1;
-      emit MessageEvent(messageCount, _fromAddr, _toAddr, _sendAccount.sentMessageCount, _recvAccount.recvMessageCount, mimeType, _ref, _message);
-      emit MessageTxEvent(_fromAddr, (_sendAccount.sentMessageCount - 1) / 10, _sendAccount.sentMessageCount, messageCount);
-      emit MessageRxEvent(_toAddr, (_recvAccount.recvMessageCount - 1) / 10, _recvAccount.recvMessageCount, messageCount);
+      messageCount = safeAdd(messageCount, 1);
+      _recvAccount.recvIds[_recvAccount.recvMessageCount] = messageCount;
+      _sendAccount.sentIds[_sendAccount.sentMessageCount] = messageCount;
+      _recvAccount.recvMessageCount = safeAdd(_recvAccount.recvMessageCount, 1);
+      _sendAccount.sentMessageCount = safeAdd(_sendAccount.sentMessageCount, 1);
+      emit MessageEvent(messageCount, messageCount, messageCount, _fromAddr, _toAddr, _sendAccount.sentMessageCount, _recvAccount.recvMessageCount, mimeType, _ref, _message);
+      emit MessageTxEvent(_fromAddr, _sendAccount.sentMessageCount, messageCount);
+      emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount, messageCount);
       //return message id, which a calling function might want to log
       _messageId = messageCount;
     } else {
       emit InviteEvent(_toAddr, msg.sender);
       _messageId = 0;
     }
-    uint _retainAmount = (msg.value * 30) / 100;
-    retainedFeesBalance += _retainAmount;
-    _recvAccount.feeBalance += (msg.value - _retainAmount);
-    _recvAccount.peerRecvMessageCount[msg.sender] += 1;
+    uint _retainAmount = safeMul(msg.value, 30) / 100;
+    retainedFeesBalance = safeAdd(retainedFeesBalance, _retainAmount);
+    _recvAccount.feeBalance = safeAdd(_recvAccount.feeBalance, safeSub(msg.value, _retainAmount));
+    _recvAccount.peerRecvMessageCount[msg.sender] = safeAdd(_recvAccount.peerRecvMessageCount[msg.sender], 1);
   }
 
 
@@ -190,7 +229,7 @@ contract D_MT {
   function withdrawRetainedFees() public {
     uint _amount = retainedFeesBalance / 2;
     address(0).transfer(_amount);
-    _amount = retainedFeesBalance - _amount;
+    _amount = safeSub(retainedFeesBalance, _amount);
     retainedFeesBalance = 0;
     (bool paySuccess, ) = tokenAddr.call.gas(contractSendGas).value(_amount)("");
     if (!paySuccess)

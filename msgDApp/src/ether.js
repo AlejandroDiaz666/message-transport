@@ -80,11 +80,13 @@ const ether = module.exports = {
     //convert an amount in wei to a comfortable representation
     //for example: 1000000000000 => '1 gwei'
     convertWeiToComfort: function(web3, wei) {
+	console.log('convertWeiToComfort: wei = ' + wei);
 	const units =
 	    (wei < ether.WEI_PER_GWEI)   ? 'Wei'   :
 	    (wei < ether.WEI_PER_SZABO)  ? 'Gwei'   :
 	    (wei < ether.WEI_PER_FINNEY) ? 'Szabo'  :
-	    (wei < ether.WEI_PER_ETH)    ? 'Finney' : 'Eth';
+            (wei < ether.WEI_PER_ETH)    ? 'Finney' : 'Eth';
+	console.log('convertWeiToComfort: wei = ' + wei + ', units = ' + units);
 	return(web3.fromWei(wei, units).toString() + ' ' + units);
     },
 
@@ -276,9 +278,9 @@ function metamaskGetLogs3(options, cb) {
     if (!!topic3)
 	options.topics[1].push(topic3);
     const paramsStr = JSON.stringify(options);
-    console.log('metamaskGetLogs3: topic1 = ' + topic1);
-    console.log('metamaskGetLogs3: topic2 = ' + topic2);
-    console.log('metamaskGetLogs3: topic3 = ' + topic3);
+    //console.log('metamaskGetLogs3: topic1 = ' + topic1);
+    //console.log('metamaskGetLogs3: topic2 = ' + topic2);
+    //console.log('metamaskGetLogs3: topic3 = ' + topic3);
     console.log('metamaskGetLogs3: options = ' + paramsStr);
     const filter = common.web3.eth.filter(options);
     filter.get(cb);

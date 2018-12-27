@@ -197,13 +197,13 @@ function setReplyButtonHandlers() {
 	    //the toAddr has already been validated. really.
 	    mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
 		//encrypt the message...
-		const toPublicKey = (!!toAcctInfo) ? toAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
+		const toPublicKey = (!!toAcctInfo) ? toAcctInfo.publicKey : null;
 		if (!toPublicKey || toPublicKey == '0x') {
 		    alert('Encryption error: unable to look up destination address in contract!');
 		    handleUnlockedMetaMask(null);
 		    return;
 		}
-		const sentMsgCtrBN = common.numberToBN(index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
+		const sentMsgCtrBN = common.numberToBN(index.acctInfo.sentMsgCount);
 		sentMsgCtrBN.iaddn(1);
 		console.log('setReplyButtonHandlers: toPublicKey = ' + toPublicKey);
 		const ptk = dhcrypt.ptk(toPublicKey, toAddr, common.web3.eth.accounts[0], '0x' + sentMsgCtrBN.toString(16));
@@ -213,7 +213,7 @@ function setReplyButtonHandlers() {
 		//in order to figure the message fee we need to see how many messages have been sent from the proposed recipient to me
 		mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
 		    console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
-		    const fee = (msgCount > 0) ? toAcctInfo[mtEther.ACCTINFO_MESSAGEFEE] : toAcctInfo[mtEther.ACCTINFO_SPAMFEE];
+		    const fee = (msgCount > 0) ? toAcctInfo.msgFee : toAcctInfo.spamFee;
 		    console.log('fee is ' + fee + ' wei');
 		    //display "waiting for metamask" in case metamask dialog is hidden
 		    const metaMaskModal = document.getElementById('metaMaskModal');
@@ -263,7 +263,7 @@ function setValidateButtonHandler() {
     });
     const validatedAddress = (toAddr) => {
 	mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
-	    const toPublicKey = (!!toAcctInfo) ? toAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
+	    const toPublicKey = (!!toAcctInfo) ? toAcctInfo.publicKey : null;
 	    console.log('validateAddrButton.listener: toPublicKey: ' + toPublicKey);
 	    if (!toPublicKey || toPublicKey == '0x') {
 		msgTextArea.value = 'Error: no account was found for this address.';
@@ -278,7 +278,7 @@ function setValidateButtonHandler() {
 		//see how many messages have been sent from the proposed recipient to me
 		mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
 		    console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
-		    const fee = (msgCount > 0) ? toAcctInfo[mtEther.ACCTINFO_MESSAGEFEE] : toAcctInfo[mtEther.ACCTINFO_SPAMFEE];
+		    const fee = (msgCount > 0) ? toAcctInfo.msgFee : toAcctInfo.spamFee;
 		    msgFeeArea.value = 'Fee: ' + ether.convertWeiToComfort(common.web3, fee);
 		});
 	    }
@@ -372,8 +372,7 @@ function setPrevNextButtonHandlers() {
 	}
     });
     index.nextMsgButtonFcn = () => {
-	const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
-	const maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
+	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
 	const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	if (index[msgNoCounter] < maxMsgNo) {
 	    ++index[msgNoCounter];
@@ -382,22 +381,19 @@ function setPrevNextButtonHandlers() {
     };
     nextMsgButton.addEventListener('click', index.nextMsgButtonFcn);
     firstButton.addEventListener('click', function() {
+	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
 	const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
-	const maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	index[msgNoCounter] = (maxMsgNo > 0) ? 1 : 0;
 	showMsgLoop(index.acctInfo);
     });
     lastButton.addEventListener('click', function() {
+	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
 	const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
-	const maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	index[msgNoCounter] = maxMsgNo;
 	showMsgLoop(index.acctInfo);
     });
     prevPageButton.addEventListener('click', function() {
 	const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	const msgNo = index[msgNoCounter];
 	const pageIdx = Math.floor((msgNo - 1) / 10);
 	console.log('pageIdx = ' + pageIdx);
 	if (pageIdx > 0) {
@@ -418,7 +414,6 @@ function setPrevNextButtonHandlers() {
     prevUnreadButton.addEventListener('click', function() {
 	const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	const msgNo = index[msgNoCounter];
-	const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
 	const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo - 1, 1, false);
 	if (unreadMsgNo > 0) {
 	    index[msgNoCounter] = unreadMsgNo;
@@ -426,10 +421,9 @@ function setPrevNextButtonHandlers() {
 	}
     });
     nextUnreadButton.addEventListener('click', function() {
+	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
 	const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	const msgNo = index[msgNoCounter];
-	const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
-	const maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
 	const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
 	if (unreadMsgNo > 0) {
 	    index[msgNoCounter] = unreadMsgNo;
@@ -572,10 +566,10 @@ function periodicCheckForAccountChanges() {
 	    if ((!!_acctInfo && !index.acctInfo) || (!_acctInfo && !!index.acctInfo)) {
 		beginTheBeguine('null');
 	    } else if (!!index.acctInfo && !!_acctInfo) {
-		const recvCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
-		const sentCntNew = parseInt(_acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
-		const recvCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
-		const sentCntOld = parseInt(index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT]);
+		const recvCntNew = parseInt(_acctInfo.recvMsgCount);
+		const sentCntNew = parseInt(_acctInfo.sentMsgCount);
+		const recvCntOld = parseInt(index.acctInfo.recvMsgCount);
+		const sentCntOld = parseInt(index.acctInfo.sentMsgCount);
 		if (recvCntNew != recvCntOld) {
 		    console.log('periodicCheckForAccountChanges: recvCnt ' + recvCntOld + ' => ' + recvCntNew);
 		    beginTheBeguine('recv');
@@ -732,7 +726,7 @@ function handleUnlockedMetaMask(mode) {
 	}
 	mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
 	    index.acctInfo = _acctInfo;
-	    index.publicKey = (!!index.acctInfo) ? index.acctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
+	    index.publicKey = (!!index.acctInfo) ? index.acctInfo.publicKey : null;
 	    //console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(index.acctInfo));
 	    //console.log('handleUnlockedMetaMask: publicKey: ' + index.publicKey);
 	    if (!index.publicKey || index.publicKey == '0x') {
@@ -740,7 +734,7 @@ function handleUnlockedMetaMask(mode) {
 	    } else {
 		if (mode == 'startup' && localStorage['onStartGoto'] == 'first-unread' && !recvMsgNoFromURL) {
 		    const msgNo = index.recvMessageNo;
-		    const maxMsgNo = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+		    const maxMsgNo = parseInt(index.acctInfo.recvMsgCount);
 		    const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
 		    console.log('handleUnlockedMetaMask: unreadMsgNo = ' + unreadMsgNo);
 		    index.recvMessageNo = (unreadMsgNo < 0) ? maxMsgNo : unreadMsgNo;
@@ -817,14 +811,14 @@ function handleRegisteredAcct(mode) {
     const registerButton = document.getElementById('registerButton');
     registerButton.textContent = 'Modify Account';
     const totalReceivedArea = document.getElementById('totalReceivedArea');
-    totalReceivedArea.value = 'Messages sent: ' + index.acctInfo[mtEther.ACCTINFO_SENTMESSAGECOUNT] + '; Messages received: ' + index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT];
+    totalReceivedArea.value = 'Messages sent: ' + index.acctInfo.sentMsgCount + '; Messages received: ' + index.acctInfo.recvMsgCount;
     const feeBalanceArea = document.getElementById('feeBalanceArea');
-    const feebalanceWei = index.acctInfo[mtEther.ACCTINFO_FEEBALANCE];
+    const feebalanceWei = index.acctInfo.feeBalance;
     //console.log('feeBalanceWei = ' + feebalanceWei);
     feeBalanceArea.value = 'Unclaimed message fees: ' + ether.convertWeiToComfort(common.web3, feebalanceWei);
     //see if new messages have been received. if yes, display new message modal until user clicks anywhere outside
     const noRxMsgs = localStorage[index.localStoragePrefix + 'noRxMsgs'];
-    const currentNoRxMsgs = parseInt(index.acctInfo[mtEther.ACCTINFO_RECVMESSAGECOUNT]);
+    const currentNoRxMsgs = parseInt(index.acctInfo.recvMsgCount);
     const deltaRxMsgCount = currentNoRxMsgs - noRxMsgs;
     if (currentNoRxMsgs > 0 && deltaRxMsgCount > 0) {
 	const newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
@@ -844,7 +838,7 @@ function handleRegisteredAcct(mode) {
 	//display "waiting for metamask" in case metamask dialog is hidden
 	const metaMaskModal = document.getElementById('metaMaskModal');
 	metaMaskModal.style.display = 'block';
-	const encryptedPrivateKey = index.acctInfo[mtEther.ACCTINFO_ENCRYPTEDPRIVATEKEY];
+	const encryptedPrivateKey = index.acctInfo.encryptedPrivateKey;
 	dhcrypt.initDH(encryptedPrivateKey, function(err) {
 	    metaMaskModal.style.display = 'none';
 	    if (!err)
@@ -930,7 +924,7 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
     index.listIdx = -1;
     //
     mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
-	const toPublicKey = (!!toAcctInfo) ? toAcctInfo[mtEther.ACCTINFO_PUBLICKEY] : null;
+	const toPublicKey = (!!toAcctInfo) ? toAcctInfo.publicKey : null;
 	if (!toPublicKey || toPublicKey == '0x') {
 	    msgTextArea.value = 'Error: no account was found for this address.';
 	    replyButton.disabled = true;
@@ -965,8 +959,8 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	clearStatusDiv(statusDiv);
 	//fees: see how many messages have been sent from the proposed recipient to me
 	mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
-	    console.log(msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
-	    const fee = (msgCount > 0) ? toAcctInfo[mtEther.ACCTINFO_MESSAGEFEE] : toAcctInfo[mtEther.ACCTINFO_SPAMFEE];
+	    console.log('handleReplyCompose: ' + msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
+	    const fee = (msgCount > 0) ? toAcctInfo.msgFee : toAcctInfo.spamFee;
 	    msgFeeArea.value = 'Fee: ' + ether.convertWeiToComfort(common.web3, fee);
 	});
     });
@@ -976,8 +970,7 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 function handleRegister() {
     setMenuButtonState('importantInfoButton', 'Enabled');
     setMenuButtonState('registerButton',      'Selected');
-    const obfuscatedSecret = index.acctInfo[mtEther.ACCTINFO_OBFUSCATEDSECRET];
-    if (obfuscatedSecret != '0') {
+    if (!!index.acctInfo.encryptedPrivateKey) {
 	setMenuButtonState('viewRecvButton',      'Enabled');
 	setMenuButtonState('composeButton',       'Enabled');
 	setMenuButtonState('viewSentButton',      'Enabled');
@@ -1014,9 +1007,9 @@ function handleRegister() {
     msgTextArea.className = (msgTextArea.className).replace('visibleIB', 'hidden');
     msgTextArea.disabled = true;
     const messageFeeInput = document.getElementById('messageFeeInput');
-    messageFeeInput.value = index.acctInfo[mtEther.ACCTINFO_MESSAGEFEE];
+    messageFeeInput.value = index.acctInfo.msgFee;
     const spamFeeInput = document.getElementById('spamFeeInput');
-    spamFeeInput.value = index.acctInfo[mtEther.ACCTINFO_SPAMFEE];
+    spamFeeInput.value = index.acctInfo.spamFee;
     const statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
 }
@@ -1260,17 +1253,16 @@ function makeMsgList(msgNo, cb) {
     //only etherscan.io provides timestamp
     const msgListHeaderDate = document.getElementById('msgListHeaderDate');
     msgListHeaderDate.textContent = (ether.node.indexOf('etherscan.io') >= 0) ? 'Date' : 'Block';
-    const getMsgLogFcn   = (index.listMode == 'recv') ? mtUtil.getRecvMsgLogs       : mtUtil.getSentMsgLogs;
-    const parseLogsFcn   = (index.listMode == 'recv') ? mtEther.parseMessageRxEvent : mtEther.parseMessageTxEvent;
-    getMsgLogFcn(common.web3.eth.accounts[0], batch, function(err, result) {
+    const getMsgIdsFcn   = (index.listMode == 'recv') ? mtUtil.getRecvMsgIds        : mtUtil.getSentMsgIds;
+    getMsgIdsFcn(common.web3.eth.accounts[0], batch, function(err, result) {
 	if (!!err || !result || result.length < listIdx + 1) {
 	    const msgTextArea = document.getElementById('msgTextArea');
 	    //either an error, or maybe just no events
 	    msgTextArea.value = (!!err) ? 'Error: ' + err : (msgNo > 0) ? 'Error: Unable to retreive message logs' : 'No messages';
 	    result = null;
 	}
-	console.log('makeMsgList: calling makeMsgListEntries(msgIds = ' + result + ' listIdx = 0, firstMsgNo = ' + firstMsgNo + ')');
-	makeMsgListEntries(parseLogsFcn, result, 0, firstMsgNo, cb);
+	console.log('makeMsgList: calling makeMsgListEntries(msgIds = ' + result.toString() + ' listIdx = 0, firstMsgNo = ' + firstMsgNo + ')');
+	makeMsgListEntries(result, 0, firstMsgNo, cb);
     });
 }
 
@@ -1335,17 +1327,15 @@ function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
 // make some entries of the recv/sent message list
 // recursive fcn to populate the entire list
 //
-// parseFcn: mtEther.parseMessageTxEvent or mtEther.parseMessageRxEvent
 // msgIds: array of up to 10 message ID's (can be null)
 // listIdx: index into list (0 - 9)
 // msgNo: msgNo of this entry
 // cb: callback when all done
 //
-function makeMsgListEntries(parseFcn, msgIds, listIdx, msgNo, cb) {
-    console.log('makeMsgListEntries: msgIds = ' + msgIds + ', listIdx = 0, msgNo = ' + msgNo + ')');
-    if (!msgIds || listIdx >= msgIds.length) {
-	const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
-	const maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
+function makeMsgListEntries(msgIds, listIdx, msgNo, cb) {
+    console.log('makeMsgListEntries: msgIds = ' + msgIds.toString() + ', msgIds.length = ' + msgIds.length + ', listIdx = 0, msgNo = ' + msgNo + ')');
+    if (!msgIds || listIdx >= msgIds.length || common.numberToBN(msgIds[listIdx]).isZero()) {
+	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
 	for (; listIdx < 9; ++listIdx, ++msgNo) {
 	    const addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
 	    const msgNoDsp = (msgNo <= maxMsgNo) ? msgNo : '';
@@ -1357,6 +1347,8 @@ function makeMsgListEntries(parseFcn, msgIds, listIdx, msgNo, cb) {
     const threeMsgIds = [];
     const msgCookies = {};
     for (let i = 0; i < 3 && listIdx < msgIds.length; ++i, ++listIdx, ++msgNo) {
+	if (common.numberToBN(msgIds[listIdx]).isZero())
+	    break;
 	console.log('makeMsgListEntries: msgId = ' + msgIds[listIdx] + ', msgNo = ' + msgNo + ' goes to listIdx = ' + listIdx);
 	const msgCookie = { idx: listIdx, no: msgNo };
 	const msgId = msgIds[listIdx];
@@ -1381,7 +1373,7 @@ function makeMsgListEntries(parseFcn, msgIds, listIdx, msgNo, cb) {
 	});
     }, function() {
 	console.log('makeMsgListEntries: got doneCb. listIdx = ' + listIdx);
-	(listIdx <= 9) ? makeMsgListEntries(parseFcn, msgIds, listIdx, msgNo, cb) : cb();
+	(listIdx <= 9) ? makeMsgListEntries(msgIds, listIdx, msgNo, cb) : cb();
     });
 }
 
@@ -1394,29 +1386,23 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content) {
     let div = index.msgListElems[listIdx].div;
     div.className = newPrefix + newSuffix;
     index.listEntries[listIdx] = new ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content);
-    /*
-    if (!!msgNo) {
-	div.addEventListener('click', function() {
-	    //re-establish View-Sent or View-Recv mode as appropriate, but no need to refresh the msg list since
-	    //by definition we are selecting a message from the current list
-	    const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	    const viewSentButton = document.getElementById('viewSentButton');
-	    const viewRecvButton = document.getElementById('viewRecvButton');
-	    index[msgNoCounter] = msgNo;
-	    if (index.listMode == 'recv' && viewRecvButton.className != 'menuBarButtonSelected')
-		handleViewRecv(index.acctInfo, false);
-	    else if (index.listMode == 'sent' && viewSentButton.className != 'menuBarButtonSelected')
-		handleViewSent(index.acctInfo, false);
-	    showMsgLoop(index.acctInfo);
-	});
-    }
-    */
     const subject = mtUtil.extractSubject(content, 80);
     index.msgListElems[listIdx].msgNoArea.value = msgNo.toString(10);
     index.msgListElems[listIdx].addrArea.value = addr;
     index.msgListElems[listIdx].dateArea.value = date;
     index.msgListElems[listIdx].msgIdArea.value = (!!msgId) ? mtUtil.abbreviateMsgId(msgId) : '';
     index.msgListElems[listIdx].subjectArea.value = subject;
+    const viewRecvButton = document.getElementById('viewRecvButton');
+    const viewSentButton = document.getElementById('viewSentButton');
+    if ((msgNo != 0 && listIdx == index.listIdx                                                                                          ) &&
+	(viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) ) {
+	console.log('addToMsgList: calling showMsgDetail(msgNo = ' + msgNo + ')');
+	//in case msg wasn't ready when showMsgLoop was called
+	if (!!index.listEntries[listIdx]) {
+	    showMsgDetail(index.listEntries[listIdx].msgId, index.listEntries[listIdx].msgNo, index.listEntries[listIdx].addr,
+			  index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].content);
+	}
+    }
 }
 
 
@@ -1427,8 +1413,7 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content) {
 //
 function getCurMsgNo(acctInfo) {
     const msgNoCounter     = (index.listMode == 'recv') ? 'recvMessageNo'                 : 'sentMessageNo';
-    const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
-    const maxMsgNo = parseInt(acctInfo[acctInfoCountIdx]);
+    const maxMsgNo = (index.listMode == 'recv') ? parseInt(acctInfo.recvMsgCount) : parseInt(acctInfo.sentMsgCount);
     if (index[msgNoCounter] == 0 && maxMsgNo > 0)
 	index[msgNoCounter] = 1;
     if (index[msgNoCounter] > maxMsgNo)
@@ -1451,8 +1436,7 @@ function getCurMsgNo(acctInfo) {
 // then calls itself to display the new list.
 //
 function showMsgLoop(acctInfo) {
-    const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
-    const maxMsgNo = parseInt(acctInfo[acctInfoCountIdx]);
+    const maxMsgNo = (index.listMode == 'recv') ? parseInt(acctInfo.recvMsgCount) : parseInt(acctInfo.sentMsgCount);
     const msgNo = getCurMsgNo(acctInfo);
     localStorage[index.localStoragePrefix + '-' + index.listMode + 'MessageNo'] = msgNo;
     const prevMsgButton = document.getElementById('prevMsgButton');
@@ -1504,10 +1488,14 @@ function showMsgLoop(acctInfo) {
     if (viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) {
 	if (msgNo != 0) {
 	    const listIdx = (msgNo - 1) % 10;
-	    console.log('showMsgLoop: calling showMsgDetail(msgNo = ' + msgNo + ')');
-	    if (!!index.listEntries[listIdx])
+	    //if the msg hasn't been addded to the list yet then it will be displayed after being added
+	    if (!!index.listEntries[listIdx]) {
+		console.log('showMsgLoop: calling showMsgDetail(msgNo = ' + msgNo + ')');
 		showMsgDetail(index.listEntries[listIdx].msgId, index.listEntries[listIdx].msgNo, index.listEntries[listIdx].addr,
 			      index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].content);
+	    } else {
+		console.log('showMsgLoop: msg detail is not available yet for msgNo = ' + msgNo);
+	    }
 	}
     }
 }
