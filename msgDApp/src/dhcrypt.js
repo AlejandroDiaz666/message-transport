@@ -47,18 +47,20 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 		//console.log('dhcrypt.initDH: keyEncryptionKey: ' + keyEncryptionKey);
 		if (!!encryptedPrivateKey) {
 		    //we already have an encrypted private key... need to decrypt it
-		    let privateKey = dhcrypt.decrypt(keyEncryptionKey, encryptedPrivateKey);
+		    let privateKey = dhcrypt.decrypt(keyEncryptionKey, encryptedPrivateKey, true);
 		    //console.log('dhcrypt.initDH: privateKey: ' + privateKey);
 		    if (privateKey.startsWith('0x'))
 			privateKey = privateKey.substring(2);
+		    //console.log('dhcrypt.initDH: private (' + privateKey.length + '): ' + privateKey.toString('hex'));
 		    dh.setPrivateKey(privateKey, 'hex');
 		    dh.generateKeys('hex');
 		} else {
 		    //generate a new private key, and encrypt it
 		    dh.generateKeys('hex');
-		    const privateKey = dh.getPrivateKey('hex');
-		    //console.log('dhcrypt.initDH: private (' + privateKey.length + '): ' + privateKey);
+		    const privateKey = dh.getPrivateKey();
+		    //console.log('dhcrypt.initDH: private (' + privateKey.length + '): ' + privateKey.toString('hex'));
 		    encryptedPrivateKey = dhcrypt.encrypt(keyEncryptionKey, privateKey);
+		    //console.log('dhcrypt.initDH: encryptedPrivateKey (' + encryptedPrivateKey.length + '): ' + encryptedPrivateKey);
 		}
 		//const publicKey = dh.getPublicKey('hex');
 		//console.log('dhcrypt.initDH: public: (' + publicKey.length + '): ' + publicKey);
@@ -104,24 +106,35 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 	return(ptk);
     },
 
+
     encrypt: function(ptk, message) {
 	const cipher = crypto.createCipher('aes256', ptk);
-	let encrypted = cipher.update(message, 'utf8', 'hex');
+	let encrypted;
+	if (typeof(message) === 'string')
+	    encrypted = cipher.update(message, 'utf8', 'hex');
+	else
+	    encrypted = cipher.update(message, null, 'hex');
 	encrypted += cipher.final('hex');
 	//console.log('encyrpt: message = ' + message);
 	//console.log('encyrpt: encrypted = ' + encrypted);
 	return(encrypted);
     },
 
-    decrypt: function(ptk, encrypted) {
+
+    decrypt: function(ptk, encrypted, toHex) {
 	if (encrypted.startsWith('0x'))
 	    encrypted = encrypted.substring(2);
 	let message = 'Unable to decrypt message';
 	try {
 	    //console.log('decyrpt: encrypted = ' + encrypted);
 	    const decipher = crypto.createDecipher('aes256', ptk);
-	    message = decipher.update(encrypted, 'hex', 'utf8');
-	    message += decipher.final('utf8');
+	    if (!!toHex) {
+		message = decipher.update(encrypted, 'hex', 'hex');
+		message += decipher.final('hex');
+	    } else {
+		message = decipher.update(encrypted, 'hex', 'utf8');
+		message += decipher.final('utf8');
+	    }
 	    //console.log('decyrpt: message = ' + message);
 	} catch (err) {
 	    message = err + '\n' + encrypted;
