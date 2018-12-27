@@ -1244,6 +1244,8 @@ function handleViewSent(acctInfo, refreshMsgList) {
 // this fcn displays the group of 10 messages that include the passed msgNo
 //
 function makeMsgList(msgNo, cb) {
+    const retrievingMsgsModal = document.getElementById('retrievingMsgsModal');
+    retrievingMsgsModal.style.display = 'block';
     const listTableBody = document.getElementById('listAreaDiv');
     const batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
     const listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
@@ -1263,65 +1265,13 @@ function makeMsgList(msgNo, cb) {
 	    result = null;
 	}
 	console.log('makeMsgList: calling makeMsgListEntries(msgIds = ' + result.toString() + ' listIdx = 0, firstMsgNo = ' + firstMsgNo + ')');
-	makeMsgListEntries(result, 0, firstMsgNo, cb);
-    });
-}
-
-
-
-//
-// make one entry of the sent message list
-// recursive fcn to populate the entire list
-//
-// parseFcn: mtEther.parseMessageTxEvent or mtEther.parseMessageRxEvent
-// result: array of logs (can be null)
-// listIdx: index into list (0 - 9)
-// msgNo: msgNo of this entry
-// cb: callback when all done
-//
-/*
-function makeMsgListEntry(parseFcn, result, listIdx, msgNo, cb) {
-    const listTableBody = document.getElementById('listAreaDiv');
-    console.log('makeMsgListEntry[' + listIdx + '] = msgNo(' + msgNo + '), result.length = ' + (!!result ? result.length : 0));
-    if (!result || listIdx >= result.length) {
-	const acctInfoCountIdx = (index.listMode == 'recv') ? mtEther.ACCTINFO_RECVMESSAGECOUNT : mtEther.ACCTINFO_SENTMESSAGECOUNT;
-	const maxMsgNo = parseInt(index.acctInfo[acctInfoCountIdx]);
-	const addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
-	addToMsgList(listIdx, '', addr, '', '', '', '', listTableBody);
-	(listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
-	return;
-    }
-    parseFcn(result[listIdx], function(err, fromAddr, txCount, msgId, blockNumber, date) {
-	if (!!err || !msgId) {
-	    if (!err)
-		err = 'Unable to parse message';
-	    console.log('makeMsgListEntry parseFcn: err = ' + err);
-	    addToMsgList(listIdx, msgNo, '', '', '', '', err, listTableBody);
-	    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
-	    return;
-	}
-	mtUtil.getAndParseIdMsg(msgId, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
-	    if (!!err) {
-		err = 'Message ID ' + msgId + ' not found';
-		addToMsgList(listIdx, msgNo, '', '', '', '', err, listTableBody);
-		(listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
-		return;
-	    }
-	    const otherAddr = (index.listMode == 'sent') ? toAddr : fromAddr;
-	    mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, (err, decrypted) => {
-		if (!!err) {
-		    addToMsgList(listIdx, msgNo, '', '', '', '', 'message decryption error', listTableBody);
-		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
-		    return;
-		} else {
-		    addToMsgList(listIdx, msgNo, otherAddr, date, msgId, ref, decrypted, listTableBody);
-		    (listIdx < 9) ? makeMsgListEntry(parseFcn, result, listIdx + 1, msgNo + 1, cb) : cb();
-		}
-	    });
+	makeMsgListEntries(result, 0, firstMsgNo, function() {
+	    retrievingMsgsModal.style.display = 'none';
+	    cb();
 	});
     });
 }
-*/
+
 
 
 //
@@ -1357,10 +1307,16 @@ function makeMsgListEntries(msgIds, listIdx, msgNo, cb) {
 	msgCookies[msgId] = msgCookie;
     }
     //gets up to 3 log entries; second cb when all done
+    let msgsToDisplay = 4;
+    let noMsgsDisplayed = 0;
     mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
-	if (!!err) {
-	    err = 'Message ID ' + msgId + ' not found';
-	    addToMsgList(msgCookie.idx, msgCookie.no, '', '', '', '', err);
+	if (!!err || !fromAddr) {
+	    err = 'Message data not found';
+	    addToMsgList(msgCookie.idx, msgCookie.no, '', '', msgIds[msgCookie.idx], '', err);
+	    if (++noMsgsDisplayed >= msgsToDisplay) {
+		console.log('makeMsgListEntries: got msgCb. err = ' + err + ', msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
+		(listIdx <= 9) ? makeMsgListEntries(msgIds, listIdx, msgNo, cb) : cb();
+	    }
 	    return;
 	}
 	const otherAddr = (index.listMode == 'sent') ? toAddr : fromAddr;
@@ -1371,10 +1327,16 @@ function makeMsgListEntries(msgIds, listIdx, msgNo, cb) {
 		console.log('makeMsgListEntries: adding msgId = ' + msgId + ', msgNo = ' + msgCookie.no + ' at listIdx = ' + msgCookie.idx);
 		addToMsgList(msgCookie.idx, msgCookie.no, otherAddr, date, msgId, ref, decrypted);
 	    }
+	    if (++noMsgsDisplayed >= msgsToDisplay) {
+		console.log('makeMsgListEntries: got msgCb. msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
+		(listIdx <= 9) ? makeMsgListEntries(msgIds, listIdx, msgNo, cb) : cb();
+	    }
 	});
-    }, function() {
-	console.log('makeMsgListEntries: got doneCb. listIdx = ' + listIdx);
-	(listIdx <= 9) ? makeMsgListEntries(msgIds, listIdx, msgNo, cb) : cb();
+    }, function(noMsgsProcessed) {
+	console.log('makeMsgListEntries: got doneCb. listIdx = ' + listIdx + ', noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsDisplayed = ' + noMsgsDisplayed);
+	msgsToDisplay = noMsgsProcessed;
+	if (noMsgsDisplayed >= msgsToDisplay)
+	    (listIdx <= 9) ? makeMsgListEntries(msgIds, listIdx, msgNo, cb) : cb();
     });
 }
 

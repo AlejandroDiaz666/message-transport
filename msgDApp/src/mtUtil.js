@@ -84,7 +84,7 @@ const mtUtil = module.exports = {
     //
     // gets up to 3 messages specified in msgIds[]
     // msgCb(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date)
-    // doneCb()
+    // doneCb(noMessagesProcessed)
     //
     getAndParseIdMsgs: function(msgIds, msgCookies, msgCb, doneCb) {
 	console.log('getAndParseIdMsgs: enter msgIds = ' + msgIds);
@@ -115,20 +115,25 @@ const mtUtil = module.exports = {
 		//either an error, or maybe just no events
 		for (let i = 0; i < msgIds.length; ++i)
 		    msgCb(err, msgCookies[msgIds[i]], msgIds[i], '', '', '', '', '', '', '', '', '');
-		doneCb();
+		doneCb(msgIds.length);
 		return;
 	    }
+	    let msgCbCount = 0;
+	    let bogusCount = 0;
 	    for (let i = 0; i < msgResults.length; ++i) {
 		mtEther.parseMessageEvent(msgResults[i], function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
 		    if (!!msgCookies[msgId]) {
 			console.log('getAndParseIdMsgs: msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr + ', idx = ' + msgCookies[msgId].idx);
 			msgCb(err, msgCookies[msgId], msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date);
+			++msgCbCount;
 		    } else {
 			console.log('getAndParseIdMsgs: got an unexpected msg, msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr);
+			++bogusCount;
 		    }
+		    if (msgCbCount + bogusCount >= msgResults.length)
+			doneCb(msgCbCount);
 		});
 	    }
-	    doneCb();
 	});
     },
 

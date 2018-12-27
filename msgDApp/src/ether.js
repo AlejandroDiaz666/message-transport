@@ -221,7 +221,7 @@ const ether = module.exports = {
 
 
     // cb(err, result)
-    //fromBlock, toBlock, address, topics[]
+    // fromBlock, toBlock, address, topics[]
     //
     //
     // this is a hacky hack to get events logs mathcing a) one signature (in topic0), plus any one of 3
@@ -338,6 +338,9 @@ function infuraGetLogs3(options, cb) {
 //	fromBlock, toBlock, address, topics[], topic1_2_opr, topic2_3_opr
 // }
 //
+// note: because of the brain-dead mechanism that etherscan.io uses to specify required topic combinations, it's entirely
+// possible that they will return results that don't match topic0. there doesn't seem to be any reliable way to specify
+// topic0 && (topic1 || topic2 || topic3)
 function etherscanGetLogs3(options, cb) {
     console.log('etherscanGetLogs3');
     let url = 'https://' + ether.etherscanioHost   +
@@ -347,18 +350,23 @@ function etherscanGetLogs3(options, cb) {
 	'&address=' + options.address              +
 	'&topic0=' + options.topics[0];
     if (options.topics.length > 1) {
-	if (!!options.topics[1])
+	if (!!options.topics[1]) {
 	    url += '&topic1=' + options.topics[1];
+	    url += '&topic0_1_opr=and';
+	}
 	if (options.topics.length > 2) {
 	    if (!!options.topics[2]) {
 		url += '&topic2=' + options.topics[2];
 		url += '&topic1_2_opr=or';
+		url += '&topic0_2_opr=and';
 	    }
 	}
 	if (options.topics.length > 3) {
 	    if (!!options.topics[3]) {
 		url += '&topic3=' + options.topics[3];
+		url += '&topic1_3_opr=or';
 		url += '&topic2_3_opr=or';
+		url += '&topic0_3_opr=and';
 	    }
 	}
     }
