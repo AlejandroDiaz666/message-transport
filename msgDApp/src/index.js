@@ -394,7 +394,8 @@ function setPrevNextButtonHandlers() {
     });
     prevPageButton.addEventListener('click', function() {
 	const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-	const pageIdx = Math.floor((msgNo - 1) / 10);
+	const msgNo = index[msgNoCounter];
+	let pageIdx = Math.floor((msgNo - 1) / 10);
 	console.log('pageIdx = ' + pageIdx);
 	if (pageIdx > 0) {
 	    --pageIdx;
@@ -405,7 +406,7 @@ function setPrevNextButtonHandlers() {
     nextPageButton.addEventListener('click', function() {
 	const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	const msgNo = index[msgNoCounter];
-	const pageIdx = Math.floor((msgNo - 1) / 10);
+	let pageIdx = Math.floor((msgNo - 1) / 10);
 	console.log('pageIdx = ' + pageIdx);
 	++pageIdx;
 	index[msgNoCounter] = (pageIdx * 10) + 1;
