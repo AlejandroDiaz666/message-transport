@@ -116,6 +116,28 @@ p {
     background-color: #9cd9db;
 }
 
+#retrievingMsgsModal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 50%;
+    top: 30%;
+    width: 270px;
+    height: 50px;
+    padding: 10px;
+    overflow: none;
+    border: 1px solid #888;
+    background-color: #9cd9db;
+}
+
+#retrievingMsgsModal>p {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: fit-content;
+    transform: translate(-50%, -50%);
+}
+
 
 #importantInfoButton {
     float: left;
