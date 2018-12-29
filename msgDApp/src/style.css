@@ -192,6 +192,7 @@ p {
 }
 #optionsButton:hover {
     opacity: 0.7;
+    cursor: pointer;
 }
 #optionsPanel {
     width: 300px;
@@ -314,6 +315,9 @@ p {
     background-color: var(--clr_buttonbgsel);
     border: var(--bor_butselect);
 }
+.menuBarButton:hover, .menuBarButtonEnabled:hover {
+    cursor: pointer;
+}
 
 #navButtonsSpan {
     margin-right: 10px;
@@ -337,16 +341,23 @@ p {
 .navButton:hover {
     background-color: var(--clr_buttonbgsel);
     border: var(--bor_butselect);
+    cursor: pointer;
 }
 .navButton[disabled], .navButton[disabled]:hover, .navButton[disabled]:focus, .navButton[disabled]:active {
     background-color: var(--clr_buttonbg);
     opacity: 0.6;
     border: 1px solid var(--clr_buttonbg);
 }
+.msgInfoAreaButton {
+    margin: 1px;
+}
 .msgInfoAreaButton:hover {
     border: 1px solid #888;
+    margin: 0px;
+    cursor: pointer;
 }
 .msgInfoAreaButton[disabled], .msgInfoAreaButton[disabled]:hover, .msgInfoAreaButton[disabled]:focus, .msgInfoAreaButton[disabled]:active {
+    margin: 1px;
     border: none;
 }
 
@@ -451,11 +462,13 @@ p {
     padding-left: 10px;
     display: table;
     margin: 0px;
-    min-width: 90%;
+    min-width: 80%;
     background-color: var(--clr_areabg1);
     color: var(--clr_areatext);
 }
-
+#validateAddrButton:hover {
+    cursor: pointer;
+}
 #msgPromptArea, #msgAddrArea, #msgIdArea {
     vertical-align: middle;
     padding-top: 1px;
@@ -530,7 +543,39 @@ p {
     border-radius: 8px;
     color: var(--clr_buttontext);
 }
-
+#attachmentButton, #attachmentInput {
+    float:right;
+    vertical-align: middle;
+    padding-top: 0px;
+    padding-right: 6px;
+    padding-bottom: 0px;
+    padding-left: 6px;
+    border-radius: 8px;
+    color: var(--clr_buttontext);
+}
+#attachmentSavePrompt {
+}
+#attachmentSaveA {
+    float:right;
+    margin-right: 10px;
+}
+#attachmentSaveSpan {
+    display: block;
+    vertical-align: middle;
+    padding-top: 0px;
+    padding-right: 6px;
+    padding-bottom: 0px;
+    padding-left: 26px;
+    border-radius: 8px;
+    color: var(--clr_buttontext);
+    background-color: var(--clr_buttonbg);
+    width: fit-content;
+    height: 20px;
+    background-image: url('../images/clip.jpg');
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+}
 
 #msgTextAreaDiv {
     padding-top: 0px;

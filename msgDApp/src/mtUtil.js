@@ -58,7 +58,7 @@ const mtUtil = module.exports = {
 
     //
     // get and parse a single msg
-    // cb(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date)
+    // cb(err, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date)
     //
     getAndParseIdMsg: function(msgId, cb) {
 	console.log('getAndParseIdMsg: enter msgId = ' + msgId);
@@ -73,7 +73,7 @@ const mtUtil = module.exports = {
 		if (!!err)
 		    console.log('getAndParseIdMsg: err = ' + err);
 		//either an error, or maybe just no events
-		cb(err, '', '', '', '', '', '', '', '', '', '');
+		cb(err, '', '', '', '', '', null, '', '', '', '');
 		return;
 	    }
 	    mtEther.parseMessageEvent(msgResult[0], cb);
@@ -83,7 +83,7 @@ const mtUtil = module.exports = {
 
     //
     // gets up to 3 messages specified in msgIds[]
-    // msgCb(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date)
+    // msgCb(err, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date)
     // doneCb(noMessagesProcessed)
     //
     getAndParseIdMsgs: function(msgIds, msgCookies, msgCb, doneCb) {
@@ -114,17 +114,17 @@ const mtUtil = module.exports = {
 		    console.log('getAndParseIdMsgs: err = ' + err);
 		//either an error, or maybe just no events
 		for (let i = 0; i < msgIds.length; ++i)
-		    msgCb(err, msgCookies[msgIds[i]], msgIds[i], '', '', '', '', '', '', '', '', '');
+		    msgCb(err, msgCookies[msgIds[i]], msgIds[i], '', '', '', '', null, '', '', '', '');
 		doneCb(msgIds.length);
 		return;
 	    }
 	    let msgCbCount = 0;
 	    let bogusCount = 0;
 	    for (let i = 0; i < msgResults.length; ++i) {
-		mtEther.parseMessageEvent(msgResults[i], function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
+		mtEther.parseMessageEvent(msgResults[i], function(err, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
 		    if (!!msgCookies[msgId]) {
 			console.log('getAndParseIdMsgs: msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr + ', idx = ' + msgCookies[msgId].idx);
-			msgCb(err, msgCookies[msgId], msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date);
+			msgCb(err, msgCookies[msgId], msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
 			++msgCbCount;
 		    } else {
 			console.log('getAndParseIdMsgs: got an unexpected msg, msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr);

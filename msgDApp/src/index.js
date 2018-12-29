@@ -43,6 +43,7 @@ const index = module.exports = {
 	setMainButtonHandlers();
 	setReplyButtonHandlers();
 	setValidateButtonHandler();
+	setAttachButtonHandler();
 	setMsgRefButtonHandler();
 	setMarkReadButtonHandler();
 	setPrevNextButtonHandlers();
@@ -52,7 +53,7 @@ const index = module.exports = {
 
 };
 
-function ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content) {
+function ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, text, attachment) {
     this.listIdx = listIdx;
     this.div = div;
     this.msgId = msgId;
@@ -60,7 +61,8 @@ function ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content) {
     this.addr = addr;
     this.date = date;
     this.ref = ref;
-    this.content = content;
+    this.text = text;
+    this.attachment = attachment;
 }
 
 
@@ -184,7 +186,7 @@ function setReplyButtonHandlers() {
 	const viewSentButton = document.getElementById('viewSentButton');
 	const msgAddrArea = document.getElementById('msgAddrArea');
 	const msgTextArea = document.getElementById('msgTextArea');
-	const message = msgTextArea.value;
+	let message = msgTextArea.value;
 	if (composeButton.className == 'menuBarButtonSelected') {
 	    //handle send
 	    console.log('send');
@@ -192,7 +194,19 @@ function setReplyButtonHandlers() {
 	    msgTextArea.disabled = true;
 	    msgAddrArea.disabled = true;
 	    validateAddrButton.disabled = true;
-	    const mimeType = '0x1';
+	    //
+	    let attachmentIdxBN;
+	    const attachmentSaveA = document.getElementById('attachmentSaveA');
+	    if (!attachmentSaveA.href || !attachmentSaveA.download) {
+		attachmentIdxBN = new BN(0);
+	    } else {
+		const nameLenBN = new BN(attachmentSaveA.download.length);
+		attachmentIdxBN = new BN(message.length).iuor(nameLenBN.ushln(248));
+		message += attachmentSaveA.download + attachmentSaveA.href;
+		console.log('replyButton: attachmentIdxBN = 0x' + attachmentIdxBN.toString(16));
+		console.log('replyButton: message = ' + message);
+	    }
+	    //
 	    const toAddr = msgAddrArea.value;
 	    //the toAddr has already been validated. really.
 	    mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
@@ -220,7 +234,7 @@ function setReplyButtonHandlers() {
 		    metaMaskModal.style.display = 'block';
 		    const msgRefButton = document.getElementById('msgRefButton');
 		    const ref = msgRefButton.ref;
-		    mtEther.sendMessage(common.web3, toAddr, mimeType, ref, encrypted, fee, function(err, txid) {
+		    mtEther.sendMessage(common.web3, toAddr, attachmentIdxBN, ref, encrypted, fee, function(err, txid) {
 			console.log('txid = ' + txid);
 			metaMaskModal.style.display = 'none';
 			const statusDiv = document.getElementById('statusDiv');
@@ -256,9 +270,11 @@ function setValidateButtonHandler() {
     const msgFeeArea = document.getElementById('msgFeeArea');
     const replyButton = document.getElementById('replyButton');
     const msgTextArea = document.getElementById('msgTextArea');
+    const attachmentButton = document.getElementById('attachmentButton');
     msgAddrArea.addEventListener('input', function() {
 	replyButton.disabled = true;
 	msgTextArea.disabled = true;
+	attachmentButton.disabled = true;
 	msgFeeArea.value = 'Fee: ';
     });
     const validatedAddress = (toAddr) => {
@@ -273,6 +289,7 @@ function setValidateButtonHandler() {
 		msgTextArea.readonly = "";
 		replyButton.disabled = false;
 		msgTextArea.value = 'Subject: ';
+		attachmentButton.disabled = false;
 		//in case user erases subject...
 		msgTextArea.placeholder='Type your message here...';
 		//see how many messages have been sent from the proposed recipient to me
@@ -302,6 +319,40 @@ function setValidateButtonHandler() {
 	    msgAddrArea.value = toAddrIn + ' (' + addr + ')';
 	    validatedAddress(addr);
 	});
+    });
+}
+
+
+function setAttachButtonHandler() {
+    const attachmentButton = document.getElementById('attachmentButton');
+    const attachmentInput = document.getElementById('attachmentInput');
+    const attachmentSaveA = document.getElementById('attachmentSaveA');
+    attachmentButton.addEventListener('click', function() {
+	if (composeButton.className == 'menuBarButtonSelected') {
+	    replaceElemClassFromTo('attachmentButton', 'visibleIB', 'hidden', true);
+	    replaceElemClassFromTo('attachmentInput', 'hidden', 'visibleIB', false);
+	}
+    });
+    attachmentInput.addEventListener('change', function() {
+	console.log('attachmentInput: got change event');
+	if (attachmentInput.files && attachmentInput.files[0]) {
+	    console.log('attachmentInput: got ' + attachmentInput.files[0].name);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+		//eg. e.target.result = data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAMAAAC5zwKfAAACx1BMV...
+		console.log('attachmentInput: e.target.result = ' + e.target.result);
+		//
+		attachmentSaveA.href = e.target.result;
+		attachmentSaveA.download = attachmentInput.files[0].name;
+		const attachmentSaveSpan = document.getElementById('attachmentSaveSpan');
+		attachmentSaveSpan.textContent = attachmentInput.files[0].name;
+		attachmentSaveA.style.display = 'inline-block';
+		replaceElemClassFromTo('attachmentInput', 'visibleIB', 'hidden', true);
+            };
+            reader.readAsDataURL(attachmentInput.files[0]);
+        } else {
+	    attachmentSaveA.href = null;
+	}
     });
 }
 
@@ -652,6 +703,9 @@ function handleLockedMetaMask(err) {
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    const attachmentSaveA = document.getElementById('attachmentSaveA');
+    attachmentSaveA.style.display = 'none';
     //
     const msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('hidden', 'visibleIB');
@@ -789,6 +843,9 @@ function handleUnregisteredAcct() {
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    const attachmentSaveA = document.getElementById('attachmentSaveA');
+    attachmentSaveA.style.display = 'none';
     //
     const msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('hidden', 'visibleIB');
@@ -880,6 +937,10 @@ function handleCompose(acctInfo, toAddr) {
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    //attach button will be enabled after addr is validated
+    replaceElemClassFromTo('attachmentButton',    'hidden',   'visibleIB', true);
+    const attachmentSaveA = document.getElementById('attachmentSaveA');
+    attachmentSaveA.style.display = 'none';
     //
     const msgRefButton = document.getElementById('msgRefButton');
     msgRefButton.ref = '0';
@@ -892,6 +953,8 @@ function handleCompose(acctInfo, toAddr) {
     msgTextArea.placeholder="Validate the recipient address, then type your message here...";
     const statusDiv = document.getElementById('statusDiv');
     clearStatusDiv(statusDiv);
+
+
 }
 
 
@@ -948,6 +1011,10 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
 	replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
 	replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+	//attach button can be enabled, since addr is already validated
+	replaceElemClassFromTo('attachmentButton',    'hidden',   'visibleIB', false);
+	const attachmentSaveA = document.getElementById('attachmentSaveA');
+	attachmentSaveA.style.display = 'none';
 	//
 	showIdAndRef('', ref, false);
 	const msgTextArea = document.getElementById('msgTextArea');
@@ -1003,6 +1070,9 @@ function handleRegister() {
     replaceElemClassFromTo('registerDiv',        'hidden',    'visibleIB', true);
     replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    const attachmentSaveA = document.getElementById('attachmentSaveA');
+    attachmentSaveA.style.display = 'none';
     //
     const msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('visibleIB', 'hidden');
@@ -1078,6 +1148,9 @@ function handleWithdraw() {
     replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    const attachmentSaveA = document.getElementById('attachmentSaveA');
+    attachmentSaveA.style.display = 'none';
     //
     const msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('visibleIB', 'hidden');
@@ -1137,6 +1210,9 @@ function handleViewRecv(acctInfo, refreshMsgList) {
 	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
     else
 	replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
+    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    const attachmentSaveA = document.getElementById('attachmentSaveA');
+    attachmentSaveA.style.display = 'none';
     //
     const msgIdArea = document.getElementById('msgIdArea');
     msgIdArea.readonly = "readonly"
@@ -1208,6 +1284,9 @@ function handleViewSent(acctInfo, refreshMsgList) {
 	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
     else
 	replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
+    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    const attachmentSaveA = document.getElementById('attachmentSaveA');
+    attachmentSaveA.style.display = 'none';
     //
     const msgIdArea = document.getElementById('msgIdArea');
     msgIdArea.readonly = "readonly"
@@ -1290,7 +1369,7 @@ function makeMsgListEntries(msgIds, listIdx, msgNo, cb) {
 	for (; listIdx < 9; ++listIdx, ++msgNo) {
 	    const addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
 	    const msgNoDsp = (msgNo <= maxMsgNo) ? msgNo : '';
-	    addToMsgList(listIdx, msgNoDsp, addr, '', '', '', '');
+	    addToMsgList(listIdx, msgNoDsp, addr, '', '', '', '', null);
 	}
 	cb();
 	return;
@@ -1309,10 +1388,10 @@ function makeMsgListEntries(msgIds, listIdx, msgNo, cb) {
     //gets up to 3 log entries; second cb when all done
     let msgsToDisplay = 4;
     let noMsgsDisplayed = 0;
-    mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
+    mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
 	if (!!err || !fromAddr) {
 	    err = 'Message data not found';
-	    addToMsgList(msgCookie.idx, msgCookie.no, '', '', msgIds[msgCookie.idx], '', err);
+	    addToMsgList(msgCookie.idx, msgCookie.no, '', '', msgIds[msgCookie.idx], '', err, null);
 	    if (++noMsgsDisplayed >= msgsToDisplay) {
 		console.log('makeMsgListEntries: got msgCb. err = ' + err + ', msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
 		(listIdx <= 9) ? makeMsgListEntries(msgIds, listIdx, msgNo, cb) : cb();
@@ -1322,10 +1401,23 @@ function makeMsgListEntries(msgIds, listIdx, msgNo, cb) {
 	const otherAddr = (index.listMode == 'sent') ? toAddr : fromAddr;
 	mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, (err, decrypted) => {
 	    if (!!err) {
-		addToMsgList(msgCookie.idx, msgCookie.no, '', '', '', '', 'message decryption error');
+		addToMsgList(msgCookie.idx, msgCookie.no, '', '', '', '', 'message decryption error', null);
 	    } else {
+		let text = decrypted;
+		let attachment = null;
+		console.log('makeMsgListEntries: msgId = ' + msgId + ', attachmentIdxBN = 0x' + attachmentIdxBN.toString(16));
+		if (!!attachmentIdxBN && !attachmentIdxBN.isZero()) {
+		    const idx = attachmentIdxBN.maskn(248).toNumber();
+		    console.log('makeMsgListEntries: idx = ' + idx);
+		    if (idx > 1) { //temporary
+			text = decrypted.substring(0, idx);
+			const nameLen = attachmentIdxBN.iushrn(248).toNumber();
+			attachment = { name: decrypted.substring(idx, idx + nameLen), blob: decrypted.substring(idx + nameLen) };
+		    }
+		}
 		console.log('makeMsgListEntries: adding msgId = ' + msgId + ', msgNo = ' + msgCookie.no + ' at listIdx = ' + msgCookie.idx);
-		addToMsgList(msgCookie.idx, msgCookie.no, otherAddr, date, msgId, ref, decrypted);
+		console.log('makeMsgListEntries: text = ' + text + ', attachment = ' + attachment);
+		addToMsgList(msgCookie.idx, msgCookie.no, otherAddr, date, msgId, ref, text, attachment);
 	    }
 	    if (++noMsgsDisplayed >= msgsToDisplay) {
 		console.log('makeMsgListEntries: got msgCb. msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
@@ -1341,15 +1433,13 @@ function makeMsgListEntries(msgIds, listIdx, msgNo, cb) {
 }
 
 
-
-function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content) {
-    console.log('addToMsgList: idx = ' + listIdx + ', msgNo = ' + msgNo + ', subject = ' + content.substring(0, 20));
+function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, text, attachment) {
     const newPrefix = (index.listIdx == listIdx) ? 'msgListItemDivSelected' : 'msgListItemDiv';
     const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo)) ? '' : 'New';
     let div = index.msgListElems[listIdx].div;
     div.className = newPrefix + newSuffix;
-    index.listEntries[listIdx] = new ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, content);
-    const subject = mtUtil.extractSubject(content, 80);
+    index.listEntries[listIdx] = new ListEntry(listIdx, div, msgId, msgNo, addr, date, ref, text, attachment);
+    const subject = mtUtil.extractSubject(text, 80);
     index.msgListElems[listIdx].msgNoArea.value = msgNo.toString(10);
     index.msgListElems[listIdx].addrArea.value = addr;
     index.msgListElems[listIdx].dateArea.value = date;
@@ -1363,7 +1453,7 @@ function addToMsgList(listIdx, msgNo, addr, date, msgId, ref, content) {
 	//in case msg wasn't ready when showMsgLoop was called
 	if (!!index.listEntries[listIdx]) {
 	    showMsgDetail(index.listEntries[listIdx].msgId, index.listEntries[listIdx].msgNo, index.listEntries[listIdx].addr,
-			  index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].content);
+			  index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].text, index.listEntries[listIdx].attachment);
 	}
     }
 }
@@ -1381,7 +1471,7 @@ function getCurMsgNo(acctInfo) {
 	index[msgNoCounter] = 1;
     if (index[msgNoCounter] > maxMsgNo)
 	index[msgNoCounter] = maxMsgNo;
-    console.log('getCurMsgNo: curMsgNo = ' + index[msgNoCounter]);
+    //console.log('getCurMsgNo: curMsgNo = ' + index[msgNoCounter]);
     return(index[msgNoCounter]);
 }
 
@@ -1455,7 +1545,7 @@ function showMsgLoop(acctInfo) {
 	    if (!!index.listEntries[listIdx]) {
 		console.log('showMsgLoop: calling showMsgDetail(msgNo = ' + msgNo + ')');
 		showMsgDetail(index.listEntries[listIdx].msgId, index.listEntries[listIdx].msgNo, index.listEntries[listIdx].addr,
-			      index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].content);
+			      index.listEntries[listIdx].date, index.listEntries[listIdx].ref, index.listEntries[listIdx].text, index.listEntries[listIdx].attachment);
 	    } else {
 		console.log('showMsgLoop: msg detail is not available yet for msgNo = ' + msgNo);
 	    }
@@ -1469,7 +1559,7 @@ function showMsgLoop(acctInfo) {
 //decrypt and display the message in the msgTextArea. also displays the msgId, ref, date & msgNo
 //msgNo is either txCount or rxCount depending on whether the message was sent or received
 //
-function showMsgDetail(msgId, msgNo, otherAddr, date, ref, msgContent) {
+function showMsgDetail(msgId, msgNo, otherAddr, date, ref, msgTextContent, attachment) {
     console.log('showMsg: enter');
     const msgAddrArea = document.getElementById('msgAddrArea');
     const msgTextArea = document.getElementById('msgTextArea');
@@ -1480,7 +1570,17 @@ function showMsgDetail(msgId, msgNo, otherAddr, date, ref, msgContent) {
     showIdAndRef(msgId, ref, true);
     msgDateArea.value = date;
     msgNoNotButton.textContent = parseInt(msgNo).toString(10);
-    msgTextArea.value = msgContent;
+    msgTextArea.value = msgTextContent;
+    const attachmentSaveA = document.getElementById('attachmentSaveA');
+    if (!!attachment) {
+	attachmentSaveA.href = attachment.blob;
+	attachmentSaveA.download = attachment.name;
+	const attachmentSaveSpan = document.getElementById('attachmentSaveSpan');
+	attachmentSaveSpan.textContent = attachment.name;
+	attachmentSaveA.style.display = 'inline-block';
+    } else {
+	attachmentSaveA.style.display = 'none';
+    }
     const replyButton = document.getElementById('replyButton');
     replyButton.disabled = false;
 }

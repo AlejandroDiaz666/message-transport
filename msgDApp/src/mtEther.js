@@ -90,12 +90,12 @@ const mtEther = module.exports = {
 
 
     //cb(err, txid)
-    sendMessage: function(web3, toAddr, mimeType, ref, messageHex, size, cb) {
+    sendMessage: function(web3, toAddr, attachmentIdxBN, ref, messageHex, size, cb) {
 	console.log('sendMessageParms: toAddr = ' + toAddr);
-	console.log('sendMessageParms: mimeType = ' + mimeType);
+	console.log('sendMessageParms: attachmentIdxBN = ' + attachmentIdxBN.toString(10));
 	console.log('sendMessageParms: ref = ' + ref);
 	const abiSendMessageFcn = mtEther.abiEncodeSendMessage();
-	const abiParms = mtEther.abiEncodeSendMessageParms(toAddr, mimeType, ref, messageHex);
+	const abiParms = mtEther.abiEncodeSendMessageParms(toAddr, attachmentIdxBN, ref, messageHex);
         const sendData = "0x" + abiSendMessageFcn + abiParms;
 	ether.send(web3, mtEther.EMT_CONTRACT_ADDR, size, 'wei', sendData, 0, cb);
     },
@@ -155,20 +155,18 @@ const mtEther = module.exports = {
 	return(mtEther.sendMessageABI);
     },
 
-    abiEncodeSendMessageParms: function(toAddr, mimeType, ref, message) {
+    abiEncodeSendMessageParms: function(toAddr, attachmentIdxBN, ref, message) {
 	if (toAddr.startsWith('0x'))
 	    toAddr = toAddr.substring(2);
-	if (mimeType.startsWith('0x'))
-	    mimeType = mimeType.substring(2);
 	if (ref.startsWith('0x'))
 	    ref = ref.substring(2);
 	const bytes = common.hexToBytes(message);
 	console.log('abiEncodeSendMessageParms: toAddr = ' + toAddr);
-	console.log('abiEncodeSendMessageParms: mimeType = ' + mimeType);
+	console.log('abiEncodeSendMessageParms: attachmentIdxBN = 0x' + attachmentIdxBN.toString(16));
 	console.log('abiEncodeSendMessageParms: ref = ' + ref);
 	//console.log('abiEncodeSendMessageParms: message (length = ' + bytes.length + '): ' + bytes.toString(16));
 	const encoded = ethabi.rawEncode([ 'address', 'uint256', 'uint256', 'bytes' ],
-				   [ new BN(toAddr, 16), new BN(mimeType, 16), new BN(ref, 16), bytes ] ).toString('hex');
+				   [ new BN(toAddr, 16), attachmentIdxBN, new BN(ref, 16), bytes ] ).toString('hex');
 	return(encoded);
     },
 
@@ -203,7 +201,7 @@ const mtEther = module.exports = {
 
 
 
-    //cb(null, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date)
+    //cb(null, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date)
     //pass in in a single result object
     //note: numbers may be in hex or dec. hex if preceeded by 0x. topics and data are always hex.
     //note: this is a synchronous fcn
@@ -247,9 +245,8 @@ const mtEther = module.exports = {
 	//console.log('parseMessageEvent: txCount = ' + txCount);
 	const rxCount = '0x' + result.data.slice(192+2, 256+2);
 	//console.log('parseMessageEvent: rxCount = ' + rxCount);
-	const mimeTypeHex = result.data.slice(256+2, 320+2);
-	const mimeType = parseInt(mimeTypeHex, 16);
-	//console.log('parseMessageEvent: mimeType = ' + mimeType.toString(10));
+	const attachmentIdxHex = result.data.slice(256+2, 320+2);
+	const attachmentIdxBN = new BN(attachmentIdxHex, 16);
 	const ref = '0x' + result.data.slice(320+2, 384+2);
 	//console.log('parseMessageEvent: ref = ' + ref);
 	const msgOffsetHex = result.data.slice(384+2, 448+2);
@@ -266,7 +263,7 @@ const mtEther = module.exports = {
 	    date = (new Date(timeStamp * 1000)).toUTCString();
 	}
 	//console.log('parseMessageEvent: date = ' + date);
-	cb(null, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date);
+	cb(null, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
     },
 
 
