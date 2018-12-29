@@ -917,8 +917,11 @@ function handleCompose(acctInfo, toAddr) {
     setMenuButtonState('viewSentButton',      'Enabled');
     setMenuButtonState('withdrawButton',      'Enabled');
     //
-    if (index.listIdx >= 0)
-	(index.listEntries[index.listIdx].div).className = 'msgListItemDiv';
+    if (index.listIdx >= 0) {
+	//unselect any currently selected message
+	const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', index.listEntries[index.listIdx].msgNo)) ? '' : 'New';
+	(index.listEntries[index.listIdx].div).className = 'msgListItemDiv' + newSuffix;
+    }
     index.listIdx = -1;
     //
     const msgPromptArea = document.getElementById('msgPromptArea');
