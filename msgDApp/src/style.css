@@ -571,7 +571,7 @@ p {
     background-color: var(--clr_buttonbg);
     width: fit-content;
     height: 20px;
-    background-image: url('../images/clip.jpg');
+    background-image: url('../images/clip.png');
     background-size: 20px 20px;
     background-repeat: no-repeat;
     background-position: 0px 0px;
