@@ -941,7 +941,8 @@ function handleCompose(acctInfo, toAddr) {
     replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
     //attach button will be enabled after addr is validated
-    replaceElemClassFromTo('attachmentButton',    'hidden',   'visibleIB', true);
+    replaceElemClassFromTo('attachmentButton',   'hidden',    'visibleIB', true);
+    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden', true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -1015,7 +1016,8 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
 	replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
 	//attach button can be enabled, since addr is already validated
-	replaceElemClassFromTo('attachmentButton',    'hidden',   'visibleIB', false);
+	replaceElemClassFromTo('attachmentButton',   'hidden',    'visibleIB', false);
+	replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden', true);
 	const attachmentSaveA = document.getElementById('attachmentSaveA');
 	attachmentSaveA.style.display = 'none';
 	//
@@ -1074,6 +1076,7 @@ function handleRegister() {
     replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -1152,6 +1155,7 @@ function handleWithdraw() {
     replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
     replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -1214,6 +1218,7 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     else
 	replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
     replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -1288,6 +1293,7 @@ function handleViewSent(acctInfo, refreshMsgList) {
     else
 	replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
     replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
