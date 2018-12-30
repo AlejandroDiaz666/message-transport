@@ -350,15 +350,15 @@ p {
 }
 .msgInfoAreaButton {
     margin: 1px;
+    border: var(--bor_butnormal);
 }
 .msgInfoAreaButton:hover {
-    border: 1px solid #888;
-    margin: 0px;
     cursor: pointer;
+    border: var(--bor_butselect);
 }
 .msgInfoAreaButton[disabled], .msgInfoAreaButton[disabled]:hover, .msgInfoAreaButton[disabled]:focus, .msgInfoAreaButton[disabled]:active {
-    margin: 1px;
-    border: none;
+    cursor: default;
+    border: var(--bor_butnormal);
 }
 
 #prevUnreadButton {
