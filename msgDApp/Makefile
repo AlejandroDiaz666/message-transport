@@ -9,10 +9,7 @@ CSSFILES := $(CSSDIR)/intro.css $(CSSSTYLEFILES)
 VERSION := $(shell cat src/autoVersion.txt)
 
 
-all:	$(BUNDLEDIR)/autoVersion.js \
-	$(BUNDLEFILES) \
-	$(CSSFILES)
-	./set_timestamp.sh
+all:	bundle/build-date
 
 clean:
 	rm -f css/*
@@ -43,7 +40,13 @@ $(CSSDIR)/%-style.css : $(SRCDIR)/%-theme.css $(SRCDIR)/style.css
 .PHONEY :
 	./autoVersion.sh
 
-$(BUNDLEDIR)/autoVersion.js : $(SRCDIR)/autoVersion.js .PHONEY
+#
+# this can run every time to check the current git version. if it hasn't
+# changed since last build then autoVersion.js is not touched
+#
+$(SRCDIR)/autoVersion.js: .PHONEY
+
+$(BUNDLEDIR)/autoVersion.js : $(SRCDIR)/autoVersion.js
 	cp $< $@
 
 $(BUNDLEDIR)/%.js : $(SRCDIR)/%.js
@@ -54,5 +57,12 @@ $(BUNDLEDIR)/index.js: src/index.js \
 	$(BUNDLEDIR)/mtEther.js \
 	$(BUNDLEDIR)/dhcrypt.js \
 	$(BUNDLEDIR)/mtUtil.js  \
-	$(BUNDLEDIR)/common.js  \
-	$(BUNDLEDIR)/autoVersion.js
+	$(BUNDLEDIR)/common.js \
+
+#
+# this actually builds the dated version of index.js
+#
+bundle/build-date: \
+	$(CSSFILES) \
+	$(BUNDLEFILES)
+	./set_timestamp.sh

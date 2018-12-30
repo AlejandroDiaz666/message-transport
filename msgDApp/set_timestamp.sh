@@ -16,3 +16,4 @@ for f in css/*.css; do
     g=$(echo $f | sed "s/css\/\([^\.]*\)\.css/css\/\1_TIMESTAMP_${now}_\.css/")
     cp $f $g
 done
+echo "build date: ${now}" >bundle/build-date
