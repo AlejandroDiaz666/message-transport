@@ -33,8 +33,7 @@ deploy: all
 	cp $(CSSBLDDIR)/*_TIMESTAMP*.css amt/css/
 	cp $(BUNDLEDIR)/SVGAnimation.js amt/bundle/
 	cp $(BUNDLEDIR)/index_TIMESTAMP*.js amt/bundle/
-	VERSION := $(shell cat src/autoVersion.txt)
-	tar -czf amt-$(VERSION).tar.gz amt
+	tar -czf amt-$(shell cat src/autoVersion.txt).tar.gz amt
 
 $(CSSBLDDIR)/intro.css : $(CSSSRCDIR)/intro.css
 	if [ ! -d $(CSSBLDDIR) ]; then mkdir -p $(CSSBLDDIR); fi
