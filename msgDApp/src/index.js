@@ -327,8 +327,19 @@ function setAttachButtonHandler() {
     const attachmentButton = document.getElementById('attachmentButton');
     const attachmentInput = document.getElementById('attachmentInput');
     const attachmentSaveA = document.getElementById('attachmentSaveA');
+    const deleteImg = document.getElementById('deleteImg');
+    deleteImg.addEventListener('click', function() {
+	attachmentSaveA.href = null;
+	attachmentSaveA.download = null;
+	attachmentInput.value = attachmentInput.files = null;
+	attachmentSaveA.style.display = 'none';
+	replaceElemClassFromTo('attachmentInput', 'visibleIB', 'hidden', true);
+	replaceElemClassFromTo('attachmentButton', 'hidden', 'visibleIB', false);
+	deleteImg.style.display = 'none';
+    });
     attachmentButton.addEventListener('click', function() {
 	if (composeButton.className == 'menuBarButtonSelected') {
+	    attachmentInput.value = attachmentInput.files = null;
 	    replaceElemClassFromTo('attachmentButton', 'visibleIB', 'hidden', true);
 	    replaceElemClassFromTo('attachmentInput', 'hidden', 'visibleIB', false);
 	}
@@ -347,6 +358,7 @@ function setAttachButtonHandler() {
 		const attachmentSaveSpan = document.getElementById('attachmentSaveSpan');
 		attachmentSaveSpan.textContent = attachmentInput.files[0].name;
 		attachmentSaveA.style.display = 'inline-block';
+		deleteImg.style.display = 'inline-block';
 		replaceElemClassFromTo('attachmentInput', 'visibleIB', 'hidden', true);
             };
             reader.readAsDataURL(attachmentInput.files[0]);

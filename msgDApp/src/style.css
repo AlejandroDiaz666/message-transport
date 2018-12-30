@@ -547,16 +547,35 @@ p {
     float:right;
     vertical-align: middle;
     padding-top: 0px;
-    padding-right: 6px;
     padding-bottom: 0px;
     padding-left: 6px;
     border-radius: 8px;
     color: var(--clr_buttontext);
 }
-#attachmentSavePrompt {
+#attachmentButton {
+    padding-right: 6px;
+}
+#attachmentInput {
+    padding-right: 0px;
+    max-width: 15em; /* emough space for no file chosen */
+}
+#attachmentInput:hover {
+    cursor: pointer;
+}
+#deleteImg {
+    display: none;
+    float: right;
+    position: relative;
+    top: -5px;
+    left: -5px;
+    width: 30px;
+    height: 30px;
+}
+#deleteImg:hover {
+    cursor: pointer;
 }
 #attachmentSaveA {
-    float:right;
+    float: right;
     margin-right: 10px;
 }
 #attachmentSaveSpan {
