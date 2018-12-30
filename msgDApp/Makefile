@@ -72,6 +72,7 @@ $(BUNDLEDIR)/index.js: $(SRCDIR)/index.js $(SRCDIR)/autoVersion.js \
 	$(BUNDLEDIR)/dhcrypt.js \
 	$(BUNDLEDIR)/mtUtil.js  \
 	$(BUNDLEDIR)/common.js
+	browserify $< -o $@
 
 $(HTMBLDDIR)/index.html : $(HTMSRCDIR)/index.html \
 	$(CSSBLDFILES) \
