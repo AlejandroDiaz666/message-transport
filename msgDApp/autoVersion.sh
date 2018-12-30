@@ -13,6 +13,7 @@ if [ -e src/autoVersion.txt ]; then
 fi
 if [ "${current}" != "${BRANCH}-${VER}" ]; then
     echo "autoversion.sh: new version is ${BRANCH}-${VER}"
+    echo "autoversion.sh: run make again..."
     echo "${BRANCH}-${VER}" > src/autoVersion.txt
     echo "var autoVersion = module.exports = { version() { return \"$BRANCH $VER\"; } }" > src/autoVersion.js
 else
