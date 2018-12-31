@@ -97,12 +97,12 @@ function setOptionsButtonHandlers() {
     if (!!localStorage['theme'] && localStorage['theme'].indexOf('wanda') >= 0) {
 	wandasThemeButton.checked = true;
 	updateThemeFcn('wandas-style');
-    } else if (!!localStorage['theme'] && localStorage['theme'].indexOf('relax') >= 0) {
-	relaxThemeButton.checked = true;
-	updateThemeFcn('relax-style');
-    } else {
+    } else if (!!localStorage['theme'] && localStorage['theme'].indexOf('mary') >= 0) {
 	marysThemeButton.checked = true;
 	updateThemeFcn('marys-style');
+    } else {
+	relaxThemeButton.checked = true;
+	updateThemeFcn('relax-style');
     }
     marysThemeButton.addEventListener('click', () => {	updateThemeFcn('marys-style'); });
     wandasThemeButton.addEventListener('click', () => { updateThemeFcn('wandas-style'); });
