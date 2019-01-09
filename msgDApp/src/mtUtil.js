@@ -83,7 +83,7 @@ const mtUtil = module.exports = {
 
     //
     // gets up to 3 messages specified in msgIds[]
-    // msgCb(err, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date)
+    // msgCb(err, cookie, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date)
     // doneCb(noMessagesProcessed)
     //
     getAndParseIdMsgs: function(msgIds, msgCookies, msgCb, doneCb) {

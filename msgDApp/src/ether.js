@@ -90,6 +90,48 @@ const ether = module.exports = {
 	return(web3.fromWei(wei, units).toString() + ' ' + units);
     },
 
+
+    //numberAndUnits eg. 5 => { index: 0, multiplyer: 1, number: 5, units: 'Wei' }
+    convertWeiBNToNumberAndUnits: function(weiBN) {
+	const numberAndUnits = {};
+	let multiplyer;
+	//console.log('convertWeiToNumberAndUnits: weiBN = ' + weiBN.toString(10));
+	if (weiBN.lt(new BN('3E8', 16))) {
+	    numberAndUnits.index = 0;
+	    numberAndUnits.multiplyer = '1';
+	    numberAndUnits.units = 'Wei';
+	} else if (weiBN.lt(new BN('F4240', 16))) {
+	    numberAndUnits.index = 1;
+	    numberAndUnits.multiplyer = '1000';
+	    numberAndUnits.units = 'Kwei';
+	} else if (weiBN.lt(new BN('3B9ACA00', 16))) {
+	    numberAndUnits.index = 2;
+	    numberAndUnits.multiplyer = '1000000';
+	    numberAndUnits.units = 'Mwei';
+	} else if (weiBN.lt(new BN('E8D4A51000', 16))) {
+	    numberAndUnits.index = 3;
+	    numberAndUnits.multiplyer = '1000000000';
+	    numberAndUnits.units = 'Gwei';
+	} else if (weiBN.lt(new BN('38D7EA4C68000', 16))) {
+	    numberAndUnits.index = 4;
+	    numberAndUnits.multiplyer = '1000000000000';
+	    numberAndUnits.units = 'Szabo';
+	} else if (weiBN.lt(new BN('DE0B6B3A7640000', 16))) {
+	    numberAndUnits.index = 5;
+	    numberAndUnits.multiplyer = '1000000000000000';
+	    numberAndUnits.units = 'Finney';
+	} else {
+	    numberAndUnits.index = 6;
+	    numberAndUnits.multiplyer = '1000000000000000000';
+	    numberAndUnits.units = 'Eth';
+	}
+	//console.log('convertWeiToNumberAndUnits: units = ' + numberAndUnits.units);
+	//console.log('convertWeiToNumberAndUnits: multiplyer = ' + numberAndUnits.multiplyer);
+	const multiplyerBN = new BN(numberAndUnits.multiplyer, 10);
+	numberAndUnits.number = weiBN.div(multiplyerBN).toNumber();
+	return(numberAndUnits);
+    },
+
     validateAddr: function (addr) {
 	if (!addr.startsWith('0x'))
 	    return(false);
@@ -143,7 +185,7 @@ const ether = module.exports = {
 	tx.data = data;
 	if (gasLimit > 0)
 	    tx.gas = gasLimit;
-	console.log('calling sendTransaction');
+	console.log('ether.send: calling sendTransaction');
 	web3.eth.sendTransaction(tx, callback)
     },
 
@@ -153,7 +195,7 @@ const ether = module.exports = {
     //	fromBlock, toBlock, address, topics[]
     //
     getLogs: function(options, cb) {
-	console.log('getLogs: ether.node = ' + ether.node);
+	console.log('ether.getLogs: ether.node = ' + ether.node);
 	if (ether.node == 'metamask') {
             const filter = common.web3.eth.filter(options);
 	    filter.get(cb);
@@ -192,7 +234,8 @@ const ether = module.exports = {
 	}
 	common.fetch(url, options, function(str, err) {
 	    if (!str || !!err) {
-		const err = "error retreiving events: " + err;
+		if (!err)
+		    err = 'getLogs: error retreiving events';
 		console.log('ether.getLogs: ' + err);
 		cb(err, '');
 		return;
@@ -252,6 +295,17 @@ const ether = module.exports = {
 	}, (err) => {
 	    cb(err, null);
 	});
+    },
+
+
+    //extract hex data from the data part of an event log
+    //offsetOfOffset is an offset into the hex, 0x-prefixed data string. at that offset is the bytes offset of the desired
+    //item. the item is prefixed with a 32 byte length.
+    extractHexData: function(data, offsetOfOffset) {
+	const itemOffset = parseInt(data.slice(offsetOfOffset, offsetOfOffset+64), 16);
+	const itemLen    = parseInt(data.slice(2+(2*itemOffset), 2+(2*itemOffset)+64), 16);
+	const itemHex = '0x' + data.slice(2+(2*itemOffset)+64, 2+(2*itemOffset)+64+(itemLen*2));
+	return(itemHex);
     },
 
 };
