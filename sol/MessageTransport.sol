@@ -196,13 +196,13 @@ contract MessageTransport is SafeMath {
       //return message id, which a calling function might want to log
       _messageId = messageCount;
     } else {
-      emit InviteEvent(_toAddr, msg.sender);
+      emit InviteEvent(_toAddr, _fromAddr);
       _messageId = 0;
     }
     uint _retainAmount = safeMul(msg.value, 30) / 100;
     retainedFeesBalance = safeAdd(retainedFeesBalance, _retainAmount);
     _recvAccount.feeBalance = safeAdd(_recvAccount.feeBalance, safeSub(msg.value, _retainAmount));
-    _recvAccount.peerRecvMessageCount[msg.sender] = safeAdd(_recvAccount.peerRecvMessageCount[msg.sender], 1);
+    _recvAccount.peerRecvMessageCount[_fromAddr] = safeAdd(_recvAccount.peerRecvMessageCount[_fromAddr], 1);
   }
 
 
