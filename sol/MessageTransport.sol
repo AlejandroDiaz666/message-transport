@@ -11,18 +11,9 @@ contract MessageTransport is SafeMath {
   // -------------------------------------------------------------------------
   event InviteEvent(address indexed _toAddr, address indexed _fromAddr);
   event MessageEvent(uint indexed _id1, uint indexed _id2, uint indexed _id3,
-		     address _fromAddr, address _toAddr, uint _txCount, uint _rxCount, uint _mimeType, uint _ref, bytes message);
+		     address _fromAddr, address _toAddr, uint _txCount, uint _rxCount, uint _attachmentIdx, uint _ref, bytes message);
   event MessageTxEvent(address indexed _fromAddr, uint indexed _txCount, uint _id);
   event MessageRxEvent(address indexed _toAddr, uint indexed _rxCount, uint _id);
-
-
-  // -------------------------------------------------------------------------
-  // defines
-  // -------------------------------------------------------------------------
-  uint constant MIME_TYPE_TEXT_PLAIN = 0;
-  uint constant MIME_TYPE_TEXT_HTML  = 1;
-  uint constant MIME_TYPE_IMAGE_JPEG = 2;
-  uint constant MIME_TYPE_IMAGE_PNG  = 3;
 
 
   // -------------------------------------------------------------------------
@@ -172,15 +163,15 @@ contract MessageTransport is SafeMath {
   // -------------------------------------------------------------------------
   // send message
   // -------------------------------------------------------------------------
-  function sendMessage(address _toAddr, uint mimeType, uint _ref, bytes memory _message) public payable returns (uint _messageId) {
+  function sendMessage(address _toAddr, uint attachmentIdx, uint _ref, bytes memory _message) public payable returns (uint _messageId) {
     uint256 _noDataLength = 4 + 20 + 32 + 32;
-    _messageId = doSendMessage(_noDataLength, msg.sender, _toAddr, mimeType, _ref, _message);
+    _messageId = doSendMessage(_noDataLength, msg.sender, _toAddr, attachmentIdx, _ref, _message);
   }
-  function sendMessage(address _fromAddr, address _toAddr, uint mimeType, uint _ref, bytes memory _message) public payable trustedOnly returns (uint _messageId) {
+  function sendMessage(address _fromAddr, address _toAddr, uint attachmentIdx, uint _ref, bytes memory _message) public payable trustedOnly returns (uint _messageId) {
     uint256 _noDataLength = 4 + 20 + 20 + 32 + 32;
-    _messageId = doSendMessage(_noDataLength, _fromAddr, _toAddr, mimeType, _ref, _message);
+    _messageId = doSendMessage(_noDataLength, _fromAddr, _toAddr, attachmentIdx, _ref, _message);
   }
-  function doSendMessage(uint256 _noDataLength, address _fromAddr, address _toAddr, uint mimeType, uint _ref, bytes memory _message) internal returns (uint _messageId) {
+  function doSendMessage(uint256 _noDataLength, address _fromAddr, address _toAddr, uint attachmentIdx, uint _ref, bytes memory _message) internal returns (uint _messageId) {
     Account storage _sendAccount = accounts[_fromAddr];
     Account storage _recvAccount = accounts[_toAddr];
     //if message text is empty then no fees are necessary, and we don't create a log entry.
@@ -195,7 +186,7 @@ contract MessageTransport is SafeMath {
       _sendAccount.sentIds[_sendAccount.sentMessageCount] = messageCount;
       _recvAccount.recvMessageCount = safeAdd(_recvAccount.recvMessageCount, 1);
       _sendAccount.sentMessageCount = safeAdd(_sendAccount.sentMessageCount, 1);
-      emit MessageEvent(messageCount, messageCount, messageCount, _fromAddr, _toAddr, _sendAccount.sentMessageCount, _recvAccount.recvMessageCount, mimeType, _ref, _message);
+      emit MessageEvent(messageCount, messageCount, messageCount, _fromAddr, _toAddr, _sendAccount.sentMessageCount, _recvAccount.recvMessageCount, attachmentIdx, _ref, _message);
       emit MessageTxEvent(_fromAddr, _sendAccount.sentMessageCount, messageCount);
       emit MessageRxEvent(_toAddr, _recvAccount.recvMessageCount, messageCount);
       //return message id, which a calling function might want to log
