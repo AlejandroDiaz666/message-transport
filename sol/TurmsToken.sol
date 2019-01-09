@@ -122,7 +122,7 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   //
   //constructor
   //
-  constructor(address _daiToken, uint256 _tokenSupplysupply, uint256 _decimals, string memory _name, string memory _symbol) public {
+  constructor(address _daiToken, uint256 _tokenSupplysupply, uint8 _decimals, string memory _name, string memory _symbol) public {
     daiToken = _daiToken;
     totalSupply = _tokenSupplysupply;
     decimals = _decimals;
