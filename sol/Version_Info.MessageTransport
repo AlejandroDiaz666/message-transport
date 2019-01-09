@@ -5,6 +5,8 @@ constructor parms:
 00000000000000000000000058412f3465c4324d18e7be2376680b59140c488d
 
 
+Note: don't forget to a) compile with optimization, b) set trust
+
 ----------------------------- old deployments that need to be destructed ----------------------------
 Ropsten: 0x0805AB36767E33aBbD69d5aAdE4e2E5B1772e3cA
 ----------------------------- old deployments that need to be destructed ----------------------------

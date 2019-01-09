@@ -171,6 +171,10 @@ contract MessageTransport is SafeMath {
     uint256 _noDataLength = 4 + 20 + 20 + 32 + 32;
     _messageId = doSendMessage(_noDataLength, _fromAddr, _toAddr, attachmentIdx, _ref, _message);
   }
+
+
+  //TODO: require to/from to have accts
+
   function doSendMessage(uint256 _noDataLength, address _fromAddr, address _toAddr, uint attachmentIdx, uint _ref, bytes memory _message) internal returns (uint _messageId) {
     Account storage _sendAccount = accounts[_fromAddr];
     Account storage _recvAccount = accounts[_toAddr];
