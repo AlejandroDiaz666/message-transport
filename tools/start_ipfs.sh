@@ -3,6 +3,7 @@
 ETC_DIR="/root/ipfs.etc"
 LOG_FILE="${ETC_DIR}/ipfs.log"
 ISON_FILE="${ETC_DIR}/IPFS_IS_ON"
+IPFS="/usr/local/bin/ipfs"
 
 #
 # parse command line
@@ -48,7 +49,7 @@ if [ -n "$DO_CHECK" ]; then
     if [ -e "${ISON_FILE}" ]; then
 	if [ -z "$pid" ]; then
 	    echo "ipfs daemon is not running! retstarting now!"
-	    nohup ipfs daemon >> ${LOG_FILE} 2>&1 &
+	    nohup ${IPFS} daemon >> ${LOG_FILE} 2>&1 &
 	    sleep 1
 	fi
     fi
@@ -85,6 +86,6 @@ if [ -n "$pid" ]; then
     exit
 fi
 echo "$(date): starting ipfs daemon" > ${ISON_FILE}
-nohup ipfs daemon >> ${LOG_FILE} 2>&1 &
+nohup ${IPFS} daemon >> ${LOG_FILE} 2>&1 &
 sleep 1
 echo "(re)started ipfs daemon"
