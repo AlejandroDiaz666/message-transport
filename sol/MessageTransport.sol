@@ -21,6 +21,7 @@ contract MessageTransport is SafeMath {
   // there is a single account structure for all account types
   // -------------------------------------------------------------------------
   struct Account {
+    bool isValid;
     uint messageFee;           // pay this much for every non-spam message sent to this account
     uint spamFee;              // pay this much for every spam message sent to this account
     uint feeBalance;           // includes spam and non-spam fees
@@ -91,6 +92,7 @@ contract MessageTransport is SafeMath {
     _account.spamFee = _spamFee;
     _account.publicKey = _publicKey;
     _account.encryptedPrivateKey = _encryptedPrivateKey;
+    _account.isValid = true;
   }
 
 
@@ -178,6 +180,8 @@ contract MessageTransport is SafeMath {
   function doSendMessage(uint256 _noDataLength, address _fromAddr, address _toAddr, uint attachmentIdx, uint _ref, bytes memory _message) internal returns (uint _messageId) {
     Account storage _sendAccount = accounts[_fromAddr];
     Account storage _recvAccount = accounts[_toAddr];
+    require(_sendAccount.isValid == true, "sender is not registered");
+    require(_recvAccount.isValid == true, "recipient is not registered");
     //if message text is empty then no fees are necessary, and we don't create a log entry.
     //after you introduce yourself to someone this way their subsequent message to you won't
     //incur your spamFee.
