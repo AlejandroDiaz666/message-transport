@@ -207,7 +207,12 @@ function setReplyButtonHandlers() {
 		console.log('replyButton: message = ' + message);
 	    }
 	    //
-	    const toAddr = msgAddrArea.value;
+	    let toAddr = msgAddrArea.value;
+	    if (toAddr.indexOf('(') >= 0) {
+		//for ens names, actual addr is beween parens
+		toAddr = msgAddrArea.value.replace(/[^\(]*\(([^]*)\).*/, "$1");
+		console.log('replyButton: toAddr = ' + toAddr);
+	    }
 	    //the toAddr has already been validated. really.
 	    mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
 		//encrypt the message...

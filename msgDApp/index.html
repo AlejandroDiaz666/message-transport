@@ -331,7 +331,7 @@ message, the message ID of the original message is stored with the reply as a 'R
 	  <span>
 	    <textarea id="msgPromptArea" rows="1" readonly="readonly" disabled="disabled">&nbsp;</textarea>
 	    <textarea id="msgAddrArea" rows="1"
-		      onkeyup="this.value=this.value.replace(/\n/,'')">&nbsp;</textarea>
+		      onkeyup="this.value=this.value.replace(/[(\n]/,'')">&nbsp;</textarea>
 	    <textarea id="msgIdArea" rows="1" class="hidden">&nbsp;</textarea>
 	    <button id="msgRefButton" type="button" class="msgInfoAreaButton hidden">Ref: N/A</button>
 	    <textarea id="msgDateArea" rows="1" class="hidden">&nbsp;</textarea>
