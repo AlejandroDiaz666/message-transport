@@ -53,17 +53,27 @@ const common = module.exports = {
 	if (numberStr.startsWith('0x')) {
 	    base = 16;
 	    numberStr = numberStr.substring(2);
-	} else if (numberStr.indexOf('.') == 1) {
+	} else if (numberStr.indexOf('e+') >= 0) {
 	    const expIdx = numberStr.indexOf('e+');
-	    if (expIdx >= 0) {
-		//console.log('numberToBN: idx of e+ = ' + expIdx);
-		//console.log('numberToBN: numberStr.substring(2, expIdx) = ' + numberStr.substring(2, expIdx));
-		let endPart = numberStr.substring(2, expIdx);
-		numberStr = numberStr.substring(0, 1) + numberStr.substring(2, expIdx);
+	    console.log('numberToBN: expStr =' + numberStr.substring(expIdx + 2));
+	    const exp = parseInt(numberStr.substring(expIdx + 2));
+	    console.log('numberToBN: exp = ' + exp);
+	    let begPart = numberStr.substring(0, expIdx);
+	    console.log('numberToBN: begPart =' + begPart);
+	    let endPart = '';
+	    if (numberStr.indexOf('.') >= 0) {
+		const dotIdx = numberStr.indexOf('.');
+		begPart = numberStr.substring(0, dotIdx);
+		endPart = numberStr.substring(dotIdx + 1, expIdx);
 	    }
+	    endPart = common.rightPadTo(endPart, exp, '0');
+	    console.log('numberToBN: begPart =' + begPart);
+	    console.log('numberToBN: endPart =' + endPart);
+	    numberStr = begPart + endPart
 	}
+	console.log('numberToBN: converted from ' + number + ' to ' + numberStr);
 	const bn = new BN(numberStr, base);
-	//console.log('numberToBN: converted from ' + number + ' to 0x' + bn.toString(16));
+	console.log('numberToBN: converted from ' + number + ' to 0x' + bn.toString(16) + ', ' + bn.toString(10));
 	return(bn);
     },
 
@@ -97,7 +107,7 @@ const common = module.exports = {
 
 
     hexToAscii: function(hexStr) {
-	console.log('hexToAscii');
+	//console.log('hexToAscii');
 	//first ensure passed parm is a string
 	let hex = hexStr.toString();
 	if (hex.startsWith('0x'))
@@ -211,9 +221,12 @@ const common = module.exports = {
 	return padded;
     },
 
-    rightPadTo: function(str, desiredLen) {
-	const bigPad = '                                                                                                    ';
-	return((str + bigPad).slice(0, desiredLen));
+    rightPadTo: function(str, desiredLen, ch) {
+	const padChar = (typeof ch !== 'undefined') ? ch : ' ';
+	const pad = new Array(1 + desiredLen).join(padChar);
+	const padded = (str.toString() + pad).slice(0, desiredLen);
+	console.log('padded = X' + padded + 'X');
+	return padded;
     },
 
     setIndexedFlag: function(prefix, index, flag) {
@@ -316,7 +329,7 @@ const common = module.exports = {
 	const options = { mode: 'cors'};
 	Object.assign(options, extraOptions);
 	fetch(request, options).then(function(resp) {
-	    console.log('common.fetch: got resp = ' + resp + ', status = ' + resp.status + ', (' + resp.statusText + ')');
+	    //console.log('common.fetch: got resp = ' + resp + ', status = ' + resp.status + ', (' + resp.statusText + ')');
 	    clearTimeout(fetch_timer);
 	    complete = true;
 	    if (timeout == true) {
@@ -336,6 +349,47 @@ const common = module.exports = {
 	    complete = true;
 	    callback("", error);
 	});
+    },
+
+
+    clearStatusDiv: function(statusDiv) {
+	while (statusDiv.hasChildNodes()) {
+	    statusDiv.removeChild(statusDiv.lastChild);
+	}
+	statusDiv.style.display = "none";
+    },
+
+
+    //state = 'Disabled' | 'Enabled' | 'Selected'
+    setMenuButtonState: function(buttonID, state) {
+	var button = document.getElementById(buttonID);
+	button.disabled = (state == 'Enabled') ? false : true;
+	var newClassName = 'menuBarButton' + state;
+	if (button.className.indexOf('menuBarButtonDisabled') >= 0)
+	    button.className = (button.className).replace('menuBarButtonDisabled', newClassName);
+	else if (button.className.indexOf('menuBarButtonEnabled') >= 0)
+	    button.className = (button.className).replace('menuBarButtonEnabled', newClassName);
+	else if (button.className.indexOf('menuBarButtonSelected') >= 0)
+	    button.className = (button.className).replace('menuBarButtonSelected', newClassName);
+	else
+	    button.className = (button.className).replace('menuBarButton', newClassName);
+    },
+
+
+    replaceElemClassFromTo: function(elemId, from, to, disabled) {
+	var elem = document.getElementById(elemId);
+	if (!elem)
+	    console.log('could not find elem: ' + elemId);
+	elem.className = (elem.className).replace(from, to);
+	elem.disabled = disabled;
+	return(elem);
+    },
+
+
+    //display (or clear) "waiting for metamask" dialog
+    showWaitingForMetaMask: function(show) {
+	const metaMaskModal = document.getElementById('metaMaskModal');
+	metaMaskModal.style.display = (!!show) ? 'block' : 'none';
     },
 
 };

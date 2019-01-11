@@ -70,10 +70,10 @@ function setOptionsButtonHandlers() {
     const versionArea = document.getElementById('versionArea');
     versionArea.textContent = 'Build: ' + autoVersion.version();
     const optionsButton = document.getElementById('optionsButton');
-    optionsButton.addEventListener('click', () => { replaceElemClassFromTo('optionsPanel', 'hidden', 'visibleB', null); });
+    optionsButton.addEventListener('click', () => { common.replaceElemClassFromTo('optionsPanel', 'hidden', 'visibleB', null); });
     const closeOptionsButton = document.getElementById('closeOptionsButton');
     closeOptionsButton.addEventListener('click', () => {
-	replaceElemClassFromTo('optionsPanel', 'visibleB', 'hidden', null);
+	common.replaceElemClassFromTo('optionsPanel', 'visibleB', 'hidden', null);
 	if (localStorage['logsNode'] != ether.node) {
 	    //if node changed...
 	    ether.node = localStorage['logsNode'];
@@ -237,14 +237,13 @@ function setReplyButtonHandlers() {
 		    const msgFeeArea = document.getElementById('msgFeeArea');
 		    msgFeeArea.value = 'Fee: ' + ether.convertWeiToComfort(common.web3, fee);
 		    console.log('fee is ' + fee + ' wei');
-		    //display "waiting for metamask" in case metamask dialog is hidden
-		    const metaMaskModal = document.getElementById('metaMaskModal');
+		    common.showWaitingForMetaMask(true);
 		    metaMaskModal.style.display = 'block';
 		    const msgRefButton = document.getElementById('msgRefButton');
 		    const ref = msgRefButton.ref;
 		    mtEther.sendMessage(common.web3, toAddr, attachmentIdxBN, ref, encrypted, fee, function(err, txid) {
 			console.log('txid = ' + txid);
-			metaMaskModal.style.display = 'none';
+			common.showWaitingForMetaMask(false);
 			const statusDiv = document.getElementById('statusDiv');
 			waitForTXID(err, txid, 'Send-Message', statusDiv, 'send', function() {
 			});
@@ -341,15 +340,15 @@ function setAttachButtonHandler() {
 	attachmentSaveA.download = null;
 	attachmentInput.value = attachmentInput.files = null;
 	attachmentSaveA.style.display = 'none';
-	replaceElemClassFromTo('attachmentInput', 'visibleIB', 'hidden', true);
-	replaceElemClassFromTo('attachmentButton', 'hidden', 'visibleIB', false);
+	common.replaceElemClassFromTo('attachmentInput', 'visibleIB', 'hidden', true);
+	common.replaceElemClassFromTo('attachmentButton', 'hidden', 'visibleIB', false);
 	deleteImg.style.display = 'none';
     });
     attachmentButton.addEventListener('click', function() {
 	if (composeButton.className == 'menuBarButtonSelected') {
 	    attachmentInput.value = attachmentInput.files = null;
-	    replaceElemClassFromTo('attachmentButton', 'visibleIB', 'hidden', true);
-	    replaceElemClassFromTo('attachmentInput', 'hidden', 'visibleIB', false);
+	    common.replaceElemClassFromTo('attachmentButton', 'visibleIB', 'hidden', true);
+	    common.replaceElemClassFromTo('attachmentInput', 'hidden', 'visibleIB', false);
 	}
     });
     attachmentInput.addEventListener('change', function() {
@@ -367,7 +366,7 @@ function setAttachButtonHandler() {
 		attachmentSaveSpan.textContent = attachmentInput.files[0].name;
 		attachmentSaveA.style.display = 'inline-block';
 		deleteImg.style.display = 'inline-block';
-		replaceElemClassFromTo('attachmentInput', 'visibleIB', 'hidden', true);
+		common.replaceElemClassFromTo('attachmentInput', 'visibleIB', 'hidden', true);
             };
             reader.readAsDataURL(attachmentInput.files[0]);
         } else {
@@ -512,52 +511,52 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 	    resolve(1);
 	}));
     }
-    replaceElemClassFromTo('intro0Div', 'hidden', 'visibleB', null);
+    common.replaceElemClassFromTo('intro0Div', 'hidden', 'visibleB', null);
     if (!index.introCompletePromise) {
 	index.introCompletePromise = new Promise((resolve, reject) => {
 	    const intro0Next = document.getElementById('intro0Next');
 	    intro0Next.addEventListener('click', function() {
-		replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
-		replaceElemClassFromTo('intro1Div', 'hidden', 'visibleB', null);
+		common.replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro1Div', 'hidden', 'visibleB', null);
 	    });
 	    const intro1Prev = document.getElementById('intro1Prev');
 	    intro1Prev.addEventListener('click', function() {
-		replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
-		replaceElemClassFromTo('intro0Div', 'hidden', 'visibleB', null);
+		common.replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro0Div', 'hidden', 'visibleB', null);
 	    });
 	    const intro1Next = document.getElementById('intro1Next');
 	    intro1Next.addEventListener('click', function() {
-		replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
-		replaceElemClassFromTo('intro2Div', 'hidden', 'visibleB', null);
+		common.replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro2Div', 'hidden', 'visibleB', null);
 	    });
 	    const intro2Prev = document.getElementById('intro2Prev');
 	    intro2Prev.addEventListener('click', function() {
-		replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
-		replaceElemClassFromTo('intro1Div', 'hidden', 'visibleB', null);
+		common.replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro1Div', 'hidden', 'visibleB', null);
 	    });
 	    const intro2Next = document.getElementById('intro2Next');
 	    intro2Next.addEventListener('click', function() {
-		replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
-		replaceElemClassFromTo('intro3Div', 'hidden', 'visibleB', null);
+		common.replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro3Div', 'hidden', 'visibleB', null);
 	    });
 	    const intro3Prev = document.getElementById('intro3Prev');
 	    intro3Prev.addEventListener('click', function() {
-		replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
-		replaceElemClassFromTo('intro2Div', 'hidden', 'visibleB', null);
+		common.replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro2Div', 'hidden', 'visibleB', null);
 	    });
 	    const intro3Next = document.getElementById('intro3Next');
 	    intro3Next.addEventListener('click', function() {
-		replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
-		replaceElemClassFromTo('intro4Div', 'hidden', 'visibleB', null);
+		common.replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro4Div', 'hidden', 'visibleB', null);
 	    });
 	    const intro4Prev = document.getElementById('intro4Prev');
 	    intro4Prev.addEventListener('click', function() {
-		replaceElemClassFromTo('intro4Div', 'visibleB', 'hidden', null);
-		replaceElemClassFromTo('intro3Div', 'hidden', 'visibleB', null);
+		common.replaceElemClassFromTo('intro4Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro3Div', 'hidden', 'visibleB', null);
 	    });
 	    const intro4Next = document.getElementById('intro4Next');
 	    intro4Next.addEventListener('click', function() {
-		replaceElemClassFromTo('intro4Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro4Div', 'visibleB', 'hidden', null);
 		//if we wanted to stop displaying the intro once the user had clicked through
 		//to the end at least one time...
 		//localStorage['FirstIntroCompleteFlag'] = true;
@@ -565,27 +564,27 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 	    });
 	    const intro0Close = document.getElementById('intro0Close');
 	    intro0Close.addEventListener('click', function() {
-		replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro0Div', 'visibleB', 'hidden', null);
 		resolve(null);
 	    });
 	    const intro1Close = document.getElementById('intro1Close');
 	    intro1Close.addEventListener('click', function() {
-		replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro1Div', 'visibleB', 'hidden', null);
 		resolve(null);
 	    });
 	    const intro2Close = document.getElementById('intro2Close');
 	    intro2Close.addEventListener('click', function() {
-		replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro2Div', 'visibleB', 'hidden', null);
 		resolve(null);
 	    });
 	    const intro3Close = document.getElementById('intro3Close');
 	    intro3Close.addEventListener('click', function() {
-		replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro3Div', 'visibleB', 'hidden', null);
 		resolve(null);
 	    });
 	    const intro4Close = document.getElementById('intro4Close');
 	    intro4Close.addEventListener('click', function() {
-		replaceElemClassFromTo('intro4Div', 'visibleB', 'hidden', null);
+		common.replaceElemClassFromTo('intro4Div', 'visibleB', 'hidden', null);
 		//if we wanted to stop displaying the intro once the user had clicked through
 		//to the end at least one time...
 		//localStorage['FirstIntroCompleteFlag'] = true;
@@ -673,12 +672,12 @@ async function beginTheBeguine(mode) {
 	    console.log('beginTheBeguine: checkForMetaMask err = ' + err);
 	    handleLockedMetaMask(err);
 	} else {
-	    setMenuButtonState('importantInfoButton', 'Disabled');
-	    setMenuButtonState('registerButton',      'Disabled');
-	    setMenuButtonState('viewRecvButton',      'Disabled');
-	    setMenuButtonState('composeButton',       'Disabled');
-	    setMenuButtonState('viewSentButton',      'Disabled');
-	    setMenuButtonState('withdrawButton',      'Disabled');
+	    common.setMenuButtonState('importantInfoButton', 'Disabled');
+	    common.setMenuButtonState('registerButton',      'Disabled');
+	    common.setMenuButtonState('viewRecvButton',      'Disabled');
+	    common.setMenuButtonState('composeButton',       'Disabled');
+	    common.setMenuButtonState('viewSentButton',      'Disabled');
+	    common.setMenuButtonState('withdrawButton',      'Disabled');
 	    handleUnlockedMetaMask(mode);
 	}
     });
@@ -691,12 +690,12 @@ async function beginTheBeguine(mode) {
 function handleLockedMetaMask(err) {
     const registerButton = document.getElementById('registerButton');
     registerButton.textContent = 'Register Account';
-    setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Disabled');
-    setMenuButtonState('viewRecvButton',      'Disabled');
-    setMenuButtonState('composeButton',       'Disabled');
-    setMenuButtonState('viewSentButton',      'Disabled');
-    setMenuButtonState('withdrawButton',      'Disabled');
+    common.setMenuButtonState('importantInfoButton', 'Enabled');
+    common.setMenuButtonState('registerButton',      'Disabled');
+    common.setMenuButtonState('viewRecvButton',      'Disabled');
+    common.setMenuButtonState('composeButton',       'Disabled');
+    common.setMenuButtonState('viewSentButton',      'Disabled');
+    common.setMenuButtonState('withdrawButton',      'Disabled');
     //
     const networkArea = document.getElementById('networkArea');
     networkArea.value = '';
@@ -714,16 +713,16 @@ function handleLockedMetaMask(err) {
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = '';
     //
-    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
-    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true).textContent = 'Reply';
-    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    common.replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true).textContent = 'Reply';
+    common.replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -736,7 +735,7 @@ function handleLockedMetaMask(err) {
     const listTableBody = document.getElementById('listAreaDiv');
     clearMsgList(listTableBody);
     const statusDiv = document.getElementById('statusDiv');
-    clearStatusDiv(statusDiv);
+    common.clearStatusDiv(statusDiv);
     alert(err);
 }
 
@@ -828,19 +827,17 @@ function handleUnlockedMetaMask(mode) {
 function handleUnregisteredAcct() {
     const registerButton = document.getElementById('registerButton');
     registerButton.textContent = 'Register Account';
-    setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Disabled');
-    setMenuButtonState('viewRecvButton',      'Disabled');
-    setMenuButtonState('composeButton',       'Disabled');
-    setMenuButtonState('viewSentButton',      'Disabled');
-    setMenuButtonState('withdrawButton',      'Disabled');
-    //display "waiting for metamask" in case metamask dialog is hidden
-    const metaMaskModal = document.getElementById('metaMaskModal');
-    metaMaskModal.style.display = 'block';
+    common.setMenuButtonState('importantInfoButton', 'Enabled');
+    common.setMenuButtonState('registerButton',      'Disabled');
+    common.setMenuButtonState('viewRecvButton',      'Disabled');
+    common.setMenuButtonState('composeButton',       'Disabled');
+    common.setMenuButtonState('viewSentButton',      'Disabled');
+    common.setMenuButtonState('withdrawButton',      'Disabled');
+    common.showWaitingForMetaMask(true);
     dhcrypt.initDH(null, function(err) {
 	metaMaskModal.style.display = 'none';
 	if (!err) {
-	    setMenuButtonState('registerButton',   'Enabled');
+	    common.setMenuButtonState('registerButton',   'Enabled');
 	}
     });
     //
@@ -854,16 +851,16 @@ function handleUnregisteredAcct() {
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = '';
     //
-    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
-    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true).textContent = 'Reply';
-    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    common.replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true).textContent = 'Reply';
+    common.replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -876,7 +873,7 @@ function handleUnregisteredAcct() {
     const listTableBody = document.getElementById('listAreaDiv');
     clearMsgList(listTableBody);
     const statusDiv = document.getElementById('statusDiv');
-    clearStatusDiv(statusDiv);
+    common.clearStatusDiv(statusDiv);
 }
 
 
@@ -913,12 +910,10 @@ function handleRegisteredAcct(mode) {
     } else {
 	const listTableBody = document.getElementById('listAreaDiv');
 	clearMsgList(listTableBody);
-	//display "waiting for metamask" in case metamask dialog is hidden
-	const metaMaskModal = document.getElementById('metaMaskModal');
-	metaMaskModal.style.display = 'block';
+	common.showWaitingForMetaMask(true);
 	const encryptedPrivateKey = index.acctInfo.encryptedPrivateKey;
 	dhcrypt.initDH(encryptedPrivateKey, function(err) {
-	    metaMaskModal.style.display = 'none';
+	    common.showWaitingForMetaMask(false);
 	    if (!err)
 		handleViewRecv(index.acctInfo, true);
 	});
@@ -930,12 +925,12 @@ function handleRegisteredAcct(mode) {
 // handle Compose button
 //
 function handleCompose(acctInfo, toAddr) {
-    setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Enabled');
-    setMenuButtonState('viewRecvButton',      'Enabled');
-    setMenuButtonState('composeButton',       'Selected');
-    setMenuButtonState('viewSentButton',      'Enabled');
-    setMenuButtonState('withdrawButton',      'Enabled');
+    common.setMenuButtonState('importantInfoButton', 'Enabled');
+    common.setMenuButtonState('registerButton',      'Enabled');
+    common.setMenuButtonState('viewRecvButton',      'Enabled');
+    common.setMenuButtonState('composeButton',       'Selected');
+    common.setMenuButtonState('viewSentButton',      'Enabled');
+    common.setMenuButtonState('withdrawButton',      'Enabled');
     //
     if (index.listIdx >= 0) {
 	//unselect any currently selected message
@@ -951,18 +946,18 @@ function handleCompose(acctInfo, toAddr) {
     msgAddrArea.readonly = '';
     msgAddrArea.value = toAddr;
     //
-    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
-    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('validateAddrButton', 'hidden',    'visibleTC', false);
-    replaceElemClassFromTo('msgFeeArea',         'hidden',    'visibleTC', true).value = 'Fee: ';
-    replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send';
-    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    common.replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('validateAddrButton', 'hidden',    'visibleTC', false);
+    common.replaceElemClassFromTo('msgFeeArea',         'hidden',    'visibleTC', true).value = 'Fee: ';
+    common.replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send';
+    common.replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
     //attach button will be enabled after addr is validated
-    replaceElemClassFromTo('attachmentButton',   'hidden',    'visibleIB', true);
-    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden', true);
+    common.replaceElemClassFromTo('attachmentButton',   'hidden',    'visibleIB', true);
+    common.replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden', true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -976,7 +971,7 @@ function handleCompose(acctInfo, toAddr) {
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder="Validate the recipient address, then type your message here...";
     const statusDiv = document.getElementById('statusDiv');
-    clearStatusDiv(statusDiv);
+    common.clearStatusDiv(statusDiv);
 
 
 }
@@ -988,12 +983,12 @@ function handleCompose(acctInfo, toAddr) {
 // modifications will be disabled.
 //
 function handleReplyCompose(acctInfo, toAddr, subject, ref) {
-    setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Enabled');
-    setMenuButtonState('viewRecvButton',      'Enabled');
-    setMenuButtonState('composeButton',       'Selected');
-    setMenuButtonState('viewSentButton',      'Enabled');
-    setMenuButtonState('withdrawButton',      'Enabled');
+    common.setMenuButtonState('importantInfoButton', 'Enabled');
+    common.setMenuButtonState('registerButton',      'Enabled');
+    common.setMenuButtonState('viewRecvButton',      'Enabled');
+    common.setMenuButtonState('composeButton',       'Selected');
+    common.setMenuButtonState('viewSentButton',      'Enabled');
+    common.setMenuButtonState('withdrawButton',      'Enabled');
     //
     if (!ether.validateAddr(toAddr)) {
 	msgTextArea.value = 'Error: invalid Ethereum address.';
@@ -1026,18 +1021,18 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	msgAddrArea.readonly = 'readonly';
 	msgAddrArea.value = toAddr;
 	//
-	replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
-	replaceElemClassFromTo('msgRefButton',       'hidden',    'visibleTC', true);
-	replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
-	replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
-	replaceElemClassFromTo('msgFeeArea',         'hidden',    'visibleTC', true).value = 'Fee: ';
-	replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', false).textContent = 'Send';
-	replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-	replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
-	replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+	common.replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+	common.replaceElemClassFromTo('msgRefButton',       'hidden',    'visibleTC', true);
+	common.replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+	common.replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+	common.replaceElemClassFromTo('msgFeeArea',         'hidden',    'visibleTC', true).value = 'Fee: ';
+	common.replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', false).textContent = 'Send';
+	common.replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+	common.replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
+	common.replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
 	//attach button can be enabled, since addr is already validated
-	replaceElemClassFromTo('attachmentButton',   'hidden',    'visibleIB', false);
-	replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden', true);
+	common.replaceElemClassFromTo('attachmentButton',   'hidden',    'visibleIB', false);
+	common.replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden', true);
 	const attachmentSaveA = document.getElementById('attachmentSaveA');
 	attachmentSaveA.style.display = 'none';
 	//
@@ -1049,7 +1044,7 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	msgTextArea.readonly = '';
 	msgTextArea.placeholder='Type your message here...';
 	const statusDiv = document.getElementById('statusDiv');
-	clearStatusDiv(statusDiv);
+	common.clearStatusDiv(statusDiv);
 	//fees: see how many messages have been sent from the proposed recipient to me
 	mtEther.getPeerMessageCount(common.web3, toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
 	    console.log('handleReplyCompose: ' + msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
@@ -1061,18 +1056,18 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 
 
 function handleRegister() {
-    setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Selected');
+    common.setMenuButtonState('importantInfoButton', 'Enabled');
+    common.setMenuButtonState('registerButton',      'Selected');
     if (!!index.acctInfo.encryptedPrivateKey) {
-	setMenuButtonState('viewRecvButton',      'Enabled');
-	setMenuButtonState('composeButton',       'Enabled');
-	setMenuButtonState('viewSentButton',      'Enabled');
-	setMenuButtonState('withdrawButton',      'Enabled');
+	common.setMenuButtonState('viewRecvButton',      'Enabled');
+	common.setMenuButtonState('composeButton',       'Enabled');
+	common.setMenuButtonState('viewSentButton',      'Enabled');
+	common.setMenuButtonState('withdrawButton',      'Enabled');
     } else {
-	setMenuButtonState('viewRecvButton',      'Disabled');
-	setMenuButtonState('composeButton',       'Disabled');
-	setMenuButtonState('viewSentButton',      'Disabled');
-	setMenuButtonState('withdrawButton',      'Disabled');
+	common.setMenuButtonState('viewRecvButton',      'Disabled');
+	common.setMenuButtonState('composeButton',       'Disabled');
+	common.setMenuButtonState('viewSentButton',      'Disabled');
+	common.setMenuButtonState('withdrawButton',      'Disabled');
     }
     //
     if (index.listIdx >= 0)
@@ -1086,17 +1081,17 @@ function handleRegister() {
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = common.web3.eth.accounts[0];
     //
-    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
-    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('registerDiv',        'hidden',    'visibleIB', true);
-    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    common.replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('registerDiv',        'hidden',    'visibleIB', true);
+    common.replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -1108,7 +1103,7 @@ function handleRegister() {
     const spamFeeInput = document.getElementById('spamFeeInput');
     spamFeeInput.value = index.acctInfo.spamFee;
     const statusDiv = document.getElementById('statusDiv');
-    clearStatusDiv(statusDiv);
+    common.clearStatusDiv(statusDiv);
 }
 
 
@@ -1130,13 +1125,11 @@ function handleRegisterSubmit() {
     spamFeeBN.imul(common.numberToBN(spamFeeUnits.value));
     const publicKey = dhcrypt.publicKey();
     const encryptedPrivateKey = dhcrypt.encryptedPrivateKey();
-    //display "waiting for metamask" in case metamask dialog is hidden
-    const metaMaskModal = document.getElementById('metaMaskModal');
-    metaMaskModal.style.display = 'block';
+    common.showWaitingForMetaMask(true);
     mtEther.register(common.web3, messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey, function(err, txid) {
 	console.log('handleRegisterSubmit: err = ' + err);
 	console.log('handleRegisterSubmit: txid = ' + txid);
-	metaMaskModal.style.display = 'none';
+	common.showWaitingForMetaMask(false);
 	const statusDiv = document.getElementById('statusDiv');
 	waitForTXID(err, txid, 'Register', statusDiv, 'recv', function() {
 	    //once he has registered we stop showing the intro automatically each time the page is loaded
@@ -1147,12 +1140,12 @@ function handleRegisterSubmit() {
 }
 
 function handleWithdraw() {
-    setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Enabled');
-    setMenuButtonState('viewRecvButton',      'Enabled');
-    setMenuButtonState('composeButton',       'Enabled');
-    setMenuButtonState('viewSentButton',      'Enabled');
-    setMenuButtonState('withdrawButton',      'Selected');
+    common.setMenuButtonState('importantInfoButton', 'Enabled');
+    common.setMenuButtonState('registerButton',      'Enabled');
+    common.setMenuButtonState('viewRecvButton',      'Enabled');
+    common.setMenuButtonState('composeButton',       'Enabled');
+    common.setMenuButtonState('viewSentButton',      'Enabled');
+    common.setMenuButtonState('withdrawButton',      'Selected');
     //
     if (index.listIdx >= 0)
 	(index.listEntries[index.listIdx].div).className = 'msgListItemDiv';
@@ -1165,17 +1158,17 @@ function handleWithdraw() {
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = common.web3.eth.accounts[0];
     //
-    replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
-    replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
+    common.replaceElemClassFromTo('msgDateArea',        'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('replyButton',        'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('navButtonsSpan',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -1186,12 +1179,10 @@ function handleWithdraw() {
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
     //
-    //display "waiting for metamask" in case metamask dialog is hidden
-    const metaMaskModal = document.getElementById('metaMaskModal');
-    metaMaskModal.style.display = 'block';
+    common.showWaitingForMetaMask(true);
     mtEther.withdraw(common.web3, function(err, txid) {
 	console.log('txid = ' + txid);
-	metaMaskModal.style.display = 'none';
+	common.showWaitingForMetaMask(false);
 	const statusDiv = document.getElementById('statusDiv');
 	waitForTXID(err, txid, 'Withdraw', statusDiv, 'recv', function() {
 	});
@@ -1210,12 +1201,12 @@ function handleWithdraw() {
 // because the index.listMode has changed. same considerations apply to navButtons.
 //
 function handleViewRecv(acctInfo, refreshMsgList) {
-    setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Enabled');
-    setMenuButtonState('viewRecvButton',      'Selected');
-    setMenuButtonState('composeButton',       'Enabled');
-    setMenuButtonState('viewSentButton',      refreshMsgList ? 'Disabled' : 'Enabled');
-    setMenuButtonState('withdrawButton',      'Enabled');
+    common.setMenuButtonState('importantInfoButton', 'Enabled');
+    common.setMenuButtonState('registerButton',      'Enabled');
+    common.setMenuButtonState('viewRecvButton',      'Selected');
+    common.setMenuButtonState('composeButton',       'Enabled');
+    common.setMenuButtonState('viewSentButton',      refreshMsgList ? 'Disabled' : 'Enabled');
+    common.setMenuButtonState('withdrawButton',      'Enabled');
     //
     const msgPromptArea = document.getElementById('msgPromptArea');
     msgPromptArea.value = 'From: ';
@@ -1224,21 +1215,21 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = '';
     //
-    replaceElemClassFromTo('msgIdArea',          'hidden',    'visibleTC', true).value = 'Msg ID: N/A';
-    replaceElemClassFromTo('msgRefButton',       'hidden',    'visibleTC', true).textContent = 'Ref: N/A';
-    replaceElemClassFromTo('msgDateArea',        'hidden',    'visibleTC', true).value = '';
-    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgIdArea',          'hidden',    'visibleTC', true).value = 'Msg ID: N/A';
+    common.replaceElemClassFromTo('msgRefButton',       'hidden',    'visibleTC', true).textContent = 'Ref: N/A';
+    common.replaceElemClassFromTo('msgDateArea',        'hidden',    'visibleTC', true).value = '';
+    common.replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
     //we'll set this to enabled after we have a valid message displayed
-    replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Reply';
-    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'hidden',    'visibleIB', false);
+    common.replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Reply';
+    common.replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('markReadButton',     'hidden',    'visibleIB', false);
     if (refreshMsgList)
-	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
+	common.replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
     else
-	replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
-    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
+	common.replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
+    common.replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -1253,7 +1244,7 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
     const statusDiv = document.getElementById('statusDiv');
-    clearStatusDiv(statusDiv);
+    common.clearStatusDiv(statusDiv);
     //
     const msgListHeaderAddr = document.getElementById('msgListHeaderAddr');
     msgListHeaderAddr.value = 'From';
@@ -1262,11 +1253,11 @@ function handleViewRecv(acctInfo, refreshMsgList) {
 	const msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
-	    setMenuButtonState('viewRecvButton', 'Selected');
-	    setMenuButtonState('viewSentButton', 'Enabled');
-	    replaceElemClassFromTo('nextUnreadButton', 'hidden', 'visibleIB', false);
-	    replaceElemClassFromTo('prevUnreadButton', 'hidden', 'visibleIB', false);
-	    replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
+	    common.setMenuButtonState('viewRecvButton', 'Selected');
+	    common.setMenuButtonState('viewSentButton', 'Enabled');
+	    common.replaceElemClassFromTo('nextUnreadButton', 'hidden', 'visibleIB', false);
+	    common.replaceElemClassFromTo('prevUnreadButton', 'hidden', 'visibleIB', false);
+	    common.replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
 	});
     }
 }
@@ -1283,12 +1274,12 @@ function handleViewRecv(acctInfo, refreshMsgList) {
 // because the index.listMode has changed. same considerations apply to navButtons.
 //
 function handleViewSent(acctInfo, refreshMsgList) {
-    setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Enabled');
-    setMenuButtonState('viewRecvButton',      refreshMsgList ? 'Disabled' : 'Enabled');
-    setMenuButtonState('composeButton',       'Enabled');
-    setMenuButtonState('viewSentButton',      'Selected');
-    setMenuButtonState('withdrawButton',      'Enabled');
+    common.setMenuButtonState('importantInfoButton', 'Enabled');
+    common.setMenuButtonState('registerButton',      'Enabled');
+    common.setMenuButtonState('viewRecvButton',      refreshMsgList ? 'Disabled' : 'Enabled');
+    common.setMenuButtonState('composeButton',       'Enabled');
+    common.setMenuButtonState('viewSentButton',      'Selected');
+    common.setMenuButtonState('withdrawButton',      'Enabled');
     //
     const msgPromptArea = document.getElementById('msgPromptArea');
     msgPromptArea.value = 'To: ';
@@ -1297,23 +1288,23 @@ function handleViewSent(acctInfo, refreshMsgList) {
     msgAddrArea.readonly = "readonly"
     msgAddrArea.value = '';
     //
-    replaceElemClassFromTo('msgIdArea',          'hidden',    'visibleTC', true).value = 'Msg ID: N/A';
-    replaceElemClassFromTo('msgRefButton',       'hidden',    'visibleTC', true).textContent = 'Ref: N/A';
-    replaceElemClassFromTo('msgDateArea',        'hidden',    'visibleTC', true).value = '';
-    replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
-    replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgIdArea',          'hidden',    'visibleTC', true).value = 'Msg ID: N/A';
+    common.replaceElemClassFromTo('msgRefButton',       'hidden',    'visibleTC', true).textContent = 'Ref: N/A';
+    common.replaceElemClassFromTo('msgDateArea',        'hidden',    'visibleTC', true).value = '';
+    common.replaceElemClassFromTo('validateAddrButton', 'visibleTC', 'hidden',    true);
+    common.replaceElemClassFromTo('msgFeeArea',         'visibleTC', 'hidden',    true);
     //we'll set this to enabled after we have a valid message displayed
-    replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send again';
-    replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('nextUnreadButton',   'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('prevUnreadButton',   'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('replyButton',        'hidden',    'visibleTC', true).textContent = 'Send again';
+    common.replaceElemClassFromTo('registerDiv',        'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('markReadButton',     'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('nextUnreadButton',   'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('prevUnreadButton',   'visibleIB', 'hidden',    true);
     if (refreshMsgList)
-	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
+	common.replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
     else
-	replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
-    replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
-    replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
+	common.replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
+    common.replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
+    common.replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     attachmentSaveA.style.display = 'none';
     //
@@ -1330,7 +1321,7 @@ function handleViewSent(acctInfo, refreshMsgList) {
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
     const statusDiv = document.getElementById('statusDiv');
-    clearStatusDiv(statusDiv);
+    common.clearStatusDiv(statusDiv);
     //
     const msgListHeaderAddr = document.getElementById('msgListHeaderAddr');
     msgListHeaderAddr.value = 'To: ';
@@ -1339,9 +1330,9 @@ function handleViewSent(acctInfo, refreshMsgList) {
 	const msgNo = getCurMsgNo(acctInfo);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
-	    setMenuButtonState('viewRecvButton', 'Enabled');
-	    setMenuButtonState('viewSentButton', 'Selected');
-	    replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
+	    common.setMenuButtonState('viewRecvButton', 'Enabled');
+	    common.setMenuButtonState('viewSentButton', 'Selected');
+	    common.replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
 	});
     }
 }
@@ -1534,15 +1525,15 @@ function showMsgLoop(acctInfo) {
     const minListMsgNo = index.msgListElems[0].msgNo;
     if (msgNo != 0 && (msgNo < minListMsgNo || msgNo >= minListMsgNo + 10)) {
 	console.log('showMsgLoop: regenerating msg list!');
-	setMenuButtonState('viewRecvButton', 'Disabled');
-	setMenuButtonState('viewSentButton', 'Disabled');
-	replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
+	common.setMenuButtonState('viewRecvButton', 'Disabled');
+	common.setMenuButtonState('viewSentButton', 'Disabled');
+	common.replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
 	makeMsgList(msgNo, function() {
 	    showMsgLoop(acctInfo);
 	    console.log('showMsgLoop: index.listMode = ' + index.listMode);
-	    setMenuButtonState('viewRecvButton', (index.listMode == 'recv') ? 'Selected' : 'Enabled');
-	    setMenuButtonState('viewSentButton', (index.listMode == 'sent') ? 'Selected' : 'Enabled');
-	    replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
+	    common.setMenuButtonState('viewRecvButton', (index.listMode == 'recv') ? 'Selected' : 'Enabled');
+	    common.setMenuButtonState('viewSentButton', (index.listMode == 'sent') ? 'Selected' : 'Enabled');
+	    common.replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
 	});
 	return;
     }
@@ -1621,12 +1612,12 @@ function showMsgDetail(msgId, msgNo, otherAddr, date, ref, msgTextContent, attac
 //
 function waitForTXID(err, txid, desc, statusDiv, continuationMode, callback) {
     //
-    setMenuButtonState('importantInfoButton', 'Enabled');
-    setMenuButtonState('registerButton',      'Disabled');
-    setMenuButtonState('viewRecvButton',      'Disabled');
-    setMenuButtonState('composeButton',       'Disabled');
-    setMenuButtonState('viewSentButton',      'Disabled');
-    setMenuButtonState('withdrawButton',      'Disabled');
+    common.setMenuButtonState('importantInfoButton', 'Enabled');
+    common.setMenuButtonState('registerButton',      'Disabled');
+    common.setMenuButtonState('viewRecvButton',      'Disabled');
+    common.setMenuButtonState('composeButton',       'Disabled');
+    common.setMenuButtonState('viewSentButton',      'Disabled');
+    common.setMenuButtonState('withdrawButton',      'Disabled');
     const replyButton = document.getElementById('replyButton');
     replyButton.disabled = true;
     //
@@ -1695,14 +1686,6 @@ function waitForTXID(err, txid, desc, statusDiv, continuationMode, callback) {
 	    });
 	}
     }, 1000);
-}
-
-
-function clearStatusDiv(statusDiv) {
-    while (statusDiv.hasChildNodes()) {
-	statusDiv.removeChild(statusDiv.lastChild);
-    }
-    statusDiv.style.display = "none";
 }
 
 
@@ -1802,23 +1785,6 @@ function makeMsgListElems(table, firstMsgNo) {
     }
 }
 
-
-
-//state = 'Disabled' | 'Enabled' | 'Selected'
-function setMenuButtonState(buttonID, state) {
-    const button = document.getElementById(buttonID);
-    button.disabled = (state == 'Enabled') ? false : true;
-    button.className = 'menuBarButton' + state;
-}
-
-function replaceElemClassFromTo(elemId, from, to, disabled) {
-    const elem = document.getElementById(elemId);
-    if (!elem)
-	console.log('could not find elem: ' + elemId);
-    elem.className = (elem.className).replace(from, to);
-    elem.disabled = disabled;
-    return(elem);
-}
 
 //we also save the id and ref in the area/button objects, for onclick
 //if enable is set, then the msgRefButton is enabled, but only if ref is nz
