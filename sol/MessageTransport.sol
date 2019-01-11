@@ -166,11 +166,11 @@ contract MessageTransport is SafeMath {
   // send message
   // -------------------------------------------------------------------------
   function sendMessage(address _toAddr, uint attachmentIdx, uint _ref, bytes memory _message) public payable returns (uint _messageId) {
-    uint256 _noDataLength = 4 + 20 + 32 + 32;
+    uint256 _noDataLength = 4 + 32 + 32 + 32 + 64;
     _messageId = doSendMessage(_noDataLength, msg.sender, _toAddr, attachmentIdx, _ref, _message);
   }
   function sendMessage(address _fromAddr, address _toAddr, uint attachmentIdx, uint _ref, bytes memory _message) public payable trustedOnly returns (uint _messageId) {
-    uint256 _noDataLength = 4 + 20 + 20 + 32 + 32;
+    uint256 _noDataLength = 4 + 32 + 32 + 32 + 32 + 64;
     _messageId = doSendMessage(_noDataLength, _fromAddr, _toAddr, attachmentIdx, _ref, _message);
   }
 
