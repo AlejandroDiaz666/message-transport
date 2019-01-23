@@ -55,11 +55,11 @@ const common = module.exports = {
 	    numberStr = numberStr.substring(2);
 	} else if (numberStr.indexOf('e+') >= 0) {
 	    const expIdx = numberStr.indexOf('e+');
-	    console.log('numberToBN: expStr =' + numberStr.substring(expIdx + 2));
+	    //console.log('numberToBN: expStr =' + numberStr.substring(expIdx + 2));
 	    const exp = parseInt(numberStr.substring(expIdx + 2));
-	    console.log('numberToBN: exp = ' + exp);
+	    //console.log('numberToBN: exp = ' + exp);
 	    let begPart = numberStr.substring(0, expIdx);
-	    console.log('numberToBN: begPart =' + begPart);
+	    //console.log('numberToBN: begPart =' + begPart);
 	    let endPart = '';
 	    if (numberStr.indexOf('.') >= 0) {
 		const dotIdx = numberStr.indexOf('.');
@@ -67,13 +67,13 @@ const common = module.exports = {
 		endPart = numberStr.substring(dotIdx + 1, expIdx);
 	    }
 	    endPart = common.rightPadTo(endPart, exp, '0');
-	    console.log('numberToBN: begPart =' + begPart);
-	    console.log('numberToBN: endPart =' + endPart);
+	    //console.log('numberToBN: begPart =' + begPart);
+	    //console.log('numberToBN: endPart =' + endPart);
 	    numberStr = begPart + endPart
 	}
-	console.log('numberToBN: converted from ' + number + ' to ' + numberStr);
+	//console.log('numberToBN: converted from ' + number + ' to ' + numberStr);
 	const bn = new BN(numberStr, base);
-	console.log('numberToBN: converted from ' + number + ' to 0x' + bn.toString(16) + ', ' + bn.toString(10));
+	//console.log('numberToBN: converted from ' + number + ' to 0x' + bn.toString(16) + ', ' + bn.toString(10));
 	return(bn);
     },
 
@@ -225,7 +225,7 @@ const common = module.exports = {
 	const padChar = (typeof ch !== 'undefined') ? ch : ' ';
 	const pad = new Array(1 + desiredLen).join(padChar);
 	const padded = (str.toString() + pad).slice(0, desiredLen);
-	console.log('padded = X' + padded + 'X');
+	//console.log('padded = X' + padded + 'X');
 	return padded;
     },
 
@@ -352,6 +352,20 @@ const common = module.exports = {
     },
 
 
+    makeTextarea: function(id, className, disabled) {
+	const textarea = document.createElement("textarea")
+	if (!!id)
+	    textarea.id = id;
+	if (!!className)
+	    textarea.className = className;
+	textarea.rows = 1;
+	textarea.readonly = 'readonly';
+	if (!!disabled)
+	    textarea.disabled = 'disabled';
+	textarea.value = '';
+	return(textarea);
+    },
+
     clearStatusDiv: function(statusDiv) {
 	while (statusDiv.hasChildNodes()) {
 	    statusDiv.removeChild(statusDiv.lastChild);
@@ -359,6 +373,11 @@ const common = module.exports = {
 	statusDiv.style.display = "none";
     },
 
+    //start or stop the wait/loading icon
+    setLoadingIcon: function(start) {
+	const waitIcon = document.getElementById('waitIcon');
+	waitIcon.style.display = (!!start) ? 'block' : 'none';
+    },
 
     //state = 'Disabled' | 'Enabled' | 'Selected'
     setMenuButtonState: function(buttonID, state) {
@@ -379,12 +398,11 @@ const common = module.exports = {
     replaceElemClassFromTo: function(elemId, from, to, disabled) {
 	var elem = document.getElementById(elemId);
 	if (!elem)
-	    console.log('could not find elem: ' + elemId);
+	    console.log('replaceElemClassFromTo: could not find elem: ' + elemId);
 	elem.className = (elem.className).replace(from, to);
 	elem.disabled = disabled;
 	return(elem);
     },
-
 
     //display (or clear) "waiting for metamask" dialog
     showWaitingForMetaMask: function(show) {
