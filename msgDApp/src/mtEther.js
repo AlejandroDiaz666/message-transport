@@ -39,9 +39,11 @@ const mtEther = module.exports = {
 
 
     accountQuery: function(web3, acct, cb) {
+	//console.log('accountQuery');
 	if (!mtEther.EMTContractInstance)
 	    initEMTContractInstance();
 	mtEther.EMTContractInstance.accounts(acct, (err, resultObj) => {
+	    //console.log('accountQuery: addr = ' + acct + ', resultObj = ' + JSON.stringify(resultObj));
 	    const acctInfo = {};
 	    if (!err) {
 		const keys = [ 'isValid', 'msgFee', 'spamFee', 'feeBalance', 'recvMsgCount', 'sentMsgCount', 'publicKey', 'encryptedPrivateKey' ];
@@ -50,7 +52,7 @@ const mtEther = module.exports = {
 		    acctInfo[keys[i]] = (resultArray[i] == 'false') ? false :
 		                        (resultArray[i] == 'true' ) ? true  : resultArray[i];
 	    }
-	    console.log('accountQuery: addr = ' + acct + ', result = ' + JSON.stringify(acctInfo));
+	    console.log('accountQuery: addr = ' + acct + ', acctInfo = ' + JSON.stringify(acctInfo));
 	    cb(err, acctInfo);
 	});
     },
@@ -258,13 +260,18 @@ const mtEther = module.exports = {
 	const msgHex = '0x' + result.data.slice((2*msgOffset)+64+2, (2*msgOffset)+64+2+(msgLen*2));
 	const blockNumber = parseInt(result.blockNumber);
 	//console.log('parseMessageEvent: blockNumber = ' + blockNumber);
-	let date = 'Block #' + blockNumber.toString(10);
 	if (!!result.timeStamp) {
 	    const timeStamp = parseInt(result.timeStamp);
-	    date = (new Date(timeStamp * 1000)).toUTCString();
+	    const date = (new Date(timeStamp * 1000)).toUTCString();
+	    cb(null, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
+	} else {
+	    common.web3.eth.getBlock(blockNumber, function(err, block) {
+		console.log('parseMessageEvent: ts = ' + block.timestamp);
+		const timeStamp = block.timestamp;
+		const date = (new Date(timeStamp * 1000)).toUTCString();
+		cb(null, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
+	    });
 	}
-	//console.log('parseMessageEvent: date = ' + date);
-	cb(null, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
     },
 
 

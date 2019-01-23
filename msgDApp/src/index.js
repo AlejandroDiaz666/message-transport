@@ -1352,9 +1352,6 @@ function makeMsgList(msgNo, cb) {
     clearMsgList(listTableBody);
     makeMsgListElems(listTableBody, firstMsgNo);
     console.log('makeMsgList: msgNo = ' + msgNo + ', index.listIdx = ' + index.listIdx);
-    //only etherscan.io provides timestamp
-    const msgListHeaderDate = document.getElementById('msgListHeaderDate');
-    msgListHeaderDate.textContent = (ether.node.indexOf('etherscan.io') >= 0) ? 'Date' : 'Block';
     const getMsgIdsFcn   = (index.listMode == 'recv') ? mtUtil.getRecvMsgIds        : mtUtil.getSentMsgIds;
     getMsgIdsFcn(common.web3.eth.accounts[0], batch, function(err, result) {
 	if (!!err || !result || result.length < listIdx + 1) {
