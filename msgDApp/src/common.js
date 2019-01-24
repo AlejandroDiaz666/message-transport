@@ -24,7 +24,7 @@ const common = module.exports = {
 		// User denied account access...
 	        console.log('checkForMetaMask: err = ' + error.toString());
 		common.web3 = null;
-		cb('You must enable the MetaMask plugin to use this utility', null);
+		cb('You must enable the MetaMask plugin to use this utility!', null);
 	    }
 	} else if (typeof window.web3 !== 'undefined') {
 	    // Legacy dapp browsers...

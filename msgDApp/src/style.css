@@ -83,6 +83,34 @@ p {
     cursor: pointer;
 }
 
+#waitIcon {
+    position: fixed;
+    display: none;
+    top: 50%;
+    left: 50%;
+    width: 80px;
+    height: 80px;
+    z-index: 2;
+    animation-name: waitIconAnimation;
+    animation-duration: 2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: reverse;
+    background-size: 80px 80px;
+    background-repeat: no-repeat;
+    background-position: 0px 0px;
+    background-image: url('../images/loading.png');
+}
+
+@keyframes waitIconAnimation {
+    from {
+	-webkit-transform: rotate(0deg);
+    }
+    to {
+	-webkit-transform: rotate(359deg);
+    }
+}
+
 
 /* this modal has a message telling the user that we are waiting
    for metamask
@@ -375,26 +403,35 @@ p {
   by setting a transparent border where i would want a margin.
 */
 #listAreaDiv  {
-    display: table;
     padding: 12px;
     margin: 0px;
     background-color: var(--clr_areabg1);
     border-collapse: collapse;
     color: var(--clr_areatext); /*yellow; */
     width: 100%;
-
+    overflow-y: scroll;
 }
-
+#msgListDiv  {
+    height: 211px;
+    overflow-y: scroll;
+}
 .msgListItemDiv,    .msgListItemDivSelected,
 .msgListItemDivNew, .msgListItemDivSelectedNew {
-    display: table-row;
+    display: inline-flex;
     clear: both;
     background-color: var(--clr_areabg1);
     font-weight: normal;
+    width: 100%;
 }
 .msgListItemDiv,
 .msgListItemDivNew {
-    border-top: 2px solid transparent;
+    border: 1px solid transparent;
+    margin: 1px;
+}
+.msgListItemDiv:hover,
+.msgListItemDivNew:hover {
+    border: 1px solid #404040;
+    margin: 1px;
 }
 .msgListItemDivSelected,
 .msgListItemDivSelectedNew {
@@ -404,34 +441,41 @@ p {
 .msgListItemDivSelectedNew {
     font-weight: bold;
 }
-
-.msgListMsgNoArea,    .msgListAddrArea,    .msgListDateArea,    .msgListMsgIdArea,    .msgListSubjectArea {
+#msgListHeaderSubject {
+    margin-right: 1em;
+}
+.msgListMsgNoArea, .msgListAddrArea, .msgListDateArea, .msgListMsgIdArea, .msgListSubjectArea {
     display: table-cell;
     vertical-align: middle;
     padding-top: 1px;
     padding-right: 0px;
     padding-bottom: 1px;
     padding-left: 0px;
-    margin: 1px;
+    margin: 0px;
     resize: none;
     font-weight: inherit;
     color: var(--clr_areatext);
 }
 .msgListMsgNoArea {
-    width: 4%; /*5em; */
+    width: 5em;
+    min-width: 5em;
+    overflow: hidden;
 }
 .msgListAddrArea {
-    width: 20%; /* 26em; */
+    width: 36em;
+    min-width: 36em;
 }
 .msgListDateArea {
-    width: 20%; /*20em; */
+    width: 24em;
+    min-width: 24em;
 }
 .msgListMsgIdArea {
-    width: 17%; /*20em; */
+    width: 20em;
+    min-width: 20em;
 }
 .msgListSubjectArea {
     min-width: 20em;
-    width: 37%;
+    width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: elipsis;

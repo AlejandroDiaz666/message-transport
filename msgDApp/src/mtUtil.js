@@ -29,10 +29,10 @@ const mtUtil = module.exports = {
 
 
     //cb(err, msgIds)
-    getSentMsgIds: function(fromAddr, batch, cb) {
+    getSentMsgIds: function(fromAddr, startIdx, count, cb) {
 	const msgIds = [];
-	const startIdxBn = new BN(batch).imuln(10);
-	mtEther.getSentMsgIds(common.web3, fromAddr, startIdxBn, 10, function(err, lastIdx, results) {
+	const startIdxBn = common.numberToBN(startIdx);
+	mtEther.getSentMsgIds(common.web3, fromAddr, startIdxBn, count, function(err, lastIdx, results) {
 	    if (!err) {
 		for (let i = 0; i < results.length; ++i)
 		    msgIds.push(common.numberToHex256(results[i]));
@@ -43,10 +43,10 @@ const mtUtil = module.exports = {
 
 
     //cb(err, msgIds)
-    getRecvMsgIds: function(toAddr, batch, cb) {
+    getRecvMsgIds: function(toAddr, startIdx, count, cb) {
 	const msgIds = [];
-	const startIdxBn = new BN(batch).imuln(10);
-	mtEther.getRecvMsgIds(common.web3, toAddr, startIdxBn, 10, function(err, lastIdx, results) {
+	const startIdxBn = common.numberToBN(startIdx);
+	mtEther.getRecvMsgIds(common.web3, toAddr, startIdxBn, count, function(err, lastIdx, results) {
 	    if (!err) {
 		for (let i = 0; i < results.length; ++i)
 		    msgIds.push(common.numberToHex256(results[i]));
@@ -87,7 +87,7 @@ const mtUtil = module.exports = {
     // doneCb(noMessagesProcessed)
     //
     getAndParseIdMsgs: function(msgIds, msgCookies, msgCb, doneCb) {
-	console.log('getAndParseIdMsgs: enter msgIds = ' + msgIds);
+	console.log('getAndParseIdMsgs: enter msgIds = ' + msgIds.toString());
 	const options = {
 	    fromBlock: 0,
 	    toBlock: 'latest',
@@ -123,7 +123,7 @@ const mtUtil = module.exports = {
 	    for (let i = 0; i < msgResults.length; ++i) {
 		mtEther.parseMessageEvent(msgResults[i], function(err, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
 		    if (!!msgCookies[msgId]) {
-			console.log('getAndParseIdMsgs: msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr + ', idx = ' + msgCookies[msgId].idx);
+			console.log('getAndParseIdMsgs: msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr);
 			msgCb(err, msgCookies[msgId], msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
 			++msgCbCount;
 		    } else {

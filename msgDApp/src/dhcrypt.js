@@ -138,6 +138,7 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 	    //console.log('decyrpt: message = ' + message);
 	} catch (err) {
 	    message = err + '\n' + encrypted;
+	    console.log('decyrpt: encrypted = ' + encrypted);
 	    console.log('decyrpt: err = ' + err);
 	}
 	return(message);

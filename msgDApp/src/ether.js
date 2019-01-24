@@ -262,6 +262,7 @@ function serialGetLogs(flavor, options, cb) {
 }
 
 function getLogsNext() {
+    console.log('getLogsNext: getLogsList.length = ' + getLogsList.length);
     if (getLogsList.length > 0) {
 	var now_ms = Date.now();
 	var elapsed_ms = now_ms - ether.getLogsTimestamp;
@@ -279,7 +280,7 @@ function getLogsNext() {
 		    getLogsInfo.cb(err, result);
 		    getLogsList.splice(0, 1);
 		    if (getLogsList.length > 0)
-			getLogs3Next();
+			getLogsNext();
 		});
 	    } else {
 		getLogsGuts(getLogsInfo.options, function(err, result) {
