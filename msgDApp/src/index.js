@@ -86,12 +86,8 @@ function setOptionsButtonHandlers() {
     const closeOptionsButton = document.getElementById('closeOptionsButton');
     closeOptionsButton.addEventListener('click', () => {
 	common.replaceElemClassFromTo('optionsPanel', 'visibleB', 'hidden', null);
-	if (localStorage['logsNode'] != ether.node) {
-	    //if node changed...
+	if (localStorage['logsNode'] != ether.node)
 	    ether.node = localStorage['logsNode'];
-	    if (!!index.acctInfo && !!index.listMode)
-		makeMsgList(getCurMsgNo(index.acctInfo), () => { showMsgLoop(index.acctInfo); });
-	}
     });
     const marysThemeButton = document.getElementById('marysThemeButton');
     const wandasThemeButton = document.getElementById('wandasThemeButton');
@@ -1870,23 +1866,6 @@ function elemIdxToMsgNo(isRx, elemIdx) {
     const maxMsgNo = (isRx) ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
     const msgNo = maxMsgNo - elemIdx;
     return(msgNo);
-}
-
-
-//
-// return the current msgNo
-// note: separate msgNo's are maintained for View-Sent and View-Received modes. this fcn returns the correct
-// msgNo depending on the current mode
-//
-function getCurMsgNo(acctInfo) {
-    const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
-    const maxMsgNo = (index.listMode == 'recv') ? parseInt(acctInfo.recvMsgCount) : parseInt(acctInfo.sentMsgCount);
-    if (index[msgNoCounter] == 0 && maxMsgNo > 0)
-	index[msgNoCounter] = 1;
-    if (index[msgNoCounter] > maxMsgNo)
-	index[msgNoCounter] = maxMsgNo;
-    //console.log('getCurMsgNo: curMsgNo = ' + index[msgNoCounter]);
-    return(index[msgNoCounter]);
 }
 
 
