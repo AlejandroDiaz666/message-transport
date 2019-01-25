@@ -2,7 +2,6 @@ pragma solidity ^0.5.0;
 
 /**
  *
- * Version F
  * @author Alejandro Diaz <Alejandro.Diaz.666@protonmail.com>
  *
  * Overview:
@@ -15,8 +14,11 @@ pragma solidity ^0.5.0;
  *         t(x) is the number of tokens held by the token-holder at the time of p(x)
  *         N    is the total number of tokens, which never changes
  *
- * assume that t(x) takes on 3 values, t(a), t(b) and t(c), at times a, b, and c. then:
- * factoring:
+ * assume that t(x) takes on 3 values, t(a), t(b) and t(c), at times a, b, and c;
+ * and that there are multiple payments at times between a and b: x, x+1, x+2...
+ * and multiple payments at times between b and c: y, x+y, y+2...
+ * and multiple payments at times greater than c: z, z+y, z+2...
+ * then factoring:
  *
  *   current_due = { (t(a) * [p(x) + p(x+1)]) ... + (t(a) * [p(x) + p(y-1)]) ... +
  *                   (t(b) * [p(y) + p(y+1)]) ... + (t(b) * [p(y) + p(z-1)]) ... +
@@ -142,11 +144,10 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   //
 
   function transfer(address _to, uint _value) public onlyPayloadSize(2*32) returns (bool success) {
-    //prevent wrap
-    if (tokenHolders[msg.sender].tokens >= _value && tokenHolders[_to].tokens + _value >= tokenHolders[_to].tokens) {
+    if (tokenHolders[msg.sender].tokens >= _value) {
       //first credit sender with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(msg.sender);
-      tokenHolders[msg.sender].tokens -= _value;
+      tokenHolders[msg.sender].tokens = safeSub(tokenHolders[msg.sender].tokens, _value);
       //if destination is a new tokenholder then we are setting his "last" snapshot to the current totalPoints
       if (tokenHolders[_to].lastEthSnapshot == 0)
 	tokenHolders[_to].lastEthSnapshot = totalEthReceived;
@@ -154,7 +155,7 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
 	tokenHolders[_to].lastDaiSnapshot = totalDaiReceived;
       //credit destination acct with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(_to);
-      tokenHolders[_to].tokens += _value;
+      tokenHolders[_to].tokens = safeAdd(tokenHolders[_to].tokens, _value);
       emit TransferEvent(msg.sender, _to, _value);
       return true;
     } else {
@@ -165,10 +166,10 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
 
   function transferFrom(address _from, address _to, uint _value) onlyPayloadSize(3*32) public returns (bool success) {
     //prevent wrap:
-    if (tokenHolders[_from].tokens >= _value && approvals[_from][msg.sender] >= _value && tokenHolders[_to].tokens + _value >= tokenHolders[_to].tokens) {
+    if (tokenHolders[_from].tokens >= _value && approvals[_from][msg.sender] >= _value) {
       //first credit source acct with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(_from);
-      tokenHolders[_from].tokens -= _value;
+      tokenHolders[_from].tokens = safeSub(tokenHolders[_from].tokens, _value);
       //if destination is a new tokenholder then we are setting his "last" snapshot to the current totalPoints
       if (tokenHolders[_to].lastEthSnapshot == 0)
 	tokenHolders[_to].lastEthSnapshot = totalEthReceived;
@@ -176,8 +177,8 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
 	tokenHolders[_to].lastDaiSnapshot = totalDaiReceived;
       //credit destination acct with points accrued so far.. must do this before number of held tokens changes
       calcCurPointsForAcct(_to);
-      tokenHolders[_to].tokens += _value;
-      approvals[_from][msg.sender] -= _value;
+      tokenHolders[_to].tokens = safeAdd(tokenHolders[_to].tokens, _value);
+      approvals[_from][msg.sender] = safeSub(approvals[_from][msg.sender], _value);
       emit TransferEvent(_from, _to, _value);
       return true;
     } else {
@@ -213,9 +214,11 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   // number of tokens must not have changed. so always call this fcn before changing the number of tokens.
   //
   function calcCurPointsForAcct(address _acct) internal {
-    tokenHolders[_acct].currentEthPoints += (totalEthReceived - tokenHolders[_acct].lastEthSnapshot) * tokenHolders[_acct].tokens;
+    uint256 _newEthPoints = safeMul(safeSub(totalEthReceived, tokenHolders[_acct].lastEthSnapshot), tokenHolders[_acct].tokens);
+    tokenHolders[_acct].currentEthPoints = safeAdd(tokenHolders[_acct].currentEthPoints, _newEthPoints);
     tokenHolders[_acct].lastEthSnapshot = totalEthReceived;
-    tokenHolders[_acct].currentDaiPoints += (totalDaiReceived - tokenHolders[_acct].lastDaiSnapshot) * tokenHolders[_acct].tokens;
+    uint256 _newDaiPoints = safeMul(safeSub(totalDaiReceived, tokenHolders[_acct].lastDaiSnapshot), tokenHolders[_acct].tokens);
+    tokenHolders[_acct].currentDaiPoints = safeAdd(tokenHolders[_acct].currentDaiPoints, _newDaiPoints);
     tokenHolders[_acct].lastDaiSnapshot = totalDaiReceived;
   }
 
@@ -224,8 +227,8 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   // default payable function. funds receieved here become dividends.
   //
   function () external payable {
-    holdoverEthBalance += msg.value;
-    totalEthReceived += msg.value;
+    holdoverEthBalance = safeAdd(holdoverEthBalance, msg.value);
+    totalEthReceived = safeAdd(totalEthReceived, msg.value);
   }
 
 
@@ -234,11 +237,11 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   // caller must have already approved the Dai transfer
   //
   function payDai(uint256 _daiAmount) external payable {
-    holdoverEthBalance += msg.value;
-    totalEthReceived += msg.value;
+    holdoverEthBalance = safeAdd(holdoverEthBalance, msg.value);
+    totalEthReceived = safeAdd(totalEthReceived, msg.value);
     require(iERC20Token(daiToken).transferFrom(msg.sender, address(this), _daiAmount), "failed to transfer dai");
-    holdoverDaiBalance += _daiAmount;
-    totalDaiReceived += _daiAmount;
+    holdoverDaiBalance = safeAdd(holdoverDaiBalance, _daiAmount);
+    totalDaiReceived = safeAdd(totalDaiReceived, _daiAmount);
   }
 
 
@@ -262,18 +265,18 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   function withdrawEthDividends() public returns (uint _amount) {
     calcCurPointsForAcct(msg.sender);
     _amount = tokenHolders[msg.sender].currentEthPoints / totalSupply;
-    uint _pointsUsed = _amount * totalSupply;
-    tokenHolders[msg.sender].currentEthPoints -= _pointsUsed;
-    holdoverEthBalance -= _amount;
+    uint _pointsUsed = safeMul(_amount, totalSupply);
+    tokenHolders[msg.sender].currentEthPoints = safeSub(tokenHolders[msg.sender].currentEthPoints, _pointsUsed);
+    holdoverEthBalance = safeSub(holdoverEthBalance, _amount);
     msg.sender.transfer(_amount);
   }
 
   function withdrawDaiDividends() public returns (uint _amount) {
     calcCurPointsForAcct(msg.sender);
     _amount = tokenHolders[msg.sender].currentDaiPoints / totalSupply;
-    uint _pointsUsed = _amount * totalSupply;
-    tokenHolders[msg.sender].currentDaiPoints -= _pointsUsed;
-    holdoverDaiBalance -= _amount;
+    uint _pointsUsed = safeMul(_amount, totalSupply);
+    tokenHolders[msg.sender].currentDaiPoints = safeSub(tokenHolders[msg.sender].currentDaiPoints, _pointsUsed);
+    holdoverDaiBalance = safeSub(holdoverDaiBalance, _amount);
     require(iERC20Token(daiToken).transfer(msg.sender, _amount), "failed to transfer dai");
   }
 
