@@ -191,6 +191,7 @@ p {
     position: absolute;
     left: 100px;
     top: 50%;
+    max-width: 50%;
     transform: translateY(-50%);
 }
 #logoImg {
