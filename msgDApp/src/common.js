@@ -352,6 +352,95 @@ const common = module.exports = {
     },
 
 
+    //
+    // as a convenience, in case an error has already occurred (for example if the user rejects the transaction), you can
+    // call this fcn with the error message and no txid.
+    //
+    // cb(err)
+    // continueFcn()
+    // note: the callback is called after the transaction is mined;
+    //       the continueFcn is called after the user clicks continue
+    // we do not clear the status div.. so you need to do that in either the callback or the continueFcn
+    //
+    waitForTXID: function(err, txid, desc, statusDiv, continueFcn, txStatusHost, callback) {
+	//status div starts out hidden
+	console.log('show status div');
+	statusDiv.style.display = "block";
+	var leftDiv = document.createElement("div");
+	leftDiv.className = 'visibleIB';
+	statusDiv.appendChild(leftDiv);
+	var rightDiv = document.createElement("div");
+	rightDiv.className = 'visibleIB';
+	statusDiv.appendChild(rightDiv);
+	var statusCtr = 0;
+	var statusText = document.createTextNode('No status yet...');
+	leftDiv.appendChild(statusText);
+	if (!!err || !txid) {
+	    if (!err)
+		err = 'No transaction hash was generated.';
+	    statusText.textContent = 'Error in ' + desc + ' transaction: ' + err;
+	    if (!!continueFcn) {
+		var reloadLink = document.createElement('a');
+		reloadLink.addEventListener('click', continueFcn);
+		reloadLink.href = 'javascript:null;';
+		reloadLink.innerHTML = "<h2>Continue</h2>";
+		reloadLink.disabled = false;
+		rightDiv.appendChild(reloadLink);
+	    }
+	    if (!!callback)
+		callback(err);
+	    return;
+	}
+	//
+	var viewTxLink = document.createElement('a');
+	viewTxLink.href = 'https://' + txStatusHost + '/tx/' + txid;
+	viewTxLink.innerHTML = "<h2>View transaction</h2>";
+	viewTxLink.target = '_blank';
+	viewTxLink.disabled = false;
+	leftDiv.appendChild(viewTxLink);
+	//
+	var noteDiv = document.createElement("div");
+	//noteDiv.className = 'hidden';
+	noteDiv.className = 'visibleB';
+	var noteText = document.createTextNode('Note: it may take several minutes for changes to be reflected...');
+	noteDiv.appendChild(noteText);
+	statusDiv.appendChild(noteDiv);
+	//
+	//cleared in handleUnlockedMetaMask, after the user clicks 'continue'
+	common.waitingForTxid = true;
+	var timer = setInterval(function() {
+	    statusText.textContent = 'Waiting for ' + desc + ' transaction: ' + ++statusCtr + ' seconds...';
+	    if ((statusCtr & 0xf) == 0) {
+		common.web3.eth.getTransactionReceipt(txid, function(err, receipt) {
+		    console.log('common.waitForTXID: err = ' + err);
+		    console.log('common.waitForTXID: receipt = ' + receipt);
+		    if (!!err || !!receipt) {
+			if (!err && !!receipt && receipt.status == 0)
+			    err = "Transaction Failed with REVERT opcode";
+			statusText.textContent = (!!err) ? 'Error in ' + desc + ' transaction: ' + err : desc + ' transaction succeeded!';
+			console.log('transaction is in block ' + (!!receipt ? receipt.blockNumber : 'err'));
+			noteDiv.className = 'visibleB';
+			//statusText.textContent = desc + ' transaction succeeded!';
+			clearInterval(timer);
+			//
+			if (!!continueFcn) {
+			    var reloadLink = document.createElement('a');
+			    reloadLink.addEventListener('click',  continueFcn);
+			    reloadLink.href = 'javascript:null;';
+			    reloadLink.innerHTML = "<h2>Continue</h2>";
+			    reloadLink.disabled = false;
+			    rightDiv.appendChild(reloadLink);
+			}
+			if (!!callback)
+			    callback(err);
+			return;
+		    }
+		});
+	    }
+	}, 1000);
+    },
+
+
     makeTextarea: function(id, className, disabled) {
 	const textarea = document.createElement("textarea")
 	if (!!id)

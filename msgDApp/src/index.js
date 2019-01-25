@@ -253,8 +253,12 @@ function setReplyButtonHandlers() {
 			console.log('txid = ' + txid);
 			common.showWaitingForMetaMask(false);
 			const statusDiv = document.getElementById('statusDiv');
-			waitForTXID(err, txid, 'Send-Message', statusDiv, 'send', function() {
-			});
+			const continueFcn = () => {
+			    index.waitingForTxid = false;
+			    common.clearStatusDiv(statusDiv);
+			    handleViewSent(index.acctInfo, true);
+			};
+			common.waitForTXID(err, txid, 'Send-Message', statusDiv, continueFcn, ether.etherscanioTxStatusHost, null);
 		    });
 		});
 	    });
@@ -1014,8 +1018,6 @@ function handleCompose(acctInfo, toAddr) {
     msgTextArea.placeholder="Validate the recipient address, then type your message here...";
     const statusDiv = document.getElementById('statusDiv');
     common.clearStatusDiv(statusDiv);
-
-
 }
 
 
@@ -1181,7 +1183,12 @@ function handleRegisterSubmit() {
 	console.log('handleRegisterSubmit: txid = ' + txid);
 	common.showWaitingForMetaMask(false);
 	const statusDiv = document.getElementById('statusDiv');
-	waitForTXID(err, txid, 'Register', statusDiv, 'recv', function() {
+	const continueFcn = () => {
+	    index.waitingForTxid = false;
+	    common.clearStatusDiv(statusDiv);
+	    handleUnlockedMetaMask('recv');
+	};
+	common.waitForTXID(err, txid, 'Register', statusDiv, continueFcn, ether.etherscanioTxStatusHost, function() {
 	    //once he has registered we stop showing the intro automatically each time the page is loaded
 	    //note: we get the cb from waitForTXID as soon as the tx completes.
 	    localStorage['FirstIntroCompleteFlag'] = true;
@@ -1238,8 +1245,12 @@ function handleWithdraw() {
 	console.log('txid = ' + txid);
 	common.showWaitingForMetaMask(false);
 	const statusDiv = document.getElementById('statusDiv');
-	waitForTXID(err, txid, 'Withdraw', statusDiv, 'recv', function() {
-	});
+	const continueFcn = () => {
+	    index.waitingForTxid = false;
+	    common.clearStatusDiv(statusDiv);
+	    handleUnlockedMetaMask('recv');
+	};
+	common.waitForTXID(err, txid, 'Withdraw', statusDiv, continueFcn, ether.etherscanioTxStatusHost, null);
     });
 }
 
@@ -1305,18 +1316,20 @@ function handleViewRecv(acctInfo, refreshMsgList) {
     msgListHeaderAddr.value = 'From';
     if (!!refreshMsgList) {
 	index.listMode = 'recv';
-	const maxMsgNo = parseInt(index.acctInfo.recvMsgCount);
-	const newIdx = maxMsgNo - index.recvMessageNo;
-	const msgListDiv = document.getElementById('msgListDiv');
-	initMsgElemList(msgListDiv, index.rxMessages, true);
-	populateMsgList(newIdx, function() {
-	    selectMsgListEntry(newIdx, function() {
-		console.log('handleViewRecv: enabling mav buttons...');
-		common.setMenuButtonState('viewRecvButton', 'Selected');
-		common.setMenuButtonState('viewSentButton', 'Enabled');
-		common.replaceElemClassFromTo('nextUnreadButton', 'hidden', 'visibleIB', false);
-		common.replaceElemClassFromTo('prevUnreadButton', 'hidden', 'visibleIB', false);
-		common.replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
+	refreshMessages(true, function(clearMsgElems) {
+	    const maxMsgNo = parseInt(index.acctInfo.recvMsgCount);
+	    const newIdx = maxMsgNo - index.recvMessageNo;
+	    const msgListDiv = document.getElementById('msgListDiv');
+	    initMsgElemList(msgListDiv, index.rxMessages, true);
+	    populateMsgList(newIdx, function() {
+		selectMsgListEntry(newIdx, function() {
+		    console.log('handleViewRecv: enabling mav buttons...');
+		    common.setMenuButtonState('viewRecvButton', 'Selected');
+		    common.setMenuButtonState('viewSentButton', 'Enabled');
+		    common.replaceElemClassFromTo('nextUnreadButton', 'hidden', 'visibleIB', false);
+		    common.replaceElemClassFromTo('prevUnreadButton', 'hidden', 'visibleIB', false);
+		    common.replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
+		});
 	    });
 	});
     }
@@ -1387,18 +1400,65 @@ function handleViewSent(acctInfo, refreshMsgList) {
     msgListHeaderAddr.value = 'To: ';
     if (!!refreshMsgList) {
 	index.listMode = 'sent';
-	const maxMsgNo = parseInt(index.acctInfo.sentMsgCount);
-	const newIdx = maxMsgNo - index.sentMessageNo;
-	const msgListDiv = document.getElementById('msgListDiv');
-	initMsgElemList(msgListDiv, index.txMessages, false);
-	populateMsgList(newIdx, function() {
-	    selectMsgListEntry(newIdx, function() {
-		common.setMenuButtonState('viewRecvButton', 'Enabled');
-		common.setMenuButtonState('viewSentButton', 'Selected');
-		common.replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
+	refreshMessages(false, function(clearMsgElems) {
+	    const maxMsgNo = parseInt(index.acctInfo.recvMsgCount);
+	    const newIdx = maxMsgNo - index.recvMessageNo;
+	    const msgListDiv = document.getElementById('msgListDiv');
+	    initMsgElemList(msgListDiv, index.txMessages, false);
+	    populateMsgList(newIdx, function() {
+		selectMsgListEntry(newIdx, function() {
+		    common.setMenuButtonState('viewRecvButton', 'Enabled');
+		    common.setMenuButtonState('viewSentButton', 'Selected');
+		    common.replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
+		});
 	    });
 	});
     }
+}
+
+
+//
+// cb(clearElemsFlag)
+//
+function refreshMessages(isRx, cb) {
+    mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
+	//TODO: verify that acct has not changed!
+	if (!!err || !_acctInfo) {
+	    alert('Error refreshing account info: err');
+	    beginTheBeguine('null');
+	    return;
+	}
+	if (isRx) {
+	    const recvCntNew = parseInt(_acctInfo.recvMsgCount);
+	    const recvCntOld = parseInt(index.acctInfo.recvMsgCount);
+	    console.log('refreshMessages: recvCntNew = ' + recvCntNew + ', recvCntOld = ' + recvCntOld);
+	    if (recvCntNew == recvCntOld) {
+		cb(false);
+	    } else {
+		index.acctInfo.recvMsgCount = recvCntNew;
+		const deltaRxMsgCount = recvCntNew - recvCntOld;
+		const newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
+		newMsgCountNotButton.textContent = deltaRxMsgCount.toString(10);
+		//newMsgModal is hidden when user cljicks anywhere
+		const newMsgModal = document.getElementById('newMsgModal');
+		newMsgModal.style.display = 'block';
+		getNewMessages(isRx, recvCntOld, recvCntNew, () => cb(true));
+		const totalReceivedArea = document.getElementById('totalReceivedArea');
+		totalReceivedArea.value = 'Messages sent: ' + index.acctInfo.sentMsgCount + '; Messages received: ' + index.acctInfo.recvMsgCount;
+	    }
+	} else {
+	    const sentCntNew = parseInt(_acctInfo.sentMsgCount);
+	    const sentCntOld = parseInt(index.acctInfo.sentMsgCount);
+	    if (sentCntNew == sentCntOld) {
+		cb(false);
+	    } else {
+		index.acctInfo.sentMsgCount = sentCntNew;
+		getNewMessages(isRx, sentCntOld, sentCntNew, () => cb(true));
+		const totalReceivedArea = document.getElementById('totalReceivedArea');
+		totalReceivedArea.value = 'Messages sent: ' + index.acctInfo.sentMsgCount + '; Messages received: ' + index.acctInfo.recvMsgCount;
+	    }
+	}
+    });
 }
 
 
@@ -1423,30 +1483,29 @@ function populateMsgList(minElemIdx, cb) {
             break;
 	else if (!!minElemIdx && index.msgListElems.length < minElemIdx + 1)
 	    ;
-        else if (msgListDiv.scrollTop + msgListDiv.clientHeight < msgListDiv.scrollHeight - 100)
+        else if (msgListDiv.scrollHeight - 50 > msgListDiv.scrollTop + msgListDiv.clientHeight)
             break;
-        console.log('populateMsgList: msgListElems.length = ' + index.msgListElems.length + ', maxMsgNo = ' + maxMsgNo);
-	//last elem is at the top, with lower numerical idx
-	const lastElemIdx = index.msgListElems.length;
-	const noElems = Math.min(9, maxMsgNo - index.msgListElems.length);
-	const firstElemIdx = lastElemIdx + noElems - 1;
-	for (let i = 0; i < noElems; ++i) {
-	    const elemIdx = index.msgListElems.length;
-	    const msgNo = elemIdxToMsgNo(isRx, elemIdx);
-	    const msgElem = makeMsgListElem(msgNo);
-	    msgElem.elemIdx = elemIdx;
-	    index.msgListElems.push(msgElem);
-	    msgListDiv.appendChild(msgElem.div);
-	}
 	if (callDepth == 0) {
 	    retrievingMsgsModal.style.display = 'block';
 	    common.setLoadingIcon('start');
 	}
 	++callCount;
 	++callDepth;
-	const startMsgNo = elemIdxToMsgNo(isRx, firstElemIdx);
+        console.log('populateMsgList: msgListElems.length = ' + index.msgListElems.length + ', maxMsgNo = ' + maxMsgNo);
+	const firstElemIdx = index.msgListElems.length;
+	const fastStartLimit = (index.msgListElems.length > 12) ? 9 : 6;
+	const noElems = Math.min(fastStartLimit, maxMsgNo - index.msgListElems.length);
+	const lastElemIdx = firstElemIdx + noElems - 1;
+	const startMsgNo = elemIdxToMsgNo(isRx, lastElemIdx);
+	for (let elemIdx = firstElemIdx; elemIdx <= lastElemIdx; ++elemIdx) {
+	    const msgNo = elemIdxToMsgNo(isRx, elemIdx);
+	    const msgElem = makeMsgListElem(msgNo);
+	    msgElem.elemIdx = elemIdx;
+	    index.msgListElems.push(msgElem);
+	    msgListDiv.appendChild(msgElem.div);
+	}
 	getMsgIdsFcn(common.web3.eth.accounts[0], startMsgNo - 1, noElems, function(err, msgIds) {
-	    console.log('populateMsgList: got ids, startMsgNo = ' + startMsgNo + ', firstElemIdx = ' + firstElemIdx);
+	    console.log('populateMsgList: got ids, startMsgNo = ' + startMsgNo + ', firstElemIdx = ' + firstElemIdx + ', lastElemIdx = ' + lastElemIdx);
 	    if (!!err || !msgIds || msgIds.length < noElems) {
 		console.log('populateMsgList: err = ' + err);
 		alert('error retrieving message ids: ' + err);
@@ -1455,7 +1514,16 @@ function populateMsgList(minElemIdx, cb) {
 		cb();
 		return;
 	    }
-	    fillMsgListEntries(msgIds, 0, startMsgNo, firstElemIdx, lastElemIdx, function() {
+	    const t = [];
+	    console.log('populateMsgList: calling getMessages(0, ' + startMsgNo + ', ' + t + ')');
+	    getMessages(msgIds, 0, startMsgNo, t, function(tempMessages) {
+		console.log('populateMsgList: got ' + tempMessages.length + ' messages');
+		for (let elemIdx = firstElemIdx; elemIdx <= lastElemIdx; ++elemIdx) {
+		    const msgElem = index.msgListElems[elemIdx];
+		    const message = tempMessages[msgElem.msgNo];
+		    if (!!message)
+			fillInMsgListEntry(elemIdx, message)
+		}
 		if (--callDepth <= 0) {
 		    retrievingMsgsModal.style.display = 'none';
 		    common.setLoadingIcon(null);
@@ -1470,35 +1538,84 @@ function populateMsgList(minElemIdx, cb) {
 
 
 //
-// fill-in noElem entries of the recv/sent message list
-// recursive fcn to populate, pre-existing list elements
+// add new entries to rxMessages or txMessages. the messages are not displayed
+//
+function getNewMessages(isRx, oldMaxMsgNo, newMaxMsgNo, cb) {
+    let callDepth = 0;
+    let callCount = 0;
+    let newMsgCount = 0;
+    const messages = isRx ? index.rxMessages : index.txMessages;
+    const getMsgIdsFcn = isRx ? mtUtil.getRecvMsgIds : mtUtil.getSentMsgIds;
+    const retrievingMsgsModal = document.getElementById('retrievingMsgsModal');
+    console.log('getNewMessages: isRx = ' + isRx + ', oldMaxMsgNo = ' + oldMaxMsgNo + ', newMaxMsgNo = ' + newMaxMsgNo);
+    while (oldMaxMsgNo + newMsgCount < newMaxMsgNo) {
+	if (callDepth == 0) {
+	    retrievingMsgsModal.style.display = 'block';
+	    common.setLoadingIcon('start');
+	}
+	++callCount;
+	++callDepth;
+	console.log('getNewMessages: callCount = ' + callCount + ', callDepth = ' + callDepth);
+	const noElems = Math.min(9, newMaxMsgNo - (oldMaxMsgNo + newMsgCount));
+	console.log('getNewMessages: noElems = ' + noElems);
+	const startMsgNo = oldMaxMsgNo + newMsgCount + 1;
+	console.log('getNewMessages: startMsgNo = ' + startMsgNo);
+	newMsgCount += noElems;
+	getMsgIdsFcn(common.web3.eth.accounts[0], startMsgNo - 1, noElems, function(err, msgIds) {
+	    console.log('getNewMessages: got ids, startMsgNo = ' + startMsgNo);
+	    if (!!err || !msgIds || msgIds.length < noElems) {
+		console.log('populateMsgList: err = ' + err);
+		alert('error retrieving message ids: ' + err);
+		retrievingMsgsModal.style.display = 'none';
+		common.setLoadingIcon(null);
+		cb();
+		return;
+	    }
+	    getMessages(msgIds, 0, startMsgNo, [], function(tempMessages) {
+		if (--callDepth <= 0) {
+		    retrievingMsgsModal.style.display = 'none';
+		    common.setLoadingIcon(null);
+		    cb();
+		}
+	    });
+	});
+    }
+    if (callCount == 0)
+	cb();
+}
+
+
+//
+// get messages corresponding to the passed msgIds[], which are numbered sequentially from msgNo
 // each recursive call retrieves up to three messages
 //
-// msgIds: array of message ID's (can be null)
-// elemIdx: starting index into list
-// cb: callback when all done
+// msgIds: array of message ID's
+// idIdx: current index into msgIds[]
+// msgNo: message number of msgIds[idIdx]
+// messages are placed to tempMessages[msgNo]
+// messages that are sucessfully decrypted are also placed to {tx,rx}Messages
+// cb(tempMessages): callback when all done
 //
-function fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) {
-    console.log('fillMsgListEntries: msgIds = ' + msgIds.toString() + ', msgIds.length = ' + msgIds.length + ', elemIdx = ' + elemIdx + ', lastElemIdx = ' + lastElemIdx + ')');
+function getMessages(msgIds, idIdx, msgNo, tempMessages, cb) {
+    console.log('getMessages: msgIds = ' + msgIds.toString() + ', msgIds.length = ' + msgIds.length + ', idIdx = ' + idIdx + ', msgNo = ' + msgNo);
     const isRx = (index.listMode == 'recv') ? true : false;
-    if (!msgIds || idIdx >= msgIds.length || common.numberToBN(msgIds[idIdx]).isZero()) {
+    if (idIdx >= msgIds.length || common.numberToBN(msgIds[idIdx]).isZero()) {
 	const maxMsgNo = (isRx) ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
-	for (; elemIdx >= lastElemIdx; --elemIdx, ++msgNo) {
+	for (; idIdx < msgIds.length && msgNo <= maxMsgNo; ++idIdx, ++msgNo) {
 	    const addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
-	    const msgNoDsp = (msgNo <= maxMsgNo) ? msgNo : '';
-	    const message = new Message(isRx, '', msgNoDsp, addr, '', '', '', '', null);
-	    fillMsgListEntry(elemIdx, message);
+	    const message = new Message(isRx, '', msgNo, addr, '', '', '', '', null);
+	    tempMessages[msgNo] = message;
 	}
-	cb();
+	cb(tempMessages);
 	return;
     }
     const threeMsgIds = [];
     const msgCookies = {};
-    for (let i = 0; i < 3 && idIdx < msgIds.length; ++i, ++idIdx, ++msgNo, --elemIdx) {
+    for (let i = 0; i < 3 && idIdx < msgIds.length; ++i, ++idIdx, ++msgNo) {
 	if (common.numberToBN(msgIds[idIdx]).isZero())
 	    break;
-	console.log('fillMsgListEntries: msgId = ' + msgIds[idIdx] + ' goes to elemIdx = ' + elemIdx);
-	const msgCookie = { idIdx: idIdx, msgNo: msgNo, elemIdx: elemIdx };
+	console.log('getMessages: msgId = ' + msgIds[idIdx]);
+	const msgCookie = { idIdx: idIdx, msgNo: msgNo };
 	const msgId = msgIds[idIdx];
 	threeMsgIds.push(msgId);
 	msgCookies[msgId] = msgCookie;
@@ -1508,16 +1625,16 @@ function fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) {
     let noMsgsDisplayed = 0;
     const messages = isRx ? index.rxMessages : index.txMessages;
     mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
-	console.log('fillMsgListEntries: getAndParseIdMsgs returns, err = ' + err);
+	console.log('getMessages: getAndParseIdMsgs returns, err = ' + err);
 	if (!!err || !fromAddr) {
 	    err = 'Message data not found';
 	    if (!!msgCookie) {
 		const message = new Message(isRx, msgIds[msgCookie.idIdx], '', '', '', err, null);
-		fillMsgListEntry(elemIdx, message);
+		tempMessages[msgCookie.msgNo] = message;
 	    }
 	    if (++noMsgsDisplayed >= msgsToDisplay) {
-		console.log('fillMsgListEntries: got msgCb. err = ' + err + ', msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
-		(elemIdx >= lastElemIdx) ? fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) : cb();
+		console.log('getMessages: got msgCb. err = ' + err + ', msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
+		(idIdx < msgIds.length) ? getMessages(msgIds, idIdx, msgNo, tempMessages, cb) : cb(tempMessages);
 	    }
 	    return;
 	}
@@ -1525,24 +1642,23 @@ function fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) {
 	mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, attachmentIdxBN, (err, messageText, attachment) => {
 	    if (!!err) {
 		const message = new Message(isRx, msgId, '', '', '', 'message decryption error' + err, null);
-		fillMsgListEntry(elemIdx, message);
+		tempMessages[msgCookie.msgNo] = message;
 	    } else {
-		console.log('fillMsgListEntries: adding msgId = ' + msgId + ' at elemIdx = ' + msgCookie.elemIdx);
-		console.log('fillMsgListEntries: text = ' + messageText + ', attachment = ' + attachment);
+		console.log('getMessages: msgId = ' + msgId + ', text = ' + messageText + ', attachment = ' + attachment);
 		const message = new Message(isRx, msgId, msgCookie.msgNo, otherAddr, date, ref, messageText, attachment);
-		fillInMsgListEntry(msgCookie.elemIdx, message);
 		messages[msgCookie.msgNo] = message;
+		tempMessages[msgCookie.msgNo] = message;
 	    }
 	    if (++noMsgsDisplayed >= msgsToDisplay) {
-		console.log('fillMsgListEntries: got msgCb. msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
-		(elemIdx >= lastElemIdx) ? fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) : cb();
+		console.log('getMessages: got msgCb. msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
+		(idIdx < msgIds.length) ? getMessages(msgIds, idIdx, msgNo, tempMessages, cb) : cb(tempMessages);
 	    }
 	});
     }, function(noMsgsProcessed) {
-	console.log('fillMsgListEntries: got doneCb. elemIdx = ' + elemIdx + ', noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsDisplayed = ' + noMsgsDisplayed);
+	console.log('getMessages: got doneCb. idIdx = ' + idIdx + ', noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsDisplayed = ' + noMsgsDisplayed);
 	msgsToDisplay = noMsgsProcessed;
 	if (noMsgsDisplayed >= msgsToDisplay)
-	    (elemIdx >= lastElemIdx) ? fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) : cb();
+	    (idIdx < msgIds.length) ? getMessages(msgIds, idIdx, msgNo, tempMessages, cb) : cb(tempMessages);
     });
 }
 
@@ -1666,89 +1782,6 @@ function showMsgDetail(msgId, msgNo, otherAddr, date, ref, msgTextContent, attac
 
 
 //
-// as a convenience, in case an error has already occurred (for example if the user rejects the transaction), you can
-// call this fcn with the error message and no txid.
-//
-function waitForTXID(err, txid, desc, statusDiv, continuationMode, callback) {
-    //
-    common.setMenuButtonState('importantInfoButton', 'Enabled');
-    common.setMenuButtonState('registerButton',      'Disabled');
-    common.setMenuButtonState('viewRecvButton',      'Disabled');
-    common.setMenuButtonState('composeButton',       'Disabled');
-    common.setMenuButtonState('viewSentButton',      'Disabled');
-    common.setMenuButtonState('withdrawButton',      'Disabled');
-    const replyButton = document.getElementById('replyButton');
-    replyButton.disabled = true;
-    //
-    //status div starts out hidden
-    console.log('show status div');
-    statusDiv.style.display = "block";
-    const leftDiv = document.createElement("div");
-    leftDiv.className = 'visibleIB';
-    statusDiv.appendChild(leftDiv);
-    const rightDiv = document.createElement("div");
-    rightDiv.className = 'visibleIB';
-    statusDiv.appendChild(rightDiv);
-    let statusCtr = 0;
-    const statusText = document.createTextNode('No status yet...');
-    leftDiv.appendChild(statusText);
-    if (!!err || !txid) {
-	if (!err)
-	    err = 'No transaction hash was generated.';
-	statusText.textContent = 'Error in ' + desc + ' transaction: ' + err;
-	const reloadLink = document.createElement('a');
-	reloadLink.addEventListener('click', function() {
-	    handleUnlockedMetaMask(continuationMode);
-	});
-	reloadLink.href = 'javascript:null;';
-	reloadLink.innerHTML = "<h2>Continue</h2>";
-	reloadLink.disabled = false;
-	rightDiv.appendChild(reloadLink);
-	callback(err);
-	return;
-    }
-    //
-    const viewTxLink = document.createElement('a');
-    viewTxLink.href = 'https://' + ether.etherscanioTxStatusHost + '/tx/' + txid;
-    viewTxLink.innerHTML = "<h2>View transaction</h2>";
-    viewTxLink.target = '_blank';
-    viewTxLink.disabled = false;
-    leftDiv.appendChild(viewTxLink);
-    //
-    //cleared in handleUnlockedMetaMask, after the user clicks 'continue'
-    index.waitingForTxid = true;
-    const timer = setInterval(function() {
-	statusText.textContent = 'Waiting for ' + desc + ' transaction: ' + ++statusCtr + ' seconds...';
-	if ((statusCtr & 0xf) == 0) {
-	    common.web3.eth.getTransactionReceipt(txid, function(err, receipt) {
-		console.log('waitForTXID: err = ' + err);
-		console.log('waitForTXID: receipt = ' + receipt);
-		if (!!err || !!receipt) {
-		    if (!err && !!receipt && receipt.status == 0)
-			err = "Transaction Failed with REVERT opcode";
-		    statusText.textContent = (!!err) ? 'Error in ' + desc + ' transaction: ' + err : desc + ' transaction succeeded!';
-		    console.log('transaction is in block ' + (!!receipt ? receipt.blockNumber : 'err'));
-		    //statusText.textContent = desc + ' transaction succeeded!';
-		    clearInterval(timer);
-		    //
-		    const reloadLink = document.createElement('a');
-		    reloadLink.addEventListener('click', function() {
-			handleUnlockedMetaMask(continuationMode);
-		    });
-		    reloadLink.href = 'javascript:null;';
-		    reloadLink.innerHTML = "<h2>Continue</h2>";
-		    reloadLink.disabled = false;
-		    rightDiv.appendChild(reloadLink);
-		    callback(err);
-		    return;
-		}
-	    });
-	}
-    }, 1000);
-}
-
-
-//
 // (re)initialize the message elements list
 // clears all msgElems from the passed listDiv.
 // if messages[] is non-null, then create a new set of elems from the passed messages
@@ -1818,7 +1851,7 @@ function makeMsgListElem(msgNo) {
     subjectArea.rows = 1;
     subjectArea.readonly = 'readonly';
     subjectArea.disabled = 'disabled';
-    subjectArea.value = '';
+    subjectArea.value = 'loading...';
     div.appendChild(msgNoArea);
     div.appendChild(addrArea);
     div.appendChild(dateArea);
