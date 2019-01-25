@@ -36,7 +36,6 @@ const index = module.exports = {
     waitingForTxid: false,
     localStoragePrefix: '',
     introCompletePromise: null,
-    periodicAcctCheckCount: 0,
 
     main: function() {
 	console.log('index.main');
@@ -49,7 +48,7 @@ const index = module.exports = {
 	setMarkReadButtonHandler();
 	setPrevNextButtonHandlers();
 	beginTheBeguine('startup');
-	//periodicCheckForAccountChanges();
+	periodicCheckForAccountChanges();
     },
 
 };
@@ -653,10 +652,10 @@ const timerIsPaused = () => {
 }
 //
 function periodicCheckForAccountChanges() {
-    console.log('periodicCheckForAccountChanges: enter');
+    //console.log('periodicCheckForAccountChanges: enter');
     if (timerIsPaused()) {
-	console.log('timerIsPaused!');
-	setTimeout(periodicCheckForAccountChanges, 10000);
+	console.log('periodicCheckForAccountChanges: timerIsPaused!');
+	setTimeout(periodicCheckForAccountChanges, 20000);
 	return;
     }
     common.checkForMetaMask(true, function(err, w3) {
@@ -665,17 +664,12 @@ function periodicCheckForAccountChanges() {
 	    console.log('periodicCheckForAccountChanges: MetaMask account changed!');
 	    console.log('periodicCheckForAccountChanges: MM acct = ' + acct + ', index.account = ' + index.account);
 	    beginTheBeguine(null);
-	    setTimeout(periodicCheckForAccountChanges, 10000);
+	    setTimeout(periodicCheckForAccountChanges, 20000);
 	    return;
 	}
-	if (!acct || ++index.periodicAcctCheckCount < 5 || timerIsPaused()) {
-	    setTimeout(periodicCheckForAccountChanges, 10000);
-	    return;
-	}
-	index.periodicAcctCheckCount = 0;
-	console.log('periodicCheckForAccountChanges: MetaMask account unchanged...');
+	//console.log('periodicCheckForAccountChanges: MetaMask account unchanged...');
 	mtEther.accountQuery(common.web3, common.web3.eth.accounts[0], function(err, _acctInfo) {
-	    console.log('index.acctInfo = ' + index.acctInfo + '_acctInfo = ' + _acctInfo);
+	    //console.log('index.acctInfo = ' + index.acctInfo + '_acctInfo = ' + _acctInfo);
 	    if ((!!_acctInfo && !index.acctInfo) || (!_acctInfo && !!index.acctInfo)) {
 		beginTheBeguine('null');
 	    } else if (!!index.acctInfo && !!_acctInfo) {
@@ -688,10 +682,15 @@ function periodicCheckForAccountChanges() {
 		    beginTheBeguine('recv');
 		} else if (sentCntNew != sentCntOld) {
 		    console.log('periodicCheckForAccountChanges: sentCnt ' + sentCntOld + ' => ' + sentCntNew);
-		    beginTheBeguine('send');
+		    const viewSentButton = document.getElementById('viewSentButton');
+		    if (viewSentButton.className.indexOf('Selected') < 0 ) {
+			//if he's not in view-sent mode then we'll update the sent list anyhow next time he switches
+			//to the view-sent mode. but if he's already viewing sent messages then we can update the list now.
+			beginTheBeguine('send');
+		    }
 		}
 	    }
-	    setTimeout(periodicCheckForAccountChanges, 10000);
+	    setTimeout(periodicCheckForAccountChanges, 20000);
 	    return;
 	});
     });
@@ -720,6 +719,10 @@ async function beginTheBeguine(mode) {
 	    common.setMenuButtonState('composeButton',       'Disabled');
 	    common.setMenuButtonState('viewSentButton',      'Disabled');
 	    common.setMenuButtonState('withdrawButton',      'Disabled');
+	    //in case we have data from a different acct
+	    index.msgListElems = [];
+	    index.rxMessages = [];
+	    index.txMessages = [];
 	    handleUnlockedMetaMask(mode);
 	}
     });
@@ -920,6 +923,7 @@ function handleUnregisteredAcct() {
 
 //
 // handle registered account
+// mode = [ 'send' | 'recv' | null ]
 //
 function handleRegisteredAcct(mode) {
     console.log('handleRegisteredAcct: mode = ' + mode);
