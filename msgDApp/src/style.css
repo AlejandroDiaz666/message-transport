@@ -374,6 +374,7 @@ p {
     background-color: var(--clr_buttonbg);
     opacity: 0.6;
     border: 1px solid var(--clr_buttonbg);
+    cursor: default;
 }
 .msgInfoAreaButton {
     margin: 1px;

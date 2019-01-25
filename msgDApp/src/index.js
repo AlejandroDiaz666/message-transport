@@ -1600,6 +1600,7 @@ function selectMsgListEntry(newIdx, cb) {
 	    index[msgNoCounter] = msgNo;
 	    localStorage[index.localStoragePrefix + '-' + index.listMode + 'MessageNo'] = msgNo;
 	}
+	enablePrevNextButtons();
     }
     const viewRecvButton = document.getElementById('viewRecvButton');
     const viewSentButton = document.getElementById('viewSentButton');
@@ -1620,98 +1621,19 @@ function selectMsgListEntry(newIdx, cb) {
     cb();
 }
 
-
 //
-// return the current msgNo
-// note: separate msgNo's are maintained for View-Sent and View-Received modes. this fcn returns the correct
-// msgNo depending on the current mode
+// enable/disable prev and next buttons depending on the currently select msgElem
 //
-function getCurMsgNo(acctInfo) {
-    const msgNoCounter     = (index.listMode == 'recv') ? 'recvMessageNo'                 : 'sentMessageNo';
-    const maxMsgNo = (index.listMode == 'recv') ? parseInt(acctInfo.recvMsgCount) : parseInt(acctInfo.sentMsgCount);
-    if (index[msgNoCounter] == 0 && maxMsgNo > 0)
-	index[msgNoCounter] = 1;
-    if (index[msgNoCounter] > maxMsgNo)
-	index[msgNoCounter] = maxMsgNo;
-    //console.log('getCurMsgNo: curMsgNo = ' + index[msgNoCounter]);
-    return(index[msgNoCounter]);
-}
-
-
-//
-// handle traversing messages via prev, next buttons
-// call this fcn anytime the current msgNo changes. it will validate the msgNo, and then re-display the message list if
-// necessary, and calculate the current elemIdx and hightlight the correct listEntry.
-// also saves current msgNo to persistent storage.
-//
-// note: makeMsgList creates and displays the list; showMsgLoop performs any special processing for the currently selected
-// list entry. when traversing the list showMsgLoop re-displays the current entry (index.elemIdx), and highlights the new
-// entry (index[msgNoCounter]). usually you call showMsgLoop in the callback from makeMsgList. however, showMsgLoop also checks
-// to make sure that the current message is within the list. if it is not, then showMsgLoop internally calls makeMsgList, and
-// then calls itself to display the new list.
-//
-function enablePrevNextButtons(acctInfo) {
-    const maxMsgNo = (index.listMode == 'recv') ? parseInt(acctInfo.recvMsgCount) : parseInt(acctInfo.sentMsgCount);
-    const msgNo = getCurMsgNo(acctInfo);
+function enablePrevNextButtons() {
+    const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
     const prevMsgButton = document.getElementById('prevMsgButton');
     const nextMsgButton = document.getElementById('nextMsgButton');
     const prevPageButton = document.getElementById('prevPageButton');
     const nextPageButton = document.getElementById('nextPageButton');
-    prevMsgButton.disabled = (msgNo > 1)          ? false : true;
-    nextMsgButton.disabled = (msgNo < maxMsgNo)   ? false : true;
-    prevPageButton.disabled = (msgNo > 10)        ? false : true;
-    nextPageButton.disabled = (msgNo < (Math.floor((maxMsgNo - 1) / 10) * 10) + 1) ? false : true;
-    //check msgNo outside of listEntries.... if yes, regenerate listEntries, and call us again; in this case we disable the navButtons and other view-list
-    //mode until after the list is regenerated.
-    const minListMsgNo = index.msgListElems[0].msgNo;
-    if (msgNo != 0 && (msgNo < minListMsgNo || msgNo >= minListMsgNo + 10)) {
-	console.log('showMsgLoop: regenerating msg list!');
-	common.setMenuButtonState('viewRecvButton', 'Disabled');
-	common.setMenuButtonState('viewSentButton', 'Disabled');
-	common.replaceElemClassFromTo('navButtonsSpan', 'visibleIB', 'hidden',    true);
-	makeMsgList(msgNo, function() {
-	    showMsgLoop(acctInfo);
-	    console.log('showMsgLoop: index.listMode = ' + index.listMode);
-	    common.setMenuButtonState('viewRecvButton', (index.listMode == 'recv') ? 'Selected' : 'Enabled');
-	    common.setMenuButtonState('viewSentButton', (index.listMode == 'sent') ? 'Selected' : 'Enabled');
-	    common.replaceElemClassFromTo('navButtonsSpan', 'hidden', 'visibleIB', true);
-	});
-	return;
-    }
-    const elemIdx = (msgNo > 0) ? (msgNo - 1) % 10 : -1;
-    console.log('showMsgLoop: elemIdx = ' + elemIdx + ', index.elemIdx = ' + index.elemIdx);
-    if (elemIdx != index.elemIdx) {
-	if (index.elemIdx >= 0) {
-	    const oldMsgNo = index.msgListElems[index.elemIdx].msgNo;
-	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', oldMsgNo)) ? '' : 'New';
-	    (index.msgListElems[index.elemIdx].div).className = 'msgListItemDiv' + newSuffix;
-	}
-	index.elemIdx = elemIdx;
-	if (index.elemIdx >= 0) {
-	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo)) ? '' : 'New';
-	    console.log('showMsgLoop: changing index.msgListElems[' + index.elemIdx + '].div).className from ' + index.msgListElems[index.elemIdx].div.className);
-	    console.log('showMsgLoop: to msgListItemDivSelected' + newSuffix);
-	    (index.msgListElems[index.elemIdx].div).className = 'msgListItemDivSelected' + newSuffix;
-	    const markReadButton = document.getElementById('markReadButton');
-	    markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
-	}
-    }
-    console.log('showMsgLoop: index[msgNoCounter] = ' + msgNo + ', maxMsgNo = ' + maxMsgNo);
-    const viewRecvButton = document.getElementById('viewRecvButton');
-    const viewSentButton = document.getElementById('viewSentButton');
-    if (viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) {
-	if (msgNo != 0) {
-	    const elemIdx = (msgNo - 1) % 10;
-	    //if the msg hasn't been addded to the list yet then it will be displayed after being added
-	    if (!!index.messageEntries[elemIdx]) {
-		console.log('showMsgLoop: calling showMsgDetail(msgNo = ' + msgNo + ')');
-		showMsgDetail(index.messageEntries[elemIdx].msgId, index.messageEntries[elemIdx].msgNo, index.messageEntries[elemIdx].addr,
-			      index.messageEntries[elemIdx].date, index.messageEntries[elemIdx].ref, index.messageEntries[elemIdx].text, index.messageEntries[elemIdx].attachment);
-	    } else {
-		console.log('showMsgLoop: msg detail is not available yet for msgNo = ' + msgNo);
-	    }
-	}
-    }
+    prevMsgButton.disabled = (index.elemIdx > 0)        ? false : true;
+    nextMsgButton.disabled = (index.elemIdx < maxMsgNo) ? false : true;
+    prevPageButton.disabled = (index.elemIdx > 10)      ? false : true;
+    nextPageButton.disabled = (index.elemIdx < (Math.floor((maxMsgNo - 1) / 10) * 10) + 1) ? false : true;
 }
 
 
@@ -1926,6 +1848,10 @@ function makeMsgListElem(msgNo) {
     return(msgElem);
 }
 
+
+//
+// fill-in a msgElem with the particulars of a message
+//
 function fillMsgListElem(msgElem, message) {
     console.log('fillMsgListElem: msgElem = ' + msgElem + ', message = ' + message);
     console.log('fillMsgListElem: elemIdx = ' + msgElem.elemIdx + ', msgNo = ' + message.msgNo);
@@ -1946,6 +1872,22 @@ function elemIdxToMsgNo(isRx, elemIdx) {
     return(msgNo);
 }
 
+
+//
+// return the current msgNo
+// note: separate msgNo's are maintained for View-Sent and View-Received modes. this fcn returns the correct
+// msgNo depending on the current mode
+//
+function getCurMsgNo(acctInfo) {
+    const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
+    const maxMsgNo = (index.listMode == 'recv') ? parseInt(acctInfo.recvMsgCount) : parseInt(acctInfo.sentMsgCount);
+    if (index[msgNoCounter] == 0 && maxMsgNo > 0)
+	index[msgNoCounter] = 1;
+    if (index[msgNoCounter] > maxMsgNo)
+	index[msgNoCounter] = maxMsgNo;
+    //console.log('getCurMsgNo: curMsgNo = ' + index[msgNoCounter]);
+    return(index[msgNoCounter]);
+}
 
 
 //we also save the id and ref in the area/button objects, for onclick
