@@ -140,11 +140,11 @@ const mtUtil = module.exports = {
 
 
     //
-    //cb(err, decrypted)
-    //decrypt and display the message in the msgTextArea. also displays the msgId, ref, date & msgNo
-    //msgNo is either txCount or rxCount depending on whether the message was sent or received
+    // cb(err, messageText, attachment)
+    // decrypt message and extract attachment
+    //  attachment: { name: 'name', blob: 'saveable-blob' };
     //
-    decryptMsg: function(otherAddr, fromAddr, toAddr, nonce, msgHex, cb) {
+    decryptMsg: function(otherAddr, fromAddr, toAddr, nonce, msgHex, attachmentIdxBN, cb) {
 	console.log('decryptMsg: otherAddr = ' + otherAddr);
 	mtEther.accountQuery(common.web3, otherAddr, function(err, otherAcctInfo) {
 	    const otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo.publicKey : null;
@@ -154,10 +154,18 @@ const mtUtil = module.exports = {
 		console.log('decryptMsg: ptk = ' + ptk);
 		const decrypted = dhcrypt.decrypt(ptk, msgHex);
 		console.log('decryptMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted);
-		cb(null, decrypted);
+		let messageText = decrypted;
+		let attachment = null;
+		if (!!attachmentIdxBN && !attachmentIdxBN.isZero()) {
+		    const idx = attachmentIdxBN.toNumber();
+		    messageText = decrypted.substring(0, idx);
+		    const nameLen = attachmentIdxBN.iushrn(248).toNumber();
+		    attachment = { name: decrypted.substring(idx, idx + nameLen), blob: decrypted.substring(idx + nameLen) };
+		}
+		cb(null, messageText, attachment);
 	    } else {
 		console.log('decryptMsg: error looking up account for ' + otherAddr + ', otherPublicKey = ' + otherPublicKey);
-		cb('Error looking up account for ' + otherAddr, '');
+		cb('Error looking up account for ' + otherAddr, '', null);
 	    }
 	});
     },

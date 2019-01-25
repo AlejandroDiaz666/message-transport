@@ -28,7 +28,7 @@ const index = module.exports = {
     acctInfo: null,
     acctCheckTimer: null,
     publicKey: null,
-    listIdx: -1,
+    elemIdx: -1,
     listMode: null,
     msgListElems: [],
     rxMessages: [],
@@ -73,7 +73,7 @@ function MsgElem(div, msgNoArea, addrArea, dateArea, msgIdArea, subjectArea, msg
     this.msgIdArea = msgIdArea;
     this.subjectArea = subjectArea;
     this.msgNo = msgNo;
-    this.listIdx = -1;
+    this.elemIdx = -1;
     this.message = null;
 }
 
@@ -419,7 +419,7 @@ function setMarkReadButtonHandler() {
 	    console.log('setMarkReadButtonHandlr: we should never be here!');
 	    return;
 	}
-	const msgElem = index.msgListElems[index.listIdx];
+	const msgElem = index.msgListElems[index.elemIdx];
 	const message = !!msgElem && msgElem.message;
 	if (!!message) {
 	    const div = msgElem.div;
@@ -449,20 +449,20 @@ function setPrevNextButtonHandlers() {
     const firstButton = document.getElementById('firstMsgButton');
     const lastButton = document.getElementById('lastMsgButton');
     prevMsgButton.addEventListener('click', function() {
-	if (index.listIdx > 0) {
-	    const newIdx = index.listIdx - 1;
+	if (index.elemIdx > 0) {
+	    const newIdx = index.elemIdx - 1;
 	    selectMsgListEntry(newIdx, function() {
-		const msgElem = index.msgListElems[index.listIdx];
+		const msgElem = index.msgListElems[index.elemIdx];
 		msgElem.div.scrollIntoView({ block: "nearest" });
 	    });
 	}
     });
     index.nextMsgButtonFcn = () => {
 	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
-	if (index.listIdx < maxMsgNo - 1) {
-	    const newIdx = index.listIdx + 1;
+	if (index.elemIdx < maxMsgNo - 1) {
+	    const newIdx = index.elemIdx + 1;
 	    selectMsgListEntry(newIdx, function() {
-		const msgElem = index.msgListElems[index.listIdx];
+		const msgElem = index.msgListElems[index.elemIdx];
 		msgElem.div.scrollIntoView({ block: "nearest" });
 	    });
 	}
@@ -471,7 +471,7 @@ function setPrevNextButtonHandlers() {
     firstButton.addEventListener('click', function() {
 	if (index.msgListElems.length > 0) {
 	    selectMsgListEntry(0, function() {
-		const msgElem = index.msgListElems[index.listIdx];
+		const msgElem = index.msgListElems[index.elemIdx];
 		msgElem.div.scrollIntoView({ block: "nearest" });
 	    });
 	}
@@ -480,49 +480,49 @@ function setPrevNextButtonHandlers() {
 	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
 	if (maxMsgNo > 0) {
 	    selectMsgListEntry(maxMsgNo - 1, function() {
-		const msgElem = index.msgListElems[index.listIdx];
-		console.log('lastButton.click: scrollin to elem idx ' + index.listIdx);
+		const msgElem = index.msgListElems[index.elemIdx];
+		console.log('lastButton.click: scrollin to elem idx ' + index.elemIdx);
 		msgElem.div.scrollIntoView({ block: "nearest" });
 	    });
 	}
     });
     prevPageButton.addEventListener('click', function() {
-	let pageIdx = Math.floor(index.listIdx / 10);
+	let pageIdx = Math.floor(index.elemIdx / 10);
 	console.log('pageIdx = ' + pageIdx);
 	const newIdx = Math.max(0, (pageIdx - 1) * 10);
 	selectMsgListEntry(newIdx, function() {
-	    const msgElem = index.msgListElems[index.listIdx];
+	    const msgElem = index.msgListElems[index.elemIdx];
 	    msgElem.div.scrollIntoView({ block: "start" });
 	});
 
     });
     nextPageButton.addEventListener('click', function() {
 	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
-	let pageIdx = Math.floor(index.listIdx / 10);
+	let pageIdx = Math.floor(index.elemIdx / 10);
 	console.log('pageIdx = ' + pageIdx);
 	const newIdx = Math.min(maxMsgNo - 1, (pageIdx + 1) * 10);
 	selectMsgListEntry(newIdx, function() {
-	    const msgElem = index.msgListElems[index.listIdx];
+	    const msgElem = index.msgListElems[index.elemIdx];
 	    msgElem.div.scrollIntoView({ block: "start" });
 	});
     });
     nextUnreadButton.addEventListener('click', function() {
 	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
-	const msgElem = index.msgListElems[index.listIdx];
+	const msgElem = index.msgListElems[index.elemIdx];
 	const msgNo = !!msgElem && msgElem.msgNo;
 	//next really means lower msg no; ie. older
 	const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo - 1, 1, false);
 	if (unreadMsgNo > 0) {
 	    const newIdx = maxMsgNo - unreadMsgNo;
 	    selectMsgListEntry(newIdx, function() {
-		const msgElem = index.msgListElems[index.listIdx];
+		const msgElem = index.msgListElems[index.elemIdx];
 		msgElem.div.scrollIntoView({ block: "nearest" });
 	    });
 	}
     });
     prevUnreadButton.addEventListener('click', function() {
 	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
-	const msgElem = index.msgListElems[index.listIdx];
+	const msgElem = index.msgListElems[index.elemIdx];
 	const msgNo = !!msgElem && msgElem.msgNo;
 	//prev really means higher msg no; ie. more recent
 	const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
@@ -531,7 +531,7 @@ function setPrevNextButtonHandlers() {
 	    const newIdx = maxMsgNo - unreadMsgNo;
 	    console.log('nextUnreadButton.click: msgListElems.length = ' + index.msgListElems.length + ', newIdx = ' + newIdx);
 	    selectMsgListEntry(newIdx, function() {
-		const msgElem = index.msgListElems[index.listIdx];
+		const msgElem = index.msgListElems[index.elemIdx];
 		msgElem.div.scrollIntoView({ block: "nearest" });
 	    });
 	}
@@ -974,16 +974,16 @@ function handleCompose(acctInfo, toAddr) {
     common.setMenuButtonState('viewSentButton',      'Enabled');
     common.setMenuButtonState('withdrawButton',      'Enabled');
     //
-    if (index.listIdx >= 0) {
+    if (index.elemIdx >= 0) {
 	//unselect any currently selected message
-	const msgElem = index.msgListElems[index.listIdx];
+	const msgElem = index.msgListElems[index.elemIdx];
 	const message = !!msgElem && msgElem.message;
 	if (!!message) {
 	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', message.msgNo)) ? '' : 'New';
 	    msgElem.div.className = 'msgListItemDiv' + newSuffix;
 	}
     }
-    index.listIdx = -1;
+    index.elemIdx = -1;
     //
     const msgPromptArea = document.getElementById('msgPromptArea');
     msgPromptArea.value = 'To: ';
@@ -1043,8 +1043,8 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	return;
     }
     //replying to a message implies that it has been read
-    if (index.listIdx >= 0) {
-	const msgElem = index.msgListElems[index.listIdx];
+    if (index.elemIdx >= 0) {
+	const msgElem = index.msgListElems[index.elemIdx];
 	const message = !!msgElem && msgElem.message;
 	if (!!message) {
 	    console.log('handleReplyCompose: listmode = ' + index.listMode + ', msgId = ' + message.msgId + ', ref = ' + ref);
@@ -1054,7 +1054,7 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	    msgElem.div.className = 'msgListItemDiv';
 	}
     }
-    index.listIdx = -1;
+    index.elemIdx = -1;
     //
     mtEther.accountQuery(common.web3, toAddr, function(err, toAcctInfo) {
 	const toPublicKey = (!!toAcctInfo) ? toAcctInfo.publicKey : null;
@@ -1120,13 +1120,13 @@ function handleRegister() {
 	common.setMenuButtonState('withdrawButton',      'Disabled');
     }
     //
-    if (index.listIdx >= 0) {
-	const msgElem = index.msgListElems[index.listIdx];
+    if (index.elemIdx >= 0) {
+	const msgElem = index.msgListElems[index.elemIdx];
 	const message = !!msgElem && msgElem.message;
 	if (!!message)
 	    msgElem.div.className = 'msgListItemDiv';
     }
-    index.listIdx = -1;
+    index.elemIdx = -1;
     //
     const msgPromptArea = document.getElementById('msgPromptArea');
     msgPromptArea.value = 'Addr: ';
@@ -1201,13 +1201,13 @@ function handleWithdraw() {
     common.setMenuButtonState('viewSentButton',      'Enabled');
     common.setMenuButtonState('withdrawButton',      'Selected');
     //
-    if (index.listIdx >= 0) {
-	const msgElem = index.msgListElems[index.listIdx];
+    if (index.elemIdx >= 0) {
+	const msgElem = index.msgListElems[index.elemIdx];
 	const message = !!msgElem && msgElem.message;
 	if (!!message)
 	    msgElem.div.className = 'msgListItemDiv';
     }
-    index.listIdx = -1;
+    index.elemIdx = -1;
     //
     const msgPromptArea = document.getElementById('msgPromptArea');
     msgPromptArea.value = 'Addr: ';
@@ -1410,9 +1410,9 @@ function handleViewSent(acctInfo, refreshMsgList) {
 // create sufficient message list elements to accomodate the current scroll position
 // the elements will be populated (ie. filled-in) asyncrhonously via makeMsgListEntries
 //
-// if minIdx is set, then we continue populating at least until we have retreived that idx
+// if minElemIdx is set, then we continue populating at least until we have retreived that idx
 //
-function populateMsgList(minIdx, cb) {
+function populateMsgList(minElemIdx, cb) {
     console.log('populateMsgList');
     const isRx = (index.listMode == 'recv') ? true : false;
     const msgListDiv = document.getElementById('msgListDiv');
@@ -1425,18 +1425,20 @@ function populateMsgList(minIdx, cb) {
         console.log('scroll: scrollTop = ' + msgListDiv.scrollTop + ', scrollHeight = ' + msgListDiv.scrollHeight + ', clientHeight = ' + msgListDiv.clientHeight);
 	if (index.msgListElems.length >= maxMsgNo)
             break;
-	else if (!!minIdx && index.msgListElems.length < minIdx + 1)
+	else if (!!minElemIdx && index.msgListElems.length < minElemIdx + 1)
 	    ;
         else if (msgListDiv.scrollTop + msgListDiv.clientHeight < msgListDiv.scrollHeight - 100)
             break;
         console.log('populateMsgList: msgListElems.length = ' + index.msgListElems.length + ', maxMsgNo = ' + maxMsgNo);
-	const startIdx = index.msgListElems.length;
+	//last elem is at the top, with lower numerical idx
+	const lastElemIdx = index.msgListElems.length;
 	const noElems = Math.min(9, maxMsgNo - index.msgListElems.length);
+	const firstElemIdx = lastElemIdx + noElems - 1;
 	for (let i = 0; i < noElems; ++i) {
-	    const idx = index.msgListElems.length;
-	    const msgNo = maxMsgNo - idx;
+	    const elemIdx = index.msgListElems.length;
+	    const msgNo = elemIdxToMsgNo(isRx, elemIdx);
 	    const msgElem = makeMsgListElem(msgNo);
-	    msgElem.listIdx = idx;
+	    msgElem.elemIdx = elemIdx;
 	    index.msgListElems.push(msgElem);
 	    msgListDiv.appendChild(msgElem.div);
 	}
@@ -1446,9 +1448,10 @@ function populateMsgList(minIdx, cb) {
 	}
 	++callCount;
 	++callDepth;
-	getMsgIdsFcn(common.web3.eth.accounts[0], startIdx, noElems, function(err, result) {
-	    console.log('populateMsgList: got ids, startIdx = ' + startIdx);
-	    if (!!err || !result || result.length < noElems) {
+	const startMsgNo = elemIdxToMsgNo(isRx, firstElemIdx);
+	getMsgIdsFcn(common.web3.eth.accounts[0], startMsgNo - 1, noElems, function(err, msgIds) {
+	    console.log('populateMsgList: got ids, startMsgNo = ' + startMsgNo + ', firstElemIdx = ' + firstElemIdx);
+	    if (!!err || !msgIds || msgIds.length < noElems) {
 		console.log('populateMsgList: err = ' + err);
 		alert('error retrieving message ids: ' + err);
 		retrievingMsgsModal.style.display = 'none';
@@ -1456,7 +1459,7 @@ function populateMsgList(minIdx, cb) {
 		cb();
 		return;
 	    }
-	    fillMsgListEntries(result, 0, startIdx, startIdx + noElems, function() {
+	    fillMsgListEntries(msgIds, 0, startMsgNo, firstElemIdx, lastElemIdx, function() {
 		if (--callDepth <= 0) {
 		    retrievingMsgsModal.style.display = 'none';
 		    common.setLoadingIcon(null);
@@ -1473,30 +1476,33 @@ function populateMsgList(minIdx, cb) {
 //
 // fill-in noElem entries of the recv/sent message list
 // recursive fcn to populate, pre-existing list elements
+// each recursive call retrieves up to three messages
 //
 // msgIds: array of message ID's (can be null)
-// listIdx: starting index into list
+// elemIdx: starting index into list
 // cb: callback when all done
 //
-function fillMsgListEntries(msgIds, idIdx, listIdx, listEndIdx, cb) {
-    console.log('fillMsgListEntries: msgIds = ' + msgIds.toString() + ', msgIds.length = ' + msgIds.length + ', listIdx = ' + listIdx + ', listEndIdx = ' + listEndIdx + ')');
+function fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) {
+    console.log('fillMsgListEntries: msgIds = ' + msgIds.toString() + ', msgIds.length = ' + msgIds.length + ', elemIdx = ' + elemIdx + ', lastElemIdx = ' + lastElemIdx + ')');
+    const isRx = (index.listMode == 'recv') ? true : false;
     if (!msgIds || idIdx >= msgIds.length || common.numberToBN(msgIds[idIdx]).isZero()) {
-	const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
-	for (; listIdx < listEndIdx; ++listIdx, ++msgNo) {
+	const maxMsgNo = (isRx) ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
+	for (; elemIdx >= lastElemIdx; --elemIdx, ++msgNo) {
 	    const addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
 	    const msgNoDsp = (msgNo <= maxMsgNo) ? msgNo : '';
-	    fillMsgListEntry(listIdx, msgNoDsp, addr, '', '', '', '', null);
+	    const message = new Message(isRx, '', msgNoDsp, addr, '', '', '', '', null);
+	    fillMsgListEntry(elemIdx, message);
 	}
 	cb();
 	return;
     }
     const threeMsgIds = [];
     const msgCookies = {};
-    for (let i = 0; i < 3 && idIdx < msgIds.length; ++i, ++idIdx, ++listIdx) {
+    for (let i = 0; i < 3 && idIdx < msgIds.length; ++i, ++idIdx, ++msgNo, --elemIdx) {
 	if (common.numberToBN(msgIds[idIdx]).isZero())
 	    break;
-	console.log('fillMsgListEntries: msgId = ' + msgIds[idIdx] + ' goes to listIdx = ' + listIdx);
-	const msgCookie = { idIdx: idIdx, listIdx: listIdx };
+	console.log('fillMsgListEntries: msgId = ' + msgIds[idIdx] + ' goes to elemIdx = ' + elemIdx);
+	const msgCookie = { idIdx: idIdx, msgNo: msgNo, elemIdx: elemIdx };
 	const msgId = msgIds[idIdx];
 	threeMsgIds.push(msgId);
 	msgCookies[msgId] = msgCookie;
@@ -1504,104 +1510,90 @@ function fillMsgListEntries(msgIds, idIdx, listIdx, listEndIdx, cb) {
     //gets up to 3 log entries; second cb when all done
     let msgsToDisplay = 4;
     let noMsgsDisplayed = 0;
+    const messages = isRx ? index.rxMessages : index.txMessages;
     mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
 	console.log('fillMsgListEntries: getAndParseIdMsgs returns, err = ' + err);
 	if (!!err || !fromAddr) {
 	    err = 'Message data not found';
-	    if (!!msgCookie)
-		fillInMsgListEntry(msgCookie.listIdx, '', '', msgIds[msgCookie.idIdx], '', err, null);
+	    if (!!msgCookie) {
+		const message = new Message(isRx, msgIds[msgCookie.idIdx], '', '', '', err, null);
+		fillMsgListEntry(elemIdx, message);
+	    }
 	    if (++noMsgsDisplayed >= msgsToDisplay) {
 		console.log('fillMsgListEntries: got msgCb. err = ' + err + ', msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
-		(listIdx < listEndIdx) ? fillMsgListEntries(msgIds, idIdx, listIdx, listEndIdx, cb) : cb();
+		(elemIdx >= lastElemIdx) ? fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) : cb();
 	    }
 	    return;
 	}
-	const otherAddr = (index.listMode == 'sent') ? toAddr : fromAddr;
-	mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, (err, decrypted) => {
+	const otherAddr = (isRx) ? fromAddr : toAddr;
+	mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, attachmentIdxBN, (err, messageText, attachment) => {
 	    if (!!err) {
-		fillInMsgListEntry(msgCookie.listIdx, '', '', '', '', 'message decryption error', null);
+		const message = new Message(isRx, msgId, '', '', '', 'message decryption error' + err, null);
+		fillMsgListEntry(elemIdx, message);
 	    } else {
-		let text = decrypted;
-		let attachment = null;
-		console.log('fillMsgListEntries: msgId = ' + msgId + ', attachmentIdxBN = 0x' + attachmentIdxBN.toString(16));
-		if (!!attachmentIdxBN && !attachmentIdxBN.isZero()) {
-		    const idx = attachmentIdxBN.maskn(248).toNumber();
-		    console.log('fillMsgListEntries: idx = ' + idx);
-		    if (idx > 1) { //temporary
-			text = decrypted.substring(0, idx);
-			const nameLen = attachmentIdxBN.iushrn(248).toNumber();
-			attachment = { name: decrypted.substring(idx, idx + nameLen), blob: decrypted.substring(idx + nameLen) };
-		    }
-		}
-		console.log('fillMsgListEntries: adding msgId = ' + msgId + ' at listIdx = ' + msgCookie.listIdx);
-		console.log('fillMsgListEntries: text = ' + text + ', attachment = ' + attachment);
-		fillInMsgListEntry(msgCookie.listIdx, otherAddr, date, msgId, ref, text, attachment);
+		console.log('fillMsgListEntries: adding msgId = ' + msgId + ' at elemIdx = ' + msgCookie.elemIdx);
+		console.log('fillMsgListEntries: text = ' + messageText + ', attachment = ' + attachment);
+		const message = new Message(isRx, msgId, msgCookie.msgNo, otherAddr, date, ref, messageText, attachment);
+		fillInMsgListEntry(msgCookie.elemIdx, message);
+		messages[msgCookie.msgNo] = message;
 	    }
 	    if (++noMsgsDisplayed >= msgsToDisplay) {
 		console.log('fillMsgListEntries: got msgCb. msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
-		(listIdx < listEndIdx) ? fillMsgListEntries(msgIds, idIdx, listIdx, listEndIdx, cb) : cb();
+		(elemIdx >= lastElemIdx) ? fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) : cb();
 	    }
 	});
     }, function(noMsgsProcessed) {
-	console.log('fillMsgListEntries: got doneCb. listIdx = ' + listIdx + ', noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsDisplayed = ' + noMsgsDisplayed);
+	console.log('fillMsgListEntries: got doneCb. elemIdx = ' + elemIdx + ', noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsDisplayed = ' + noMsgsDisplayed);
 	msgsToDisplay = noMsgsProcessed;
 	if (noMsgsDisplayed >= msgsToDisplay)
-	    (listIdx < listEndIdx) ? fillMsgListEntries(msgIds, idIdx, listIdx, listEndIdx, cb) : cb();
+	    (elemIdx >= lastElemIdx) ? fillMsgListEntries(msgIds, idIdx, msgNo, elemIdx, lastElemIdx, cb) : cb();
     });
 }
 
 
-function fillInMsgListEntry(listIdx, addr, date, msgId, ref, text, attachment) {
-    console.log('fillInMsgListEntry: listIdx = ' + listIdx);
-    const isRx = (index.listMode == 'recv') ? true : false;
-    const maxMsgNo = (isRx) ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
-    const msgNo = maxMsgNo - listIdx;
-    const msgElem = index.msgListElems[listIdx];
-    const message = new Message(isRx, msgId, msgNo, addr, date, ref, text, attachment);
-    if (isRx)
-	index.rxMessages[msgNo] = message;
-    else
-	index.txMessages[msgNo] = message;
+function fillInMsgListEntry(elemIdx, message) {
+    console.log('fillInMsgListEntry: elemIdx = ' + elemIdx + ', msgNo = ' + message.msgNo);
+    const msgElem = index.msgListElems[elemIdx];
     fillMsgListElem(msgElem, message);
     const viewRecvButton = document.getElementById('viewRecvButton');
     const viewSentButton = document.getElementById('viewSentButton');
-    if ((msgNo != 0 && listIdx == index.listIdx                                                                                          ) &&
+    if ((message.msgNo != 0 && elemIdx == index.elemIdx                                                                                          ) &&
 	(viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) ) {
-	console.log('fillInMsgListEntry: calling showMsgDetail(msgNo = ' + msgNo + ')');
+	console.log('fillInMsgListEntry: calling showMsgDetail(msgNo = ' + message.msgNo + ')');
 	showMsgDetail(message.msgId, message.msgNo, message.addr, message.date, message.ref, message.text, message.attachment);
     }
 }
 
 
 function selectMsgListEntry(newIdx, cb) {
-    console.log('selectMsgListEntry: newIdx = ' + newIdx + ', index.listIdx = ' + index.listIdx + ', msgListElems.length = ' + index.msgListElems.length);
-    if (newIdx != index.listIdx) {
-	if (index.listIdx >= 0) {
-	    const oldMsgNo = index.msgListElems[index.listIdx].msgNo;
+    console.log('selectMsgListEntry: newIdx = ' + newIdx + ', index.elemIdx = ' + index.elemIdx + ', msgListElems.length = ' + index.msgListElems.length);
+    if (newIdx != index.elemIdx) {
+	if (index.elemIdx >= 0) {
+	    const oldMsgNo = index.msgListElems[index.elemIdx].msgNo;
 	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', oldMsgNo)) ? '' : 'New';
-	    console.log('selectMsgListEntry: changing index.msgListElems[' + index.listIdx + '].div).className from ' + index.msgListElems[index.listIdx].div.className);
+	    console.log('selectMsgListEntry: changing index.msgListElems[' + index.elemIdx + '].div).className from ' + index.msgListElems[index.elemIdx].div.className);
 	    console.log('selectMsgListEntry: to msgListItemDivSelected' + newSuffix);
-	    (index.msgListElems[index.listIdx].div).className = 'msgListItemDiv' + newSuffix;
+	    (index.msgListElems[index.elemIdx].div).className = 'msgListItemDiv' + newSuffix;
 	}
 	if (newIdx >= index.msgListElems.length) {
-	    index.listIdx = -1;
+	    index.elemIdx = -1;
 	    const maxMsgNo = (index.listMode == 'recv') ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
 	    if (newIdx >= maxMsgNo)
 		alert('attempted to access a non-existant message');
 	    else
 		populateMsgList(newIdx, function() {
-		    console.log('selectMsgListEntry: recursive call newIdx = ' + newIdx + ', index.listIdx = ' + index.listIdx + ', msgListElems.length = ' + index.msgListElems.length);
+		    console.log('selectMsgListEntry: recursive call newIdx = ' + newIdx + ', index.elemIdx = ' + index.elemIdx + ', msgListElems.length = ' + index.msgListElems.length);
 		    selectMsgListEntry(newIdx, cb);
 		});
 	    return;
 	}
-	index.listIdx = newIdx;
-	if (index.listIdx >= 0) {
-	    const msgNo = index.msgListElems[index.listIdx].msgNo;
+	index.elemIdx = newIdx;
+	if (index.elemIdx >= 0) {
+	    const msgNo = index.msgListElems[index.elemIdx].msgNo;
 	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo)) ? '' : 'New';
-	    console.log('selectMsgListEntry: changing index.msgListElems[' + index.listIdx + '].div).className from ' + index.msgListElems[index.listIdx].div.className);
+	    console.log('selectMsgListEntry: changing index.msgListElems[' + index.elemIdx + '].div).className from ' + index.msgListElems[index.elemIdx].div.className);
 	    console.log('selectMsgListEntry: to msgListItemDivSelected' + newSuffix);
-	    (index.msgListElems[index.listIdx].div).className = 'msgListItemDivSelected' + newSuffix;
+	    (index.msgListElems[index.elemIdx].div).className = 'msgListItemDivSelected' + newSuffix;
 	    const markReadButton = document.getElementById('markReadButton');
 	    markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
 	    const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
@@ -1612,8 +1604,8 @@ function selectMsgListEntry(newIdx, cb) {
     const viewRecvButton = document.getElementById('viewRecvButton');
     const viewSentButton = document.getElementById('viewSentButton');
     if (viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) {
-	if (index.listIdx >= 0 && index.listIdx < index.msgListElems.length) {
-	    const msgElem = index.msgListElems[index.listIdx];
+	if (index.elemIdx >= 0 && index.elemIdx < index.msgListElems.length) {
+	    const msgElem = index.msgListElems[index.elemIdx];
 	    const message = !!msgElem && msgElem.message;
 	    const msgNo = !!msgElem && msgElem.msgNo;
 	    //if the message hasn't been retreived yet then it will be displayed in fillInMsgListEntry
@@ -1627,40 +1619,6 @@ function selectMsgListEntry(newIdx, cb) {
     }
     cb();
 }
-
-
-//
-// make the the message list, according to the current View-Sent / View-Recv mode.
-// this fcn displays the group of 10 messages that include the passed msgNo
-//
-function makeMsgList(msgNo, cb) {
-    console.log('makeMsgList: we should not be here...');
-    const retrievingMsgsModal = document.getElementById('retrievingMsgsModal');
-    retrievingMsgsModal.style.display = 'block';
-    const msgListDiv = document.getElementById('msgListDiv');
-    const batch = (msgNo > 0) ? Math.floor((msgNo - 1) / 10) : 0;
-    const listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : 0;
-    const firstMsgNo = batch * 10 + 1;
-    initMsgElemList(msgListDiv, null, null);
-    makeMsgListElems(msgListDiv, firstMsgNo);
-    console.log('makeMsgList: msgNo = ' + msgNo + ', index.listIdx = ' + index.listIdx);
-    const getMsgIdsFcn   = (index.listMode == 'recv') ? mtUtil.getRecvMsgIds        : mtUtil.getSentMsgIds;
-    getMsgIdsFcn(common.web3.eth.accounts[0], batch, function(err, result) {
-	if (!!err || !result || result.length < listIdx + 1) {
-	    const msgTextArea = document.getElementById('msgTextArea');
-	    //either an error, or maybe just no events
-	    msgTextArea.value = (!!err) ? 'Error: ' + err : (msgNo > 0) ? 'Error: Unable to retreive message logs' : 'No messages';
-	    result = null;
-	}
-	console.log('makeMsgList: calling makeMsgListEntries(msgIds = ' + result.toString() + ' listIdx = 0, firstMsgNo = ' + firstMsgNo + ')');
-	makeMsgListEntries(result, 0, firstMsgNo, function() {
-	    retrievingMsgsModal.style.display = 'none';
-	    cb();
-	});
-    });
-}
-
-
 
 
 //
@@ -1683,11 +1641,11 @@ function getCurMsgNo(acctInfo) {
 //
 // handle traversing messages via prev, next buttons
 // call this fcn anytime the current msgNo changes. it will validate the msgNo, and then re-display the message list if
-// necessary, and calculate the current listIdx and hightlight the correct listEntry.
+// necessary, and calculate the current elemIdx and hightlight the correct listEntry.
 // also saves current msgNo to persistent storage.
 //
 // note: makeMsgList creates and displays the list; showMsgLoop performs any special processing for the currently selected
-// list entry. when traversing the list showMsgLoop re-displays the current entry (index.listIdx), and highlights the new
+// list entry. when traversing the list showMsgLoop re-displays the current entry (index.elemIdx), and highlights the new
 // entry (index[msgNoCounter]). usually you call showMsgLoop in the callback from makeMsgList. however, showMsgLoop also checks
 // to make sure that the current message is within the list. if it is not, then showMsgLoop internally calls makeMsgList, and
 // then calls itself to display the new list.
@@ -1720,20 +1678,20 @@ function enablePrevNextButtons(acctInfo) {
 	});
 	return;
     }
-    const listIdx = (msgNo > 0) ? (msgNo - 1) % 10 : -1;
-    console.log('showMsgLoop: listIdx = ' + listIdx + ', index.listIdx = ' + index.listIdx);
-    if (listIdx != index.listIdx) {
-	if (index.listIdx >= 0) {
-	    const oldMsgNo = index.msgListElems[index.listIdx].msgNo;
+    const elemIdx = (msgNo > 0) ? (msgNo - 1) % 10 : -1;
+    console.log('showMsgLoop: elemIdx = ' + elemIdx + ', index.elemIdx = ' + index.elemIdx);
+    if (elemIdx != index.elemIdx) {
+	if (index.elemIdx >= 0) {
+	    const oldMsgNo = index.msgListElems[index.elemIdx].msgNo;
 	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', oldMsgNo)) ? '' : 'New';
-	    (index.msgListElems[index.listIdx].div).className = 'msgListItemDiv' + newSuffix;
+	    (index.msgListElems[index.elemIdx].div).className = 'msgListItemDiv' + newSuffix;
 	}
-	index.listIdx = listIdx;
-	if (index.listIdx >= 0) {
+	index.elemIdx = elemIdx;
+	if (index.elemIdx >= 0) {
 	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo)) ? '' : 'New';
-	    console.log('showMsgLoop: changing index.msgListElems[' + index.listIdx + '].div).className from ' + index.msgListElems[index.listIdx].div.className);
+	    console.log('showMsgLoop: changing index.msgListElems[' + index.elemIdx + '].div).className from ' + index.msgListElems[index.elemIdx].div.className);
 	    console.log('showMsgLoop: to msgListItemDivSelected' + newSuffix);
-	    (index.msgListElems[index.listIdx].div).className = 'msgListItemDivSelected' + newSuffix;
+	    (index.msgListElems[index.elemIdx].div).className = 'msgListItemDivSelected' + newSuffix;
 	    const markReadButton = document.getElementById('markReadButton');
 	    markReadButton.textContent = (!!newSuffix) ? 'Mark as Read' : 'Mark as Unread';
 	}
@@ -1743,12 +1701,12 @@ function enablePrevNextButtons(acctInfo) {
     const viewSentButton = document.getElementById('viewSentButton');
     if (viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) {
 	if (msgNo != 0) {
-	    const listIdx = (msgNo - 1) % 10;
+	    const elemIdx = (msgNo - 1) % 10;
 	    //if the msg hasn't been addded to the list yet then it will be displayed after being added
-	    if (!!index.messageEntries[listIdx]) {
+	    if (!!index.messageEntries[elemIdx]) {
 		console.log('showMsgLoop: calling showMsgDetail(msgNo = ' + msgNo + ')');
-		showMsgDetail(index.messageEntries[listIdx].msgId, index.messageEntries[listIdx].msgNo, index.messageEntries[listIdx].addr,
-			      index.messageEntries[listIdx].date, index.messageEntries[listIdx].ref, index.messageEntries[listIdx].text, index.messageEntries[listIdx].attachment);
+		showMsgDetail(index.messageEntries[elemIdx].msgId, index.messageEntries[elemIdx].msgNo, index.messageEntries[elemIdx].addr,
+			      index.messageEntries[elemIdx].date, index.messageEntries[elemIdx].ref, index.messageEntries[elemIdx].text, index.messageEntries[elemIdx].attachment);
 	    } else {
 		console.log('showMsgLoop: msg detail is not available yet for msgNo = ' + msgNo);
 	    }
@@ -1758,9 +1716,9 @@ function enablePrevNextButtons(acctInfo) {
 
 
 //
-//cb(err)
-//decrypt and display the message in the msgTextArea. also displays the msgId, ref, date & msgNo
-//msgNo is either txCount or rxCount depending on whether the message was sent or received
+// cb(err)
+// display the message in the msgTextArea. also displays the msgId, ref, date & msgNo
+// msgNo is either txCount or rxCount depending on whether the message was sent or received
 //
 function showMsgDetail(msgId, msgNo, otherAddr, date, ref, msgTextContent, attachment) {
     console.log('showMsg: enter');
@@ -1886,15 +1844,15 @@ function initMsgElemList(listDiv, messages, isRx) {
 	listDiv.removeChild(child);
     }
     index.msgListElems = [];
-    index.listIdx = -1;
+    index.elemIdx = -1;
     if (!!messages && messages.length > 0) {
 	const maxMsgNo = (!!isRx) ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
 	for (let i = 0; i < messages.length; ++i) {
-	    const listIdx = index.msgListElems.length;
-	    const msgNo = maxMsgNo - listIdx;
+	    const elemIdx = index.msgListElems.length;
+	    const msgNo = maxMsgNo - elemIdx;
 	    if (!!messages[msgNo]) {
 		const msgElem = makeMsgListElem(msgNo);
-		msgElem.listIdx = listIdx;
+		msgElem.elemIdx = elemIdx;
 		index.msgListElems.push(msgElem);
 		fillMsgListElem(msgElem, messages[msgNo]);
 		listDiv.appendChild(msgElem.div);
@@ -1962,7 +1920,7 @@ function makeMsgListElem(msgNo) {
 		handleViewRecv(index.acctInfo, false);
 	    else if (index.listMode == 'sent' && viewSentButton.className != 'menuBarButtonSelected')
 		handleViewSent(index.acctInfo, false);
-	    selectMsgListEntry(msgElem.listIdx);
+	    selectMsgListEntry(msgElem.elemIdx);
 	}
     });
     return(msgElem);
@@ -1970,7 +1928,7 @@ function makeMsgListElem(msgNo) {
 
 function fillMsgListElem(msgElem, message) {
     console.log('fillMsgListElem: msgElem = ' + msgElem + ', message = ' + message);
-    console.log('fillMsgListElem: listIdx = ' + msgElem.listIdx + ', msgNo = ' + message.msgNo);
+    console.log('fillMsgListElem: elemIdx = ' + msgElem.elemIdx + ', msgNo = ' + message.msgNo);
     const newPrefix = 'msgListItemDiv';
     const newSuffix = (!message.isRx || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', message.msgNo)) ? '' : 'New';
     msgElem.div.className = newPrefix + newSuffix;
@@ -1982,6 +1940,11 @@ function fillMsgListElem(msgElem, message) {
     msgElem.message = message;
 }
 
+function elemIdxToMsgNo(isRx, elemIdx) {
+    const maxMsgNo = (isRx) ? parseInt(index.acctInfo.recvMsgCount) : parseInt(index.acctInfo.sentMsgCount);
+    const msgNo = maxMsgNo - elemIdx;
+    return(msgNo);
+}
 
 
 
