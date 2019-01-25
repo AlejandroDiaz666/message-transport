@@ -927,24 +927,8 @@ function handleRegisteredAcct(mode) {
     localStorage['FirstIntroCompleteFlag'] = true;
     const registerButton = document.getElementById('registerButton');
     registerButton.textContent = 'Modify Account';
-    const totalReceivedArea = document.getElementById('totalReceivedArea');
-    totalReceivedArea.value = 'Messages sent: ' + index.acctInfo.sentMsgCount + '; Messages received: ' + index.acctInfo.recvMsgCount;
-    const feeBalanceArea = document.getElementById('feeBalanceArea');
-    const feebalanceWei = index.acctInfo.feeBalance;
-    //console.log('feeBalanceWei = ' + feebalanceWei);
-    feeBalanceArea.value = 'Unclaimed message fees: ' + ether.convertWeiToComfort(common.web3, feebalanceWei);
-    //see if new messages have been received. if yes, display new message modal until user clicks anywhere outside
-    const noRxMsgs = localStorage[index.localStoragePrefix + 'noRxMsgs'];
-    const currentNoRxMsgs = parseInt(index.acctInfo.recvMsgCount);
-    const deltaRxMsgCount = currentNoRxMsgs - noRxMsgs;
-    if (currentNoRxMsgs > 0 && deltaRxMsgCount > 0) {
-	const newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
-	newMsgCountNotButton.textContent = deltaRxMsgCount.toString(10);
-	localStorage[index.localStoragePrefix + 'noRxMsgs'] = currentNoRxMsgs.toString(10);
-	const newMsgModal = document.getElementById('newMsgModal');
-	newMsgModal.style.display = 'block';
-    }
     if (!!mode && !!dhcrypt.dh && index.publicKey == dhcrypt.publicKey()) {
+	displayFeesAndMsgCnt();
 	if (mode == 'recv')
 	    handleViewRecv(index.acctInfo, true);
 	else
@@ -956,9 +940,34 @@ function handleRegisteredAcct(mode) {
 	const encryptedPrivateKey = index.acctInfo.encryptedPrivateKey;
 	dhcrypt.initDH(encryptedPrivateKey, function(err) {
 	    common.showWaitingForMetaMask(false);
-	    if (!err)
+	    if (!err) {
+		displayFeesAndMsgCnt();
 		handleViewRecv(index.acctInfo, true);
+	    }
 	});
+    }
+}
+
+
+function displayFeesAndMsgCnt() {
+    const totalReceivedArea = document.getElementById('totalReceivedArea');
+    const feeBalanceArea = document.getElementById('feeBalanceArea');
+    totalReceivedArea.value = 'Messages sent: ' + index.acctInfo.sentMsgCount + '; Messages received: ' + index.acctInfo.recvMsgCount;
+    const feebalanceWei = index.acctInfo.feeBalance;
+    feeBalanceArea.value = 'Unclaimed message fees: ' + ether.convertWeiToComfort(common.web3, feebalanceWei);
+    //see if new messages have been received. if yes, display new message modal until user clicks anywhere outside
+    const savedNoRxMsgs = localStorage[index.localStoragePrefix + 'noRxMsgs'];
+    console.log('displayFeesAndMsgCnt: savedNoRxMsgs = ' + savedNoRxMsgs);
+    const currentNoRxMsgs = parseInt(index.acctInfo.recvMsgCount);
+    console.log('displayFeesAndMsgCnt: currentNoRxMsgs = ' + currentNoRxMsgs);
+    const deltaRxMsgCount = (!!savedNoRxMsgs) ? currentNoRxMsgs - savedNoRxMsgs : currentNoRxMsgs;
+    console.log('displayFeesAndMsgCnt: deltaRxMsgCount = ' + deltaRxMsgCount);
+    if (currentNoRxMsgs > 0 && deltaRxMsgCount > 0) {
+	const newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
+	newMsgCountNotButton.textContent = deltaRxMsgCount.toString(10);
+	localStorage[index.localStoragePrefix + 'noRxMsgs'] = currentNoRxMsgs.toString(10);
+	const newMsgModal = document.getElementById('newMsgModal');
+	newMsgModal.style.display = 'block';
     }
 }
 
@@ -1436,15 +1445,8 @@ function refreshMessages(isRx, cb) {
 		cb(false);
 	    } else {
 		index.acctInfo.recvMsgCount = recvCntNew;
-		const deltaRxMsgCount = recvCntNew - recvCntOld;
-		const newMsgCountNotButton = document.getElementById('newMsgCountNotButton');
-		newMsgCountNotButton.textContent = deltaRxMsgCount.toString(10);
-		//newMsgModal is hidden when user cljicks anywhere
-		const newMsgModal = document.getElementById('newMsgModal');
-		newMsgModal.style.display = 'block';
+		displayFeesAndMsgCnt();
 		getNewMessages(isRx, recvCntOld, recvCntNew, () => cb(true));
-		const totalReceivedArea = document.getElementById('totalReceivedArea');
-		totalReceivedArea.value = 'Messages sent: ' + index.acctInfo.sentMsgCount + '; Messages received: ' + index.acctInfo.recvMsgCount;
 	    }
 	} else {
 	    const sentCntNew = parseInt(_acctInfo.sentMsgCount);
@@ -1453,9 +1455,8 @@ function refreshMessages(isRx, cb) {
 		cb(false);
 	    } else {
 		index.acctInfo.sentMsgCount = sentCntNew;
+		displayFeesAndMsgCnt();
 		getNewMessages(isRx, sentCntOld, sentCntNew, () => cb(true));
-		const totalReceivedArea = document.getElementById('totalReceivedArea');
-		totalReceivedArea.value = 'Messages sent: ' + index.acctInfo.sentMsgCount + '; Messages received: ' + index.acctInfo.recvMsgCount;
 	    }
 	}
     });
@@ -1478,12 +1479,14 @@ function populateMsgList(minElemIdx, cb) {
     let callCount = 0;
     const retrievingMsgsModal = document.getElementById('retrievingMsgsModal');
     for (let j = 0; j < 100; ++j) {
-        console.log('scroll: scrollTop = ' + msgListDiv.scrollTop + ', scrollHeight = ' + msgListDiv.scrollHeight + ', clientHeight = ' + msgListDiv.clientHeight);
+	//scrollHeight is the enture height, including the part of the elem that is now viewable because it is scrolled
+	//scrollTop is a measurement of the distance from the element's top to its topmost visible content
+        console.log('scroll: scrollHeight = ' + msgListDiv.scrollHeight + ', scrollTop = ' + msgListDiv.scrollTop + ', clientHeight = ' + msgListDiv.clientHeight);
 	if (index.msgListElems.length >= maxMsgNo)
             break;
 	else if (!!minElemIdx && index.msgListElems.length < minElemIdx + 1)
 	    ;
-        else if (msgListDiv.scrollHeight - 50 > msgListDiv.scrollTop + msgListDiv.clientHeight)
+        else if (msgListDiv.scrollHeight > msgListDiv.scrollTop + msgListDiv.clientHeight + 50)
             break;
 	if (callDepth == 0) {
 	    retrievingMsgsModal.style.display = 'block';
@@ -1491,12 +1494,12 @@ function populateMsgList(minElemIdx, cb) {
 	}
 	++callCount;
 	++callDepth;
-        console.log('populateMsgList: msgListElems.length = ' + index.msgListElems.length + ', maxMsgNo = ' + maxMsgNo);
 	const firstElemIdx = index.msgListElems.length;
 	const fastStartLimit = (index.msgListElems.length > 12) ? 9 : 6;
 	const noElems = Math.min(fastStartLimit, maxMsgNo - index.msgListElems.length);
 	const lastElemIdx = firstElemIdx + noElems - 1;
 	const startMsgNo = elemIdxToMsgNo(isRx, lastElemIdx);
+        console.log('populateMsgList: msgListElems.length = ' + index.msgListElems.length + ', noElems = ' + noElems);
 	for (let elemIdx = firstElemIdx; elemIdx <= lastElemIdx; ++elemIdx) {
 	    const msgNo = elemIdxToMsgNo(isRx, elemIdx);
 	    const msgElem = makeMsgListElem(msgNo);
@@ -1517,7 +1520,7 @@ function populateMsgList(minElemIdx, cb) {
 	    const t = [];
 	    console.log('populateMsgList: calling getMessages(0, ' + startMsgNo + ', ' + t + ')');
 	    getMessages(msgIds, 0, startMsgNo, t, function(tempMessages) {
-		console.log('populateMsgList: got ' + tempMessages.length + ' messages');
+		console.log('populateMsgList: got ' + Object.keys(tempMessages).length + ' messages');
 		for (let elemIdx = firstElemIdx; elemIdx <= lastElemIdx; ++elemIdx) {
 		    const msgElem = index.msgListElems[elemIdx];
 		    const message = tempMessages[msgElem.msgNo];
@@ -1882,7 +1885,6 @@ function makeMsgListElem(msgNo) {
 // fill-in a msgElem with the particulars of a message
 //
 function fillMsgListElem(msgElem, message) {
-    console.log('fillMsgListElem: msgElem = ' + msgElem + ', message = ' + message);
     console.log('fillMsgListElem: elemIdx = ' + msgElem.elemIdx + ', msgNo = ' + message.msgNo);
     const newPrefix = 'msgListItemDiv';
     const newSuffix = (!message.isRx || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', message.msgNo)) ? '' : 'New';

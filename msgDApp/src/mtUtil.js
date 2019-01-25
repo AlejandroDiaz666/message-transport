@@ -149,11 +149,9 @@ const mtUtil = module.exports = {
 	mtEther.accountQuery(common.web3, otherAddr, function(err, otherAcctInfo) {
 	    const otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo.publicKey : null;
 	    if (!!otherPublicKey && otherPublicKey != '0x') {
-		console.log('decryptMsg: otherPublicKey = ' + otherPublicKey);
 		const ptk = dhcrypt.ptk(otherPublicKey, toAddr, fromAddr, nonce);
-		console.log('decryptMsg: ptk = ' + ptk);
 		const decrypted = dhcrypt.decrypt(ptk, msgHex);
-		console.log('decryptMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted);
+		console.log('decryptMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted.substring(0, 30));
 		let messageText = decrypted;
 		let attachment = null;
 		if (!!attachmentIdxBN && !attachmentIdxBN.isZero()) {

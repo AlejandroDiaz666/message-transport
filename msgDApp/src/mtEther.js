@@ -43,7 +43,6 @@ const mtEther = module.exports = {
 	if (!mtEther.EMTContractInstance)
 	    initEMTContractInstance();
 	mtEther.EMTContractInstance.accounts(acct, (err, resultObj) => {
-	    //console.log('accountQuery: addr = ' + acct + ', resultObj = ' + JSON.stringify(resultObj));
 	    const acctInfo = {};
 	    if (!err) {
 		const keys = [ 'isValid', 'msgFee', 'spamFee', 'feeBalance', 'recvMsgCount', 'sentMsgCount', 'publicKey', 'encryptedPrivateKey' ];
@@ -52,7 +51,7 @@ const mtEther = module.exports = {
 		    acctInfo[keys[i]] = (resultArray[i] == 'false') ? false :
 		                        (resultArray[i] == 'true' ) ? true  : resultArray[i];
 	    }
-	    console.log('accountQuery: addr = ' + acct + ', acctInfo = ' + JSON.stringify(acctInfo));
+	    //console.log('accountQuery: addr = ' + acct + ', acctInfo = ' + JSON.stringify(acctInfo));
 	    cb(err, acctInfo);
 	});
     },
