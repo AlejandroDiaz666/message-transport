@@ -155,7 +155,8 @@ const mtUtil = module.exports = {
 		let messageText = decrypted;
 		let attachment = null;
 		if (!!attachmentIdxBN && !attachmentIdxBN.isZero()) {
-		    const idx = attachmentIdxBN.toNumber();
+		    const idx = attachmentIdxBN.maskn(248).toNumber();
+		    console.log('decryptMsg: attachment at idx ' + idx);
 		    messageText = decrypted.substring(0, idx);
 		    const nameLen = attachmentIdxBN.iushrn(248).toNumber();
 		    attachment = { name: decrypted.substring(idx, idx + nameLen), blob: decrypted.substring(idx + nameLen) };
