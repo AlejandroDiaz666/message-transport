@@ -1,0 +1,6 @@
+*~
+bundle/*
+src/js/autoVersion.js
+src/js/autoVersion.txt
+release/*
+messaging*.tar.gz
