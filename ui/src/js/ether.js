@@ -22,6 +22,7 @@ const ether = module.exports = {
     etherscanioTxStatusHost_ropsten: 'ropsten.etherscan.io',
     etherscanioHost_main: 'api.etherscan.io',
     etherscanioTxStatusHost_main: 'etherscan.io',
+    infuraioHost_main: 'mainnet.infura.io',
     infuraioHost_kovan: 'kovan.infura.io',
     infuraioHost_ropsten: 'ropsten.infura.io',
     infuraioProjectID: 'd31bddc6dc8e47d29906cee739e4fe7f',
