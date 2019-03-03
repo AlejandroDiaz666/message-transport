@@ -80,7 +80,7 @@ contract MessageTransport is SafeMath {
 
 
   // -------------------------------------------------------------------------
-  // register a simple message account
+  // register a message account
   // -------------------------------------------------------------------------
   function register(uint256 _messageFee, uint256 _spamFee, bytes memory _publicKey, bytes memory _encryptedPrivateKey) public {
     Account storage _account = accounts[msg.sender];
@@ -101,16 +101,18 @@ contract MessageTransport is SafeMath {
   }
 
 
-  //
+
+  // -------------------------------------------------------------------------
+  // get _maxResults message id's of received messages
   // note that array will always have _maxResults entries. ignore messageID = 0
-  //
+  // -------------------------------------------------------------------------
   function getRecvMsgs(address _to, uint256 _startIdx, uint256 _maxResults) public view returns(uint256 _idx, uint256[] memory _messageIds) {
     uint _count = 0;
     Account storage _recvAccount = accounts[_to];
     uint256 _recvMessageCount = _recvAccount.recvMessageCount;
     _messageIds = new uint256[](_maxResults);
     mapping(uint256 => uint256) storage _recvIds = _recvAccount.recvIds;
-    //note first messageID is at recvIds[0];
+    //first messageID is at recvIds[0];
     for (_idx = _startIdx; _idx < _recvMessageCount; ++_idx) {
       _messageIds[_count] = _recvIds[_idx];
       if (++_count >= _maxResults)
@@ -118,9 +120,10 @@ contract MessageTransport is SafeMath {
     }
   }
 
-  //
+  // -------------------------------------------------------------------------
+  // get _maxResults message id's of sent messages
   // note that array will always have _maxResults entries. ignore messageID = 0
-  //
+  // -------------------------------------------------------------------------
   function getSentMsgs(address _from, uint256 _startIdx, uint256 _maxResults) public view returns(uint256 _idx, uint256[] memory _messageIds) {
     uint _count = 0;
     Account storage _sentAccount = accounts[_from];
@@ -138,7 +141,7 @@ contract MessageTransport is SafeMath {
 
   // -------------------------------------------------------------------------
   // get the required fee in order to send a message (or spam message)
-  // this is handy for contract calls
+  // the second version is handy for calls from partner contract(s)
   // -------------------------------------------------------------------------
   function getFee(address _toAddr) public view returns(uint256 _fee) {
     Account storage _sendAccount = accounts[msg.sender];
