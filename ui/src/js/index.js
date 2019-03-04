@@ -26,6 +26,7 @@ const index = module.exports = {
     sentMessageNo: 1,
     account: null,
     acctCheckTimer: null,
+    etherPrice: 100,
     elemIdx: -1,
     listMode: null,
     msgListElems: [],
@@ -704,6 +705,13 @@ async function beginTheBeguine(mode) {
     //listMode starts off here null. it will be set in handleViewRecv and handleViewSent. it's used
     //as a flag by button handlers to indicate that it's ok to redraw the list.
     index.listMode = null;
+    if (!!localStorage['etherPrice'])
+	index.etherPrice = localStorage['etherPrice'];
+    ether.getEtherPrice(function(err, price) {
+	console.log('err = ' + err + ', price = '  + price);
+	if (!err && !!price)
+	    index.etherPrice = localStorage['etherPrice'] = price;
+    });
     common.checkForMetaMask(true, function(err, w3) {
 	const acct = (!err && !!w3) ? w3.eth.accounts[0] : null;
 	index.account = acct;
@@ -1130,13 +1138,26 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 
 
 function handleRegister() {
+    const halfFinneyBN = (new BN(ether.finneyHex, 16)).divn(2);
+    const hundredSzaboBN = (new BN(ether.szaboHex, 16)).muln(100);
+    const hundreds = (index.etherPrice > 50) ? Math.floor(parseInt(index.etherPrice) / 100) : 1;
+    let suggestedMsgFeeBN = halfFinneyBN.divn(hundreds);
+    suggestedMsgFeeBN = suggestedMsgFeeBN.div(hundredSzaboBN);
+    suggestedMsgFeeBN.imul(hundredSzaboBN);
+    let suggestedSpamFeeBN = suggestedMsgFeeBN.muln(10);
+    console.log('suggestedMsgFeeBN = ' + ether.convertWeiBNToComfort(suggestedMsgFeeBN) + ', suggestedSpamFeeBN = ' + ether.convertWeiBNToComfort(suggestedSpamFeeBN));
+    let msgFeeBN = suggestedMsgFeeBN;
+    let spamFeeBN = suggestedSpamFeeBN;
+    //
     common.setMenuButtonState('importantInfoButton', 'Enabled');
     common.setMenuButtonState('registerButton',      'Selected');
-    if (!!mtUtil.acctInfo.encryptedPrivateKey) {
+    if (!!mtUtil.acctInfo.isValid) {
 	common.setMenuButtonState('viewRecvButton',      'Enabled');
 	common.setMenuButtonState('composeButton',       'Enabled');
 	common.setMenuButtonState('viewSentButton',      'Enabled');
 	common.setMenuButtonState('withdrawButton',      'Enabled');
+	msgFeeBN = common.numberToBN(mtUtil.acctInfo.msgFee);
+	spamFeeBN = common.numberToBN(mtUtil.acctInfo.spamFee);
     } else {
 	common.setMenuButtonState('viewRecvButton',      'Disabled');
 	common.setMenuButtonState('composeButton',       'Disabled');
@@ -1151,6 +1172,15 @@ function handleRegister() {
 	    msgElem.div.className = 'msgListItemDiv';
     }
     index.elemIdx = -1;
+    //
+    document.getElementById('suggestedMsgFee').textContent = ether.convertWeiBNToComfort(suggestedMsgFeeBN);
+    document.getElementById('suggestedSpamFee').textContent = ether.convertWeiBNToComfort(suggestedSpamFeeBN);
+    const msgFeeNumberAndUnits = ether.convertWeiBNToNumberAndUnits(msgFeeBN);
+    const spamFeeNumberAndUnits = ether.convertWeiBNToNumberAndUnits(spamFeeBN);
+    document.getElementById('messageFeeInput').value = msgFeeNumberAndUnits.number;
+    document.getElementById('spamFeeInput').value = spamFeeNumberAndUnits.number;
+    document.getElementById('messageFeeUnits').selectedIndex = msgFeeNumberAndUnits.index;
+    document.getElementById('spamFeeUnits').selectedIndex = spamFeeNumberAndUnits.index;
     //
     const msgPromptArea = document.getElementById('msgPromptArea');
     msgPromptArea.value = 'Addr: ';
@@ -1176,10 +1206,6 @@ function handleRegister() {
     const msgTextArea = document.getElementById('msgTextArea');
     msgTextArea.className = (msgTextArea.className).replace('visibleIB', 'hidden');
     msgTextArea.disabled = true;
-    const messageFeeInput = document.getElementById('messageFeeInput');
-    messageFeeInput.value = mtUtil.acctInfo.msgFee;
-    const spamFeeInput = document.getElementById('spamFeeInput');
-    spamFeeInput.value = mtUtil.acctInfo.spamFee;
     const statusDiv = document.getElementById('statusDiv');
     common.clearStatusDiv(statusDiv);
 }

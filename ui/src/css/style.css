@@ -693,11 +693,24 @@ p {
     resize: none;
 }
 #registerDiv {
+    position: relative;
     padding: 0px;
     margin: 0px;
     min-width: 100%;
     resize: none;
     height: 14em;
+}
+#registerTextDiv {
+    position: absolute;
+    top: 30px;
+    left: 440px;
+    width: 700px;
+    background-color: snow;
+    border-radius: 15px;
+    padding: 15px;
+}
+#registerDiv p {
+    font-family: 'Lato', sans-serif;
 }
 DIV.finalresultstable {
     background-color: #60ff60;

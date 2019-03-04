@@ -26,6 +26,10 @@ const ether = module.exports = {
     infuraioHost_kovan: 'kovan.infura.io',
     infuraioHost_ropsten: 'ropsten.infura.io',
     infuraioProjectID: 'd31bddc6dc8e47d29906cee739e4fe7f',
+    gweiHex: '3B9ACA00',
+    szaboHex: 'E8D4A51000',
+    finneyHex: '38D7EA4C68000',
+    etherHex: 'DE0B6B3A7640000',
     getLogsTimestamp: 0,
     getLogsTimer: null,
     chainId: 0,
@@ -81,11 +85,11 @@ const ether = module.exports = {
     //for example: 1000000000000 => '1 gwei'
     convertWeiBNToComfort: function(weiBN) {
 	let units =
-	    (weiBN.lt(new BN('3B9ACA00', 16)))        ? 'Wei'    :
-	    (weiBN.lt(new BN('E8D4A51000', 16)))      ? 'Gwei'   :
-	    (weiBN.lt(new BN('38D7EA4C68000', 16)))   ? 'Szabo'  :
-	    (weiBN.lt(new BN('DE0B6B3A7640000', 16))) ? 'Finney' : 'ether';
-	console.log('convertWeiBNToComfort: weiBN = ' + weiBN.toString(10) + ', units = ' + units);
+	    (weiBN.lt(new BN(ether.gweiHex, 16)))   ? 'Wei'    :
+	    (weiBN.lt(new BN(ether.szaboHex, 16)))  ? 'Gwei'   :
+	    (weiBN.lt(new BN(ether.finneyHex, 16))) ? 'Szabo'  :
+	    (weiBN.lt(new BN(ether.etherHex, 16)))  ? 'Finney' : 'ether';
+	//console.log('convertWeiBNToComfort: weiBN = ' + weiBN.toString(10) + ', units = ' + units);
 	return(common.web3.fromWei(weiBN, units).toString() + ' ' + (units == 'ether' ? 'Eth' : units));
     },
 
@@ -270,6 +274,40 @@ const ether = module.exports = {
 	    cb(null, addr);
 	}, (err) => {
 	    cb(err, null);
+	});
+    },
+
+
+    //cb(err, price)
+    getEtherPrice: function(cb) {
+	url = 'https://api.etherscan.io/api?module=stats&action=ethprice';
+	common.fetch(url, null, function(str, err) {
+	    if (!str || !!err) {
+		if (!err)
+		    err = 'getEtherPrice: error retreiving price';
+		console.log('getEtherPrice: ' + err);
+		cb(err, '');
+		return;
+	    }
+	    //console.log('getEtherPrice: err = ' + err + ', str = ' + str);
+	    //typical:
+	    //  { "status"  : "1",
+	    //    "message" : "OK",
+	    //    "result"  : { "ethbtc" : "0.03409",
+	    //                  "ethbtc_timestamp" : "1551678384",
+	    //                  "ethusd" : "128.24",
+	    //                  "ethusd_timestamp" : "1551678361"
+	    //                }
+	    //  }
+	    const resp = JSON.parse(str);
+	    if (resp.status != 1 || resp.message != 'OK') {
+		const err = "error retreiving price: bad status (" + resp.status + ", " + resp.message + ")";
+		console.log('getEtherPrice: ' + err);
+		cb(err, '');
+		return;
+	    }
+	    cb(err, resp.result.ethusd);
+	    return;
 	});
     },
 
