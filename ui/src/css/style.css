@@ -501,6 +501,9 @@ p {
 .msgListAddrArea {
     width: 36em;
     min-width: 36em;
+    white-space: nowrap;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 .msgListDateArea {
     width: 24em;

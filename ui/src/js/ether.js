@@ -36,6 +36,8 @@ const ether = module.exports = {
     //nodeType = 'etherscan.io' | 'infura.io' | 'metamask' | 'custom'
     nodeType: 'metamask',
     node: 'http://192.168.0.2:8545',
+    ensAddrCache: {},
+    ensNameCache: {},
     ens: null,
 
 
@@ -263,17 +265,59 @@ const ether = module.exports = {
 
 
     //cb(err, addr)
-    ensLookup: function(addrIn, cb) {
-	if (!ether.ens)
-	    ether.ens = new ENS(common.web3.currentProvider);
-	if (addrIn.startsWith('0x') || !addrIn.endsWith('.eth')) {
-	    cb('Error: invalid Ethereum address.', null);
+    ensLookup: function(name, cb) {
+	const cachedAddr = ether.ensAddrCache[name];
+	if (!!cachedAddr) {
+	    if (cachedAddr.length > 1)
+		cb(null, cachedAddr);
+	    else
+		cb('ensLookup: cache lookup gives no addr', null);
 	    return;
 	}
-	ether.ens.resolver(addrIn).addr().then((addr) => {
+	if (!ether.ens)
+	    ether.ens = new ENS(common.web3.currentProvider);
+	if (name.startsWith('0x') || name.indexOf('.') < 0) {
+	    cb('Error: invalid ENS name', null);
+	    return;
+	}
+	ether.ens.resolver(name).addr().then((addr) => {
+	    ether.ensAddrCache[name] = addr;
 	    cb(null, addr);
 	}, (err) => {
+	    ether.ensAddrCache[name] = 'X';
 	    cb(err, null);
+	});
+    },
+
+
+
+
+    //cb(err, addr)
+    ensReverseLookup: function(addrIn, cb) {
+	const cachedName = ether.ensNameCache[addrIn];
+	if (!!cachedName) {
+	    if (cachedName.length > 1)
+		cb(null, cachedName);
+	    else
+		cb('ensReverseLookup: cache lookup gives no name', null);
+	    return;
+	}
+	console.log('ensReveseLookup');
+	if (!ether.ens)
+	    ether.ens = new ENS(common.web3.currentProvider);
+	if (!addrIn.startsWith('0x') || addrIn.endsWith('.eth')) {
+	    console.log('ensReveseLookup: invalid address');
+	    cb('ensReveseLookup: invalid address', null);
+	    return;
+	}
+	ether.ens.reverse(addrIn).name().then((name) => {
+	    console.log('ensReveseLookup: got name: ' + name);
+	    ether.ensNameCache[addrIn] = name;
+	    cb(null, name);
+	}).catch(() => {
+	    console.log('ensReveseLookup: catch no name found');
+	    ether.ensNameCache[addrIn] = 'X';
+	    cb('ensReveseLookup: no name found', null);
 	});
     },
 

@@ -60,6 +60,7 @@ function Message(isRx, msgId, msgNo, addr, date, ref, text, attachment) {
     this.ref = ref;
     this.text = text;
     this.attachment = attachment;
+    this.ensName = null;
 }
 
 function MsgElem(div, msgNoArea, addrArea, dateArea, msgIdArea, subjectArea, msgNo) {
@@ -237,7 +238,7 @@ function setReplyButtonHandlers() {
 	    //
 	    let toAddr = msgAddrArea.value;
 	    if (toAddr.indexOf('(') >= 0) {
-		//for ens names, actual addr is beween parens
+		//for ens names, actual, complete addr is beween parens
 		toAddr = msgAddrArea.value.replace(/[^\(]*\(([^]*)\).*/, "$1");
 		console.log('replyButton: toAddr = ' + toAddr);
 	    }
@@ -267,7 +268,8 @@ function setReplyButtonHandlers() {
 	    });
 	} else if ((viewRecvButton.className == 'menuBarButtonSelected') ||
 		   (viewSentButton.className == 'menuBarButtonSelected') ) {
-	    //handle reply
+	    // handle reply
+	    // fromAddr can be either complete addr or ens name followed by complete addr in parens
 	    const fromAddr = msgAddrArea.value;
 	    let subject = '';
 	    if (message.startsWith('Subject: ') || message.startsWith('re: ')) {
@@ -329,7 +331,12 @@ function setValidateButtonHandler() {
 	const toAddrIn = msgAddrArea.value;
 	console.log('toAddrIn = ' + toAddrIn);
 	if (ether.validateAddr(toAddrIn)) {
-	    validatedAddress(toAddrIn);
+	    ether.ensReverseLookup(toAddrIn, function(err, name) {
+		console.log('validateAddrButton: reverse ENS results: err = ' + err + ', name = ' + name);
+		if (!err && !!name)
+		    msgAddrArea.value = name + ' (' + toAddrIn + ')';
+		validatedAddress(toAddrIn);
+	    });
 	    return;
 	}
 	ether.ensLookup(toAddrIn, function(err, addr) {
@@ -1055,8 +1062,8 @@ function handleCompose(acctInfo, toAddr) {
 
 //
 // handle reply button -- this is a special compose mode
-// addr should already be valid. if somehow it isn't valid, then we shunt over to handleCompose. otherwise addr
-// modifications will be disabled.
+// addr should already be valid. it can be either complete addr or ens name followed by complete addr in parens
+// if somehow it isn't valid, then we shunt over to handleCompose.
 //
 function handleReplyCompose(acctInfo, toAddr, subject, ref) {
     common.setMenuButtonState('importantInfoButton', 'Enabled');
@@ -1066,10 +1073,16 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
     common.setMenuButtonState('viewSentButton',      'Enabled');
     common.setMenuButtonState('withdrawButton',      'Enabled');
     //
-    if (!ether.validateAddr(toAddr)) {
+    let exatractedAddr = toAddr;
+    if (toAddr.indexOf('(') >= 0) {
+	//for ens names, actual addr is beween parens
+	exatractedAddr = toAddr.replace(/[^\(]*\(([^]*)\).*/, "$1");
+	console.log('handleReplyCompose: exatractedAddr = ' + exatractedAddr);
+    }
+    if (!ether.validateAddr(exatractedAddr)) {
 	msgTextArea.value = 'Error: invalid Ethereum address.';
 	replyButton.disabled = true;
-	handleCompose(mtUtil.acctInfo, toAddr);
+	handleCompose(mtUtil.acctInfo, exatractedAddr);
 	return;
     }
     //replying to a message implies that it has been read
@@ -1086,12 +1099,12 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
     }
     index.elemIdx = -1;
     //
-    mtEther.accountQuery(toAddr, function(err, toAcctInfo) {
+    mtEther.accountQuery(exatractedAddr, function(err, toAcctInfo) {
 	const toPublicKey = (!!toAcctInfo) ? toAcctInfo.publicKey : null;
 	if (!toPublicKey || toPublicKey == '0x') {
 	    msgTextArea.value = 'Error: no account was found for this address.';
 	    replyButton.disabled = true;
-	    handleCompose(mtUtil.acctInfo, toAddr);
+	    handleCompose(mtUtil.acctInfo, exatractedAddr);
 	    return;
 	}
 	const msgPromptArea = document.getElementById('msgPromptArea');
@@ -1128,8 +1141,8 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	const statusDiv = document.getElementById('statusDiv');
 	common.clearStatusDiv(statusDiv);
 	//fees: see how many messages have been sent from the proposed recipient to me
-	mtEther.getPeerMessageCount(toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
-	    console.log('handleReplyCompose: ' + msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
+	mtEther.getPeerMessageCount(exatractedAddr, common.web3.eth.accounts[0], function(err, msgCount) {
+	    console.log('handleReplyCompose: ' + msgCount.toString(10) + ' messages have been sent from ' + exatractedAddr + ' to me');
 	    const fee = (msgCount > 0) ? toAcctInfo.msgFee : toAcctInfo.spamFee;
 	    msgFeeArea.value = 'Fee: ' + ether.convertWeiBNToComfort(common.numberToBN(fee));
 	});
@@ -1674,6 +1687,12 @@ function getMessages(msgIds, idIdx, msgNo, tempMessages, cb) {
     let msgsToDisplay = 4;
     let noMsgsDisplayed = 0;
     const messages = isRx ? index.rxMessages : index.txMessages;
+    const msgCompleteFcn = (source, err) => {
+	if (++noMsgsDisplayed >= msgsToDisplay) {
+	    console.log('getMessages: got msgCb, ' + source + ', err = ' + err + ', msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
+	    (idIdx < msgIds.length) ? getMessages(msgIds, idIdx, msgNo, tempMessages, cb) : cb(tempMessages);
+	}
+    };
     mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
 	console.log('getMessages: getAndParseIdMsgs returns, err = ' + err);
 	if (!!err || !fromAddr) {
@@ -1682,10 +1701,7 @@ function getMessages(msgIds, idIdx, msgNo, tempMessages, cb) {
 		const message = new Message(isRx, msgIds[msgCookie.idIdx], '', '', '', '', err, null);
 		tempMessages[msgCookie.msgNo] = message;
 	    }
-	    if (++noMsgsDisplayed >= msgsToDisplay) {
-		console.log('getMessages: got msgCb. err = ' + err + ', msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
-		(idIdx < msgIds.length) ? getMessages(msgIds, idIdx, msgNo, tempMessages, cb) : cb(tempMessages);
-	    }
+	    msgCompleteFcn('getAndParseIdMsgs', err);
 	    return;
 	}
 	console.log('getMessages: got msgId = ' + msgId + ', msgNo = ' + msgCookie.msgNo + ', attachmentIdxBN = ' + attachmentIdxBN.toString(16));
@@ -1694,16 +1710,18 @@ function getMessages(msgIds, idIdx, msgNo, tempMessages, cb) {
 	    if (!!err) {
 		const message = new Message(isRx, msgId, '', '', '', '', 'message decryption error' + err, null);
 		tempMessages[msgCookie.msgNo] = message;
-	    } else {
-		console.log('getMessages: msgId = ' + msgId + ', text = ' + messageText + ', attachment = ' + attachment);
-		const message = new Message(isRx, msgId, msgCookie.msgNo, otherAddr, date, ref, messageText, attachment);
-		messages[msgCookie.msgNo] = message;
-		tempMessages[msgCookie.msgNo] = message;
+		msgCompleteFcn('decryptMsg', err);
+		return;
 	    }
-	    if (++noMsgsDisplayed >= msgsToDisplay) {
-		console.log('getMessages: got msgCb. msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
-		(idIdx < msgIds.length) ? getMessages(msgIds, idIdx, msgNo, tempMessages, cb) : cb(tempMessages);
-	    }
+	    console.log('getMessages: msgId = ' + msgId + ', text = ' + messageText + ', attachment = ' + attachment);
+	    const message = new Message(isRx, msgId, msgCookie.msgNo, otherAddr, date, ref, messageText, attachment);
+	    messages[msgCookie.msgNo] = message;
+	    tempMessages[msgCookie.msgNo] = message;
+	    ether.ensReverseLookup(otherAddr, function(err, name) {
+		if (!err && !!name)
+		    message.ensName = name;
+		msgCompleteFcn('ensReverseLookup', null);
+	    });
 	});
     }, function(noMsgsProcessed) {
 	console.log('getMessages: got doneCb. idIdx = ' + idIdx + ', noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsDisplayed = ' + noMsgsDisplayed);
@@ -1723,7 +1741,7 @@ function fillInMsgListEntry(elemIdx, message) {
     if ((message.msgNo != 0 && elemIdx == index.elemIdx                                                                                          ) &&
 	(viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) ) {
 	console.log('fillInMsgListEntry: calling showMsgDetail(msgNo = ' + message.msgNo + ')');
-	showMsgDetail(message.msgId, message.msgNo, message.addr, message.date, message.ref, message.text, message.attachment);
+	showMsgDetail(message);
     }
 }
 
@@ -1779,7 +1797,7 @@ function selectMsgListEntry(newIdx, cb) {
 	    //if the message hasn't been retreived yet then it will be displayed in fillInMsgListEntry
 	    if (!!message) {
 		console.log('selectMsgListEntry: calling showMsgDetail(msgNo = ' + msgNo + ')');
-		showMsgDetail(message.msgId, message.msgNo, message.addr, message.date, message.ref, message.text, message.attachment);
+		showMsgDetail(message);
 	    } else {
 		console.log('selectMsgListEntry: msg detail is not available yet for msgNo = ' + message.msgNo);
 	    }
@@ -1809,24 +1827,24 @@ function enablePrevNextButtons() {
 // display the message in the msgTextArea. also displays the msgId, ref, date & msgNo
 // msgNo is either txCount or rxCount depending on whether the message was sent or received
 //
-function showMsgDetail(msgId, msgNo, otherAddr, date, ref, msgTextContent, attachment) {
+function showMsgDetail(message) {
     console.log('showMsg: enter');
     const msgAddrArea = document.getElementById('msgAddrArea');
     const msgTextArea = document.getElementById('msgTextArea');
     const msgNoNotButton = document.getElementById('msgNoNotButton');
     msgAddrArea.disabled = true;
     msgTextArea.disabled = true;
-    msgAddrArea.value = otherAddr;
-    showIdAndRef(msgId, ref, true);
-    msgDateArea.value = date;
-    msgNoNotButton.textContent = parseInt(msgNo).toString(10);
-    msgTextArea.value = msgTextContent;
+    msgAddrArea.value = (!!message.ensName) ? message.ensName + ' (' +  message.addr + ')' : message.addr;
+    showIdAndRef(message.msgId, message.ref, true);
+    msgDateArea.value = message.date;
+    msgNoNotButton.textContent = parseInt(message.msgNo).toString(10);
+    msgTextArea.value = message.text;
     const attachmentSaveA = document.getElementById('attachmentSaveA');
-    if (!!attachment) {
-	attachmentSaveA.href = attachment.blob;
-	attachmentSaveA.download = attachment.name;
+    if (!!message.attachment) {
+	attachmentSaveA.href = message.attachment.blob;
+	attachmentSaveA.download = message.attachment.name;
 	const attachmentSaveSpan = document.getElementById('attachmentSaveSpan');
-	attachmentSaveSpan.textContent = attachment.name;
+	attachmentSaveSpan.textContent = message.attachment.name;
 	attachmentSaveA.style.display = 'inline-block';
     } else {
 	attachmentSaveA.style.display = 'none';
@@ -1942,7 +1960,12 @@ function fillMsgListElem(msgElem, message) {
     const newSuffix = (!message.isRx || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', message.msgNo)) ? '' : 'New';
     msgElem.div.className = newPrefix + newSuffix;
     msgElem.msgNoArea.value = message.msgNo.toString(10);
-    msgElem.addrArea.value = message.addr;
+    if (!!message.ensName) {
+	const addr = (message.ensName.length < 16) ? message.addr : message.addr.substring(0, 6) + '...' + message.addr.substring(38);
+	msgElem.addrArea.value = message.ensName + ' (' + addr + ')';
+    } else {
+	msgElem.addrArea.value = message.addr;
+    }
     msgElem.dateArea.value = message.date;
     msgElem.msgIdArea.value = (!!message.msgId) ? mtUtil.abbreviateMsgId(message.msgId) : '';
     msgElem.subjectArea.value = mtUtil.extractSubject(message.text, 80);
