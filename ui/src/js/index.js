@@ -255,12 +255,14 @@ function setReplyButtonHandlers() {
 		common.showWaitingForMetaMask(true);
 		const msgRefButton = document.getElementById('msgRefButton');
 		const ref = msgRefButton.ref;
+		const msgNo = mtUtil.acctInfo.sentMsgCount + 1;
 		mtEther.sendMessage(toAddr, attachmentIdxBN, ref, encrypted, msgFee, function(err, txid) {
 		    console.log('txid = ' + txid);
 		    common.showWaitingForMetaMask(false);
 		    const continueFcn = () => {
 			common.waitingForTxid = false;
 			common.clearStatusDiv();
+			index.sentMessageNo = msgNo;
 			handleViewSent(true);
 		    };
 		    common.waitForTXID(err, txid, 'Send-Message', continueFcn, ether.etherscanioTxStatusHost, null);
@@ -1469,7 +1471,7 @@ function handleViewSent(refreshMsgList) {
 	index.listMode = 'sent';
 	refreshMessages(false, function(clearMsgElems) {
 	    const maxMsgNo = parseInt(mtUtil.acctInfo.sentMsgCount);
-	    const newIdx = maxMsgNo - index.sentMessageNo;
+	    const newIdx = Math.max(maxMsgNo - index.sentMessageNo, 0);
 	    const msgListDiv = document.getElementById('msgListDiv');
 	    initMsgElemList(msgListDiv, index.txMessages, false);
 	    populateMsgList(newIdx, function() {
