@@ -146,6 +146,19 @@ const ether = module.exports = {
 	return(numberAndUnits);
     },
 
+
+    // cb(err, addr)
+    privateKeyToAddr: function(privateKey, cb) {
+	try {
+	    const addr = ethUtils.privateToAddress('0x' + privateKey).toString('hex')
+	    console.log('privateKeyToAddr: addr = ' + addr);
+	    cb(null, '0x' + addr);
+	} catch (err) {
+	    cb(err, '');
+	}
+    },
+
+
     validateAddr: function (addr) {
 	if (!addr.startsWith('0x'))
 	    return(false);
@@ -207,16 +220,64 @@ const ether = module.exports = {
     // cb(err, txid)
     // units: 'wei' | 'szabo' | 'finney' | 'ether'
     //
-    send: function(to_addr, size, units, data, gasLimit, cb) {
+    send: function(toAddr, size, units, data, gasLimit, cb) {
 	const tx = {};
 	tx.from = common.web3.eth.accounts[0];
 	tx.value = common.web3.toWei(size, units);
-	tx.to = to_addr,
+	tx.to = toAddr,
 	tx.data = data;
 	if (gasLimit > 0)
 	    tx.gas = gasLimit;
 	console.log('ether.send: calling sendTransaction; tx.value = ' + tx.value);
 	common.web3.eth.sendTransaction(tx, cb)
+    },
+
+
+    //
+    // cb(err, txid)
+    // private key in hex, w/o leading 0x
+    // units: 'wei' | 'szabo' | 'finney' | 'ether'
+    //
+    // this sends from the current metamask account, but you must supply the private key
+    //
+    sendUsingPrivateKey: function(privateKey, toAddr, size, units, data, gasLimit, gasPrice, cb) {
+	const fromAcct = common.web3.eth.accounts[0];
+	console.log('sendUsingPrivateKey: fromAcct = ' + fromAcct);
+	console.log('sendUsingPrivateKey: size = ' + size + ', units = ' + units);
+	const privateKeyBuf = new Buffer(privateKey, 'hex');
+	const wei = common.web3.toWei(size, units);
+	console.log('sendUsingPrivateKey: wei = ' + wei + ', type = ' + typeof(wei));
+	const sizeBN = new BN(common.web3.toWei(size, units).toString(10), 10);
+	const priceBN = new BN(gasPrice);
+	common.web3.eth.getTransactionCount(fromAcct, (err, txCount) => {
+	    console.log('sendUsingPrivateKey: err = ' + err + ', txCount = ' + txCount);
+	    const nonceBN = new BN(txCount);
+	    const tx = new ethtx(null);
+	    tx.to = toAddr,
+	    tx.from = fromAcct;
+	    tx.data = data;
+	    tx.nonce = nonceBN.toArrayLike(Buffer, 'be');
+	    tx.gasPrice = priceBN.toArrayLike(Buffer, 'be');
+	    tx.value = sizeBN.toArrayLike(Buffer, 'be');
+	    const signAndSend = (key, tx, cb) => {
+		tx.sign(key);
+		const serializedTx = tx.serialize();
+		const serializedTxHex = '0x' + serializedTx.toString('hex');
+		common.web3.eth.sendRawTransaction(serializedTxHex, cb);
+	    };
+	    if (!!gasLimit) {
+		const gasLimitBN = new BN(gasLimit);
+		tx.gas = gasLimitBN.toArrayLike(Buffer, 'be');
+		signAndSend(privateKeyBuf, tx, cb);
+	    } else {
+		common.web3.eth.estimateGas({ to: toAddr, from: fromAcct, data: data, value: sizeBN.toString(10) }, (err, estimate) => {
+		    console.log('sendUsingPrivateKey: err = ' + err + ', gasLimit = ' + estimate);
+		    const gasLimitBN = new BN(estimate);
+		    tx.gas = gasLimitBN.toArrayLike(Buffer, 'be');
+		    signAndSend(privateKeyBuf, tx, cb);
+		});
+	    }
+	});
     },
 
 
@@ -608,9 +669,7 @@ function metamaskGetLogs3(options, cb) {
 	options.topics[1].push(topic3);
     const paramsStr = JSON.stringify(options);
     console.log('metamaskGetLogs3: options = ' + paramsStr);
-    const web3 = (ether.nodeType == 'metamask') ? common.web3 :
-	  new Web3(new Web3.providers.HttpProvider(ether.node));
-    const filter = web3.eth.filter(options);
+    const filter = common.web3.eth.filter(options);
     filter.get(function(err, result) {
 	if (ether.nodeType == 'metamask')
 	    filter.stopWatching();
