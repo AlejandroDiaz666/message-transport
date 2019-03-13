@@ -344,7 +344,7 @@ const common = module.exports = {
     // call this fcn with the error message and no txid.
     //
     // cb(err, receipt)
-    // continueFcn()
+    // continueFcn(err, receipt)
     // note: the callback is called after the transaction is mined;
     //       the continueFcn is called after the user clicks continue
     // a div with id = statusDiv must exist. in addition classes "statusDivHide" and "statusDivShow" must exist.
@@ -368,7 +368,7 @@ const common = module.exports = {
 	    statusText.textContent = 'Error in ' + desc + ' transaction: ' + err;
 	    if (!!continueFcn) {
 		const reloadLink = document.createElement('a');
-		reloadLink.addEventListener('click', continueFcn);
+		reloadLink.addEventListener('click', () => continueFcn(err, null));
 		reloadLink.href = 'javascript:null;';
 		reloadLink.innerHTML = "<h2>Continue</h2>";
 		reloadLink.disabled = false;
@@ -411,7 +411,7 @@ const common = module.exports = {
 			//
 			if (!!continueFcn) {
 			    const reloadLink = document.createElement('a');
-			    reloadLink.addEventListener('click',  continueFcn);
+			    reloadLink.addEventListener('click',  () => continueFcn(err, receipt));
 			    reloadLink.href = 'javascript:null;';
 			    reloadLink.innerHTML = "<h2>Continue</h2>";
 			    reloadLink.disabled = false;
