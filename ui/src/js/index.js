@@ -243,7 +243,7 @@ function setReplyButtonHandlers() {
 		console.log('replyButton: toAddr = ' + toAddr);
 	    }
 	    //the toAddr has already been validated. really.
-	    mtUtil.encryptMsg(toAddr, message, function(err, msgFee, encrypted) {
+	    mtUtil.encryptMsg(toAddr, message, function(err, msgFee, encrypted, msgNoBN) {
 		if (!!err) {
 		    alert(err);
 		    handleUnlockedMetaMask(null);
@@ -255,14 +255,16 @@ function setReplyButtonHandlers() {
 		common.showWaitingForMetaMask(true);
 		const msgRefButton = document.getElementById('msgRefButton');
 		const ref = msgRefButton.ref;
-		const msgNo = mtUtil.acctInfo.sentMsgCount + 1;
 		mtEther.sendMessage(toAddr, attachmentIdxBN, ref, encrypted, msgFee, function(err, txid) {
 		    console.log('txid = ' + txid);
 		    common.showWaitingForMetaMask(false);
-		    const continueFcn = () => {
+		    const continueFcn = (err, receipt) => {
+			if (!err) {
+			    mtUtil.acctInfo.sentMsgCount = msgNoBN.toString(10);
+			    index.sentMessageNo = msgNoBN.toNumber();
+			}
 			common.waitingForTxid = false;
 			common.clearStatusDiv();
-			index.sentMessageNo = msgNo;
 			handleViewSent(true);
 		    };
 		    common.waitForTXID(err, txid, 'Send-Message', continueFcn, ether.etherscanioTxStatusHost, null);
@@ -1541,7 +1543,7 @@ function populateMsgList(minElemIdx, cb) {
     let callCount = 0;
     const retrievingMsgsModal = document.getElementById('retrievingMsgsModal');
     for (let j = 0; j < 100; ++j) {
-	//scrollHeight is the enture height, including the part of the elem that is now viewable because it is scrolled
+	//scrollHeight is the entire height, including the part of the elem that is now viewable because it is scrolled
 	//scrollTop is a measurement of the distance from the element's top to its topmost visible content
         console.log('scroll: scrollHeight = ' + msgListDiv.scrollHeight + ', scrollTop = ' + msgListDiv.scrollTop + ', clientHeight = ' + msgListDiv.clientHeight);
 	if (index.msgListElems.length >= maxMsgNo)

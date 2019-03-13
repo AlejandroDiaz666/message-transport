@@ -175,7 +175,7 @@ const mtUtil = module.exports = {
     },
 
 
-    // cb(err, msgFee, encrypted)
+    // cb(err, msgFee, encrypted, msgNoBN)
     encryptMsg: function(toAddr, message, cb) {
 	console.log('encryptMsg');
 	mtEther.accountQuery(toAddr, function(err, toAcctInfo) {
@@ -198,7 +198,7 @@ const mtUtil = module.exports = {
 	    mtEther.getPeerMessageCount(toAddr, common.web3.eth.accounts[0], function(err, msgCount) {
 		console.log('encryptMsg: ' + msgCount.toString(10) + ' messages have been sent from ' + toAddr + ' to me');
 		const msgFee = (msgCount > 0) ? toAcctInfo.msgFee : toAcctInfo.spamFee;
-		cb(null, msgFee, encrypted);
+		cb(null, msgFee, encrypted, sentMsgCtrBN);
 	    });
 	});
     },
