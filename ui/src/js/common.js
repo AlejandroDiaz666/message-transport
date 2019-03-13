@@ -535,13 +535,18 @@ const common = module.exports = {
     },
 
 
+    replaceClassFromTo: function(elem, from, to, disabled) {
+	elem.className = (elem.className).replace(from, to);
+	elem.disabled = disabled;
+	return(elem);
+    },
+
+
     replaceElemClassFromTo: function(elemId, from, to, disabled) {
 	const elem = document.getElementById(elemId);
 	if (!elem)
 	    console.log('replaceElemClassFromTo: could not find elem: ' + elemId);
-	elem.className = (elem.className).replace(from, to);
-	elem.disabled = disabled;
-	return(elem);
+	return(common.replaceClassFromTo(elem, from, to, disabled));
     },
 
 
