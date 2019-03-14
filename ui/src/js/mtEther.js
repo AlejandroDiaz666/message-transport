@@ -109,6 +109,20 @@ const mtEther = module.exports = {
 	ether.send(mtEther.EMT_CONTRACT_ADDR, size, 'wei', sendData, 0, cb);
     },
 
+
+    //cb(err, txid)
+    // this version of sendMessage uses sendUsingPrivateKey
+    sendMessagePK: function(privateKey, toAddr, attachmentIdxBN, ref, messageHex, size, gasLimit, gasPrice, cb) {
+	console.log('sendMessageParms: toAddr = ' + toAddr);
+	console.log('sendMessageParms: attachmentIdxBN = ' + attachmentIdxBN.toString(10));
+	console.log('sendMessageParms: ref = ' + ref);
+	const abiSendMessageFcn = mtEther.abiEncodeSendMessage();
+	const abiParms = mtEther.abiEncodeSendMessageParms(toAddr, attachmentIdxBN, ref, messageHex);
+        const sendData = "0x" + abiSendMessageFcn + abiParms;
+	ether.sendUsingPrivateKey(privateKey, mtEther.EMT_CONTRACT_ADDR, size, 'wei', sendData, gasLimit, gasPrice, cb);
+    },
+
+
     //cb(err, txid)
     register: function(messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey, cb) {
 	const abiRegisterFcn = mtEther.abiEncodeRegister();
