@@ -104,13 +104,13 @@ function setOptionsButtonHandlers() {
 	    themedStyle.href = themedStyle.href.replace('relax-style', localStorage['theme']);
     };
     if (!!localStorage['theme'] && localStorage['theme'].indexOf('relax') >= 0) {
-	wandasThemeButton.checked = true;
+	relaxThemeButton.checked = true;
 	updateThemeFcn('relax-style');
     } else if (!!localStorage['theme'] && localStorage['theme'].indexOf('mary') >= 0) {
 	marysThemeButton.checked = true;
 	updateThemeFcn('marys-style');
     } else {
-	relaxThemeButton.checked = true;
+	wandasThemeButton.checked = true;
 	updateThemeFcn('wandas-style');
     }
     marysThemeButton.addEventListener('click', () => {	updateThemeFcn('marys-style'); });
