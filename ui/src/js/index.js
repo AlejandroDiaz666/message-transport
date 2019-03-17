@@ -826,15 +826,10 @@ function handleUnlockedMetaMask(mode) {
     common.waitingForTxid = false;
     index.localStoragePrefix = (common.web3.eth.accounts[0]).substring(2, 10) + '-';
     //
-    ether.ensReverseLookup(common.web3.eth.accounts[0], function(err, name) {
-	let addrNumericStr = index.account;
-	let addrStr = addrNumericStr;
-	if (!err && !!name) {
-	    index.accountEnsName = name;
-	    if (name.length > 16)
-		addrNumericStr = index.account.substring(0, 6) + '...' + index.account.substring(38);
-	    addrStr = name + ' (' + addrNumericStr + ')';
-	}
+    ether.ensReverseLookup(index.account, function(err, name) {
+	let addrStr = index.account
+	if (!err && !!name)
+	    addrStr = abbreviateAddrForEns(index.account, name);
 	document.getElementById('accountArea').value = 'Account: ' + addrStr;
 	document.getElementById('accountAreaFull').textContent = index.account;
     });
@@ -1975,12 +1970,10 @@ function fillMsgListElem(msgElem, message) {
     const newSuffix = (!message.isRx || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', message.msgNo)) ? '' : 'New';
     msgElem.div.className = newPrefix + newSuffix;
     msgElem.msgNoArea.value = message.msgNo.toString(10);
-    if (!!message.ensName) {
-	const addr = (message.ensName.length < 16) ? message.addr : message.addr.substring(0, 6) + '...' + message.addr.substring(38);
-	msgElem.addrArea.value = message.ensName + ' (' + addr + ')';
-    } else {
+    if (!!message.ensName)
+	msgElem.addrArea.value = abbreviateAddrForEns(message.addr, message.ensName);
+    else
 	msgElem.addrArea.value = message.addr;
-    }
     msgElem.dateArea.value = message.date;
     msgElem.msgIdArea.value = (!!message.msgId) ? mtUtil.abbreviateMsgId(message.msgId) : '';
     msgElem.subjectArea.value = mtUtil.extractSubject(message.text, 80);
@@ -1991,6 +1984,23 @@ function elemIdxToMsgNo(isRx, elemIdx) {
     const maxMsgNo = (isRx) ? parseInt(mtUtil.acctInfo.recvMsgCount) : parseInt(mtUtil.acctInfo.sentMsgCount);
     const msgNo = maxMsgNo - elemIdx;
     return(msgNo);
+}
+
+
+function abbreviateAddrForEns(addr, ensName) {
+    let addrNumericStr = addr;
+    if (ensName.length >= 15) {
+	console.log('abbreviateAddrForEns: ensName = ' + ensName);
+	// normal length of addr is '0x' + 40 chars. field can fit 40 + 16 ens. or
+	// replace addr chars with XXXX...XXXX
+	const noAddrChars = Math.max( 40 - (((ensName.length - 15) + 8 + 1) & 0xfffe), 6);
+	const cut = 40 - noAddrChars;
+	console.log('abbreviateAddrForEns: ensName.length = ' + ensName.length + ', cut = ' + cut);
+	const remain2 = (40 - cut) / 2;
+	console.log('abbreviateAddrForEns: remain2 = ' + remain2);
+	addrNumericStr = addr.substring(0, 2 + remain2) + '...' + addr.substring(2 + 40 - remain2);
+    }
+    return(ensName + ' (' + addrNumericStr + ')');
 }
 
 
