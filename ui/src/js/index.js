@@ -827,16 +827,16 @@ function handleUnlockedMetaMask(mode) {
     index.localStoragePrefix = (common.web3.eth.accounts[0]).substring(2, 10) + '-';
     //
     ether.ensReverseLookup(common.web3.eth.accounts[0], function(err, name) {
-	let addrNumericStr = common.web3.eth.accounts[0];
+	let addrNumericStr = index.account;
 	let addrStr = addrNumericStr;
 	if (!err && !!name) {
 	    index.accountEnsName = name;
 	    if (name.length > 16)
-		addrNumericStr = common.web3.eth.accounts[0].substring(0, 6) + '...' + common.web3.eth.accounts[0].substring(38);
+		addrNumericStr = index.account.substring(0, 6) + '...' + index.account.substring(38);
 	    addrStr = name + ' (' + addrNumericStr + ')';
 	}
-	const accountArea = document.getElementById('accountArea');
-	accountArea.value = 'Account: ' + addrStr;
+	document.getElementById('accountArea').value = 'Account: ' + addrStr;
+	document.getElementById('accountAreaFull').textContent = index.account;
     });
     ether.getBalance('ether', function(err, balance) {
 	const balanceArea = document.getElementById('balanceArea');
