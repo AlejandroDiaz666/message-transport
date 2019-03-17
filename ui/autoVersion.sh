@@ -2,7 +2,7 @@
 
 #
 # this little utility creates a teensy module to get the
-# version of the currently builing code from git. the module
+# version of the currently building code from git. the module
 # will be src/js/autoVersion.js, which should be in .gitignore
 #
 BRANCH=$(git branch | grep "*" | cut -d " " -f 2)

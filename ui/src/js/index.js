@@ -25,6 +25,7 @@ const index = module.exports = {
     recvMessageNo: 1,
     sentMessageNo: 1,
     account: null,
+    accountEnsName: null,
     acctCheckTimer: null,
     etherPrice: 100,
     elemIdx: -1,
@@ -726,6 +727,7 @@ async function beginTheBeguine(mode) {
     common.checkForMetaMask(true, function(err, w3) {
 	const acct = (!err && !!w3) ? w3.eth.accounts[0] : null;
 	index.account = acct;
+	index.accountEnsName = null;
 	if (!!err || !acct) {
 	    console.log('beginTheBeguine: checkForMetaMask err = ' + err);
 	    handleLockedMetaMask(err);
@@ -824,8 +826,18 @@ function handleUnlockedMetaMask(mode) {
     common.waitingForTxid = false;
     index.localStoragePrefix = (common.web3.eth.accounts[0]).substring(2, 10) + '-';
     //
-    const accountArea = document.getElementById('accountArea');
-    accountArea.value = 'Your account: ' + common.web3.eth.accounts[0];
+    ether.ensReverseLookup(common.web3.eth.accounts[0], function(err, name) {
+	let addrNumericStr = common.web3.eth.accounts[0];
+	let addrStr = addrNumericStr;
+	if (!err && !!name) {
+	    index.accountEnsName = name;
+	    if (name.length > 16)
+		addrNumericStr = common.web3.eth.accounts[0].substring(0, 6) + '...' + common.web3.eth.accounts[0].substring(38);
+	    addrStr = name + ' (' + addrNumericStr + ')';
+	}
+	const accountArea = document.getElementById('accountArea');
+	accountArea.value = 'Account: ' + addrStr;
+    });
     ether.getBalance('ether', function(err, balance) {
 	const balanceArea = document.getElementById('balanceArea');
 	console.log('balance (eth) = ' + balance);
@@ -1204,7 +1216,7 @@ function handleRegister() {
     const msgAddrArea = document.getElementById('msgAddrArea');
     msgAddrArea.disabled = true;
     msgAddrArea.readonly = "readonly"
-    msgAddrArea.value = common.web3.eth.accounts[0];
+    msgAddrArea.value = (!!index.accountEnsName) ? index.accountEnsName + ' (' +  index.account + ')' : index.account;
     //
     common.replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
     common.replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
@@ -1284,7 +1296,7 @@ function handleWithdraw() {
     const msgAddrArea = document.getElementById('msgAddrArea');
     msgAddrArea.disabled = true;
     msgAddrArea.readonly = "readonly"
-    msgAddrArea.value = common.web3.eth.accounts[0];
+    msgAddrArea.value = (!!index.accountEnsName) ? index.accountEnsName + ' (' +  index.account + ')' : index.account;
     //
     common.replaceElemClassFromTo('msgIdArea',          'visibleTC', 'hidden',    true);
     common.replaceElemClassFromTo('msgRefButton',       'visibleTC', 'hidden',    true).textContent = '';
@@ -1805,7 +1817,8 @@ function selectMsgListEntry(newIdx, cb) {
 	    }
 	}
     }
-    cb();
+    if (!!cb)
+	cb();
 }
 
 //
@@ -1946,7 +1959,7 @@ function makeMsgListElem(msgNo) {
 		handleViewRecv(false);
 	    else if (index.listMode == 'sent' && viewSentButton.className != 'menuBarButtonSelected')
 		handleViewSent(false);
-	    selectMsgListEntry(msgElem.elemIdx);
+	    selectMsgListEntry(msgElem.elemIdx, null);
 	}
     });
     return(msgElem);
