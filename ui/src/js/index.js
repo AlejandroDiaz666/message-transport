@@ -103,15 +103,15 @@ function setOptionsButtonHandlers() {
 	if (themedStyle.href.indexOf('relax-style') >= 0)
 	    themedStyle.href = themedStyle.href.replace('relax-style', localStorage['theme']);
     };
-    if (!!localStorage['theme'] && localStorage['theme'].indexOf('wanda') >= 0) {
+    if (!!localStorage['theme'] && localStorage['theme'].indexOf('relax') >= 0) {
 	wandasThemeButton.checked = true;
-	updateThemeFcn('wandas-style');
+	updateThemeFcn('relax-style');
     } else if (!!localStorage['theme'] && localStorage['theme'].indexOf('mary') >= 0) {
 	marysThemeButton.checked = true;
 	updateThemeFcn('marys-style');
     } else {
 	relaxThemeButton.checked = true;
-	updateThemeFcn('relax-style');
+	updateThemeFcn('wandas-style');
     }
     marysThemeButton.addEventListener('click', () => {	updateThemeFcn('marys-style'); });
     wandasThemeButton.addEventListener('click', () => { updateThemeFcn('wandas-style'); });
