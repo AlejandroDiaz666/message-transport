@@ -824,10 +824,10 @@ function handleUnlockedMetaMask(mode) {
     //we can be called from the 'continue' link in waitForTXID, so clear waiting flag. this re-enables the interval
     //timer to check for changed rx/tx counts
     common.waitingForTxid = false;
-    index.localStoragePrefix = (common.web3.eth.accounts[0]).substring(2, 10) + '-';
+    index.localStoragePrefix = (index.account).substring(2, 10) + '-';
     //
     ether.ensReverseLookup(index.account, function(err, name) {
-	let addrStr = index.account
+	let addrStr = index.account;
 	if (!err && !!name)
 	    addrStr = abbreviateAddrForEns(index.account, name);
 	document.getElementById('accountArea').value = 'Account: ' + addrStr;
