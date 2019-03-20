@@ -76,9 +76,8 @@ import './iDividendToken.sol';
 
 contract ETT is iERC20Token, iDividendToken, SafeMath {
 
-  event PaymentEvent(address indexed from, uint amount);
-  event TransferEvent(address indexed from, address indexed to, uint amount);
-  event ApprovalEvent(address indexed from, address indexed to, uint amount);
+  event Transfer(address indexed from, address indexed to, uint amount);
+  event Approval(address indexed from, address indexed to, uint amount);
 
   struct tokenHolder {
     uint tokens;           // num tokens currently held in this acct, aka balance
@@ -91,51 +90,29 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   bool    public isLocked;
   uint8   public decimals;
   address public daiToken;
-  address payable public owner;
   string  public symbol;
   string  public name;
-  uint           totalSupply;                                   // total token supply. never changes
+  uint public    totalSupply;                                   // total token supply. never changes
   uint public    holdoverEthBalance;                            // funds received, but not yet distributed
   uint public    totalEthReceived;
   uint public    holdoverDaiBalance;                            // funds received, but not yet distributed
   uint public    totalDaiReceived;
 
-  mapping (address => mapping (address => uint)) approvals;  //transfer approvals, from -> to
+  mapping (address => mapping (address => uint)) approvals;     //transfer approvals, from -> to -> amount
   mapping (address => tokenHolder) public tokenHolders;
 
-  modifier ownerOnly {
-    require(msg.sender == owner, "owner only");
-    _;
-  }
-
-  modifier unlockedOnly {
-    require(!isLocked, "unlocked only");
-    _;
-  }
-
-
-  //this is to protect from short-address attack. use this to verify size of args, especially when an address arg preceeds
-  //a value arg. see: https://www.reddit.com/r/ethereum/comments/63s917/worrysome_bug_exploit_with_erc20_token/dfwmhc3/
-  modifier onlyPayloadSize(uint256 size) {
-    assert(msg.data.length >= size + 4);
-    _;
-  }
 
   //
   //constructor
   //
-  constructor(address _daiToken, uint256 _tokenSupplysupply, uint8 _decimals, string memory _name, string memory _symbol) public {
+  constructor(address _daiToken, uint256 _tokenSupply, uint8 _decimals, string memory _name, string memory _symbol) public {
     daiToken = _daiToken;
-    totalSupply = _tokenSupplysupply;
+    totalSupply = _tokenSupply;
     decimals = _decimals;
     name = _name;
     symbol = _symbol;
-    owner = msg.sender;
-    tokenHolders[owner].tokens = totalSupply;
-  }
-
-  function lock() public ownerOnly {
-    isLocked = true;
+    tokenHolders[msg.sender].tokens = totalSupply;
+    emit Transfer(address(0), msg.sender, totalSupply);
   }
 
 
@@ -143,47 +120,54 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   // ERC-20
   //
 
-  function transfer(address _to, uint _value) public onlyPayloadSize(2*32) returns (bool success) {
-    if (tokenHolders[msg.sender].tokens >= _value) {
-      //first credit sender with points accrued so far.. must do this before number of held tokens changes
-      calcCurPointsForAcct(msg.sender);
-      tokenHolders[msg.sender].tokens = safeSub(tokenHolders[msg.sender].tokens, _value);
-      //if destination is a new tokenholder then we are setting his "last" snapshot to the current totalPoints
-      if (tokenHolders[_to].lastEthSnapshot == 0)
-	tokenHolders[_to].lastEthSnapshot = totalEthReceived;
-      if (tokenHolders[_to].lastDaiSnapshot == 0)
-	tokenHolders[_to].lastDaiSnapshot = totalDaiReceived;
-      //credit destination acct with points accrued so far.. must do this before number of held tokens changes
-      calcCurPointsForAcct(_to);
-      tokenHolders[_to].tokens = safeAdd(tokenHolders[_to].tokens, _value);
-      emit TransferEvent(msg.sender, _to, _value);
-      return true;
-    } else {
-      return false;
-    }
+
+  //
+  // transfer tokens to a specified address
+  // @param to the address to transfer to.
+  // @param value the amount to be transferred.
+  // checks for overflow, sufficient tokens to xfer are in internal _transfer fcn
+  //
+  function transfer(address _to, uint _value) public returns (bool success) {
+    _transfer(msg.sender, _to, _value);
+    return true;
   }
 
 
-  function transferFrom(address _from, address _to, uint _value) onlyPayloadSize(3*32) public returns (bool success) {
-    //prevent wrap:
-    if (tokenHolders[_from].tokens >= _value && approvals[_from][msg.sender] >= _value) {
-      //first credit source acct with points accrued so far.. must do this before number of held tokens changes
-      calcCurPointsForAcct(_from);
-      tokenHolders[_from].tokens = safeSub(tokenHolders[_from].tokens, _value);
-      //if destination is a new tokenholder then we are setting his "last" snapshot to the current totalPoints
-      if (tokenHolders[_to].lastEthSnapshot == 0)
-	tokenHolders[_to].lastEthSnapshot = totalEthReceived;
-      if (tokenHolders[_to].lastDaiSnapshot == 0)
-	tokenHolders[_to].lastDaiSnapshot = totalDaiReceived;
-      //credit destination acct with points accrued so far.. must do this before number of held tokens changes
-      calcCurPointsForAcct(_to);
-      tokenHolders[_to].tokens = safeAdd(tokenHolders[_to].tokens, _value);
-      approvals[_from][msg.sender] = safeSub(approvals[_from][msg.sender], _value);
-      emit TransferEvent(_from, _to, _value);
-      return true;
-    } else {
-      return false;
-    }
+  //
+  // transfer tokens from one address to another.
+  // note that while this function emits an Approval event, this is not required as per the specification,
+  // and other compliant implementations may not emit the event.
+  // @param from address the address which you want to send tokens from
+  // @param to address the address which you want to transfer to
+  // @param value uint256 the amount of tokens to be transferred
+  // checks for overflow, sufficient tokens to xfer are in internal _transfer fcn
+  // check for sufficient approval in in the safeSub
+  //
+  function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+    _transfer(_from, _to, _value);
+    _approve(_from, msg.sender, safeSub(approvals[_from][msg.sender], _value));
+    return true;
+  }
+
+
+  //
+  // internal fcn to execute a transfer. no check/modification of approval here
+  // wrap of token balances is prevented in safe{Add,Sub}
+  //
+  function _transfer(address _from, address _to, uint _value) internal {
+    require(_to != address(0));
+    //first credit source acct with points accrued so far.. must do this before number of held tokens changes
+    calcCurPointsForAcct(_from);
+    tokenHolders[_from].tokens = safeSub(tokenHolders[_from].tokens, _value);
+    //if destination is a new tokenholder then we are setting his "last" snapshot to the current totalPoints
+    if (tokenHolders[_to].lastEthSnapshot == 0)
+      tokenHolders[_to].lastEthSnapshot = totalEthReceived;
+    if (tokenHolders[_to].lastDaiSnapshot == 0)
+      tokenHolders[_to].lastDaiSnapshot = totalDaiReceived;
+    //credit destination acct with points accrued so far.. must do this before number of held tokens changes
+    calcCurPointsForAcct(_to);
+    tokenHolders[_to].tokens = safeAdd(tokenHolders[_to].tokens, _value);
+    emit Transfer(_from, _to, _value);
   }
 
 
@@ -192,10 +176,62 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   }
 
 
-  function approve(address _spender, uint _value) public onlyPayloadSize(2*32) returns (bool success) {
-    approvals[msg.sender][_spender] = _value;
-    emit ApprovalEvent(msg.sender, _spender, _value);
+  //
+  // approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
+  // beware that changing an allowance with this method brings the risk that someone may use both the old
+  // and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this
+  // race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards:
+  // https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+  // @param _spender the address which will spend the funds.
+  // @param _value the amount of tokens to be spent.
+  //
+  function approve(address _spender, uint256 _value) public returns (bool) {
+    _approve(msg.sender, _spender, _value);
     return true;
+  }
+
+
+  //
+  // increase the amount of tokens that an owner allows to a spender.
+  // approve should be called when allowed[msg.sender][spender] == 0. to increment
+  // allowed value it is better to use this function to avoid 2 calls (and wait until
+  // the first transaction is mined)
+  // Emits an Approval event.
+  // @param _spender the address which will spend the funds.
+  // @param _addedValue the amount of tokens to increase the allowance by.
+  //
+  function increaseAllowance(address _spender, uint256 _addedValue) public returns (bool) {
+    _approve(msg.sender, _spender, safeAdd(approvals[msg.sender][_spender], _addedValue));
+    return true;
+  }
+
+  /**
+   * decrease the amount of tokens that an owner allows to a spender.
+   * approve should be called when allowed[msg.sender][spender] == 0. to decrement
+   * allowed value it is better to use this function to avoid 2 calls (and wait until
+   * the first transaction is mined)
+   * from MonolithDAO Token.sol
+   * emits an Approval event.
+   * @param _spender the address which will spend the funds.
+   * @param _subtractedValue the amount of tokens to decrease the allowance by.
+   */
+  function decreaseAllowance(address _spender, uint256 _subtractedValue) public returns (bool) {
+    _approve(msg.sender, _spender, safeSub(approvals[msg.sender][_spender], _subtractedValue));
+    return true;
+  }
+
+
+  /*
+   * @dev internal fcn to approve an address to spend another addresses' tokens.
+   * @param _owner the address that owns the tokens.
+   * @param _spender the address that will spend the tokens.
+   * @param _value the number of tokens that can be spent.
+   */
+  function _approve(address _owner, address _spender, uint _value) internal {
+    require(_owner != address(0));
+    require(_spender != address(0));
+    approvals[_owner][_spender] = _value;
+    emit Approval(_owner, _spender, _value);
   }
 
 
@@ -280,10 +316,5 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
     require(iERC20Token(daiToken).transfer(msg.sender, _amount), "failed to transfer dai");
   }
 
-
-  //only available before the contract is locked
-  function killContract() public ownerOnly unlockedOnly {
-    selfdestruct(owner);
-  }
 
 }

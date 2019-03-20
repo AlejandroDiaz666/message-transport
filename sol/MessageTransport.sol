@@ -4,7 +4,9 @@ pragma solidity ^0.5.0;
 //  Message_Transport
 // ---------------------------------------------------------------------------
 import './SafeMath.sol';
-contract MessageTransport is SafeMath {
+import './Ownable.sol';
+
+contract MessageTransport is SafeMath, Ownable {
 
   // -------------------------------------------------------------------------
   // events
@@ -39,7 +41,6 @@ contract MessageTransport is SafeMath {
   // data storage
   // -------------------------------------------------------------------------
   bool public isLocked;
-  address payable public owner;
   address public tokenAddr;
   uint public messageCount;
   uint public retainedFeesBalance;
@@ -50,14 +51,6 @@ contract MessageTransport is SafeMath {
   // -------------------------------------------------------------------------
   // modifiers
   // -------------------------------------------------------------------------
-  modifier ownerOnly {
-    require(msg.sender == owner, "owner only");
-    _;
-  }
-  modifier unlockedOnly {
-    require(!isLocked, "unlocked only");
-    _;
-  }
   modifier trustedOnly {
     require(trusted[msg.sender] == true, "trusted only");
     _;
@@ -68,14 +61,10 @@ contract MessageTransport is SafeMath {
   //  EMS constructor
   // -------------------------------------------------------------------------
   constructor(address _tokenAddr) public {
-    owner = msg.sender;
     tokenAddr = _tokenAddr;
   }
-  function setTrust(address _trustedAddr, bool _trust) public ownerOnly {
+  function setTrust(address _trustedAddr, bool _trust) public onlyOwner {
     trusted[_trustedAddr] = _trust;
-  }
-  function lock() public ownerOnly {
-    isLocked = true;
   }
 
 
@@ -231,12 +220,4 @@ contract MessageTransport is SafeMath {
       revert();
   }
 
-
-  // -------------------------------------------------------------------------
-  // for debug
-  // only available before the contract is locked
-  // -------------------------------------------------------------------------
-  function killContract() public ownerOnly unlockedOnly {
-    selfdestruct(owner);
-  }
 }
