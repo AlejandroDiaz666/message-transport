@@ -10,6 +10,9 @@ contract MessageTransport is SafeMath, Ownable {
 
   // -------------------------------------------------------------------------
   // events
+  // etherscan.io's Event Log API does not have an option to match multiple values
+  // in an individual topic. so in order to match any one of three message id's we
+  // duplicate the message id into 3 topic position.
   // -------------------------------------------------------------------------
   event InviteEvent(address indexed _toAddr, address indexed _fromAddr);
   event MessageEvent(uint indexed _id1, uint indexed _id2, uint indexed _id3,
@@ -216,8 +219,7 @@ contract MessageTransport is SafeMath, Ownable {
     _amount = safeSub(retainedFeesBalance, _amount);
     retainedFeesBalance = 0;
     (bool paySuccess, ) = tokenAddr.call.value(_amount)("");
-    if (!paySuccess)
-      revert();
+    require(paySuccess, "failed to transfer fees");
   }
 
 }
