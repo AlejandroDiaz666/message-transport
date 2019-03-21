@@ -269,12 +269,10 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
 
 
   //
-  // this payable function is for payment in Dai and optionally also Eth
+  // this payable function is for payment in Dai
   // caller must have already approved the Dai transfer
   //
-  function payDai(uint256 _daiAmount) external payable {
-    holdoverEthBalance = safeAdd(holdoverEthBalance, msg.value);
-    totalEthReceived = safeAdd(totalEthReceived, msg.value);
+  function payDai(uint256 _daiAmount) external {
     require(iERC20Token(daiToken).transferFrom(msg.sender, address(this), _daiAmount), "failed to transfer dai");
     holdoverDaiBalance = safeAdd(holdoverDaiBalance, _daiAmount);
     totalDaiReceived = safeAdd(totalDaiReceived, _daiAmount);
