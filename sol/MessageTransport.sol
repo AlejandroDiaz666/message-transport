@@ -175,9 +175,10 @@ contract MessageTransport is SafeMath, Ownable {
     //after you introduce yourself to someone this way their subsequent message to you won't
     //incur your spamFee.
     if (msg.data.length > _noDataLength) {
-      require(msg.value >= _recvAccount.messageFee, "fee is insufficient");
       if (_sendAccount.peerRecvMessageCount[_toAddr] == 0)
 	require(msg.value >= _recvAccount.spamFee, "spam fee is insufficient");
+      else
+	require(msg.value >= _recvAccount.messageFee, "fee is insufficient");
       messageCount = safeAdd(messageCount, 1);
       _recvAccount.recvIds[_recvAccount.recvMessageCount] = messageCount;
       _sendAccount.sentIds[_sendAccount.sentMessageCount] = messageCount;
