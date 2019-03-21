@@ -73,14 +73,27 @@ contract MessageTransport is SafeMath, Ownable {
 
   // -------------------------------------------------------------------------
   // register a message account
+  // the decryption key for the encryptedPrivateKey should be guarded with the
+  // same secrecy and caution as the ethereum private key. in fact the decryption
+  // key should never be tranmitted or stored at all -- but always derived from a
+  // message signature; that is, through metamask.
   // -------------------------------------------------------------------------
   function register(uint256 _messageFee, uint256 _spamFee, bytes memory _publicKey, bytes memory _encryptedPrivateKey) public {
     Account storage _account = accounts[msg.sender];
-    _account.messageFee = _messageFee;
-    _account.spamFee = _spamFee;
+    require(_account.isValid == false, "account already registered");
     _account.publicKey = _publicKey;
     _account.encryptedPrivateKey = _encryptedPrivateKey;
     _account.isValid = true;
+    _modifyAccount(_account, _messageFee, _spamFee);
+  }
+  function modifyAccount(uint256 _messageFee, uint256 _spamFee) public {
+    Account storage _account = accounts[msg.sender];
+    require(_account.isValid == true, "not registered");
+    _modifyAccount(_account, _messageFee, _spamFee);
+  }
+  function _modifyAccount(Account storage _account, uint256 _messageFee, uint256 _spamFee) internal {
+    _account.messageFee = _messageFee;
+    _account.spamFee = _spamFee;
   }
 
 
