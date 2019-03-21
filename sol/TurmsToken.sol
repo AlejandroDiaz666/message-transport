@@ -92,13 +92,13 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
   address public daiToken;
   string  public symbol;
   string  public name;
-  uint public    totalSupply;                                   // total token supply. never changes
-  uint public    holdoverEthBalance;                            // funds received, but not yet distributed
+  uint public    totalSupply;                                       // total token supply. never changes
+  uint public    holdoverEthBalance;                                // funds received, but not yet distributed
   uint public    totalEthReceived;
-  uint public    holdoverDaiBalance;                            // funds received, but not yet distributed
+  uint public    holdoverDaiBalance;                                // funds received, but not yet distributed
   uint public    totalDaiReceived;
 
-  mapping (address => mapping (address => uint)) approvals;     //transfer approvals, from -> to -> amount
+  mapping (address => mapping (address => uint)) private approvals; //transfer approvals, from -> to -> amount
   mapping (address => tokenHolder) public tokenHolders;
 
 
