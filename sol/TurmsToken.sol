@@ -280,6 +280,19 @@ contract ETT is iERC20Token, iDividendToken, SafeMath {
 
 
   //
+  // updateDaiBalance
+  // update the dia holdover balance, in case someone transfers dai directly
+  // to the contract. anyone can call this.
+  //
+  function updateDaiBalance() public {
+    uint256 _actBalance = iERC20Token(daiToken).balanceOf(address(this));
+    uint256 _daiAmount = safeSub(_actBalance, holdoverDaiBalance);
+    holdoverDaiBalance = safeAdd(holdoverDaiBalance, _daiAmount);
+    totalDaiReceived = safeAdd(totalDaiReceived, _daiAmount);
+  }
+
+
+  //
   // check my dividends
   //
   function checkDividends(address _addr) view public returns(uint _ethAmount, uint _daiAmount) {
