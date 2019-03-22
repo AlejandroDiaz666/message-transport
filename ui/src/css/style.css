@@ -476,7 +476,7 @@ p {
     border-collapse: collapse;
     color: var(--clr_areatext); /*yellow; */
     width: 100%;
-    overflow-y: scroll;
+    overflow-y: hidden;
     overflow-x: hidden;
 }
 #msgListDiv  {

@@ -833,7 +833,7 @@ function handleUnlockedMetaMask(mode) {
 	document.getElementById('accountArea').value = 'Account: ' + addrStr;
 	document.getElementById('accountAreaFull').textContent = index.account;
     });
-    ether.getBalance('ether', function(err, balance) {
+    ether.getBalance(index.account, 'ether', function(err, balance) {
 	const balanceArea = document.getElementById('balanceArea');
 	console.log('balance (eth) = ' + balance);
 	const balanceETH = parseFloat(balance).toFixed(6);
