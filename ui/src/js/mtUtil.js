@@ -160,6 +160,7 @@ const mtUtil = module.exports = {
 		let messageText = decrypted;
 		let attachment = null;
 		if (!!attachmentIdxBN && !attachmentIdxBN.isZero()) {
+		    console.log('decryptMsg: attachmentIdxBN = 0x' + attachmentIdxBN.toString(16));
 		    const idx = attachmentIdxBN.maskn(248).toNumber();
 		    console.log('decryptMsg: attachment at idx ' + idx);
 		    messageText = decrypted.substring(0, idx);
