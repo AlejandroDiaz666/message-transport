@@ -61,7 +61,7 @@ contract MessageTransport is SafeMath, Ownable {
 
 
   // -------------------------------------------------------------------------
-  //  EMS constructor
+  //  MessageTransport constructor
   // -------------------------------------------------------------------------
   constructor(address _tokenAddr) public {
     tokenAddr = _tokenAddr;
