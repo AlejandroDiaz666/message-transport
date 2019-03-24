@@ -26,6 +26,7 @@ const mtEther = module.exports = {
     messageRxEventTopic0: null,
     sendMessageABI: null,
     registerABI: null,
+    modifyAccountABI: null,
     withdrawABI: null,
 
 
@@ -129,15 +130,26 @@ const mtEther = module.exports = {
 	const abiRegisterFcn = mtEther.abiEncodeRegister();
 	const abiParms = mtEther.abiEncodeRegisterParms(messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey);
         const sendData = "0x" + abiRegisterFcn + abiParms;
-	console.log('sendData = ' + sendData);
+	console.log('register: sendData = ' + sendData);
 	ether.send(mtEther.EMT_CONTRACT_ADDR, 0, 'wei', sendData, 0, cb);
     },
+
+
+    //cb(err, txid)
+    modifyAccount: function(messageFeeBN, spamFeeBN, cb) {
+	const abiModifyAccountFcn = mtEther.abiEncodeModifyAccount();
+	const abiParms = mtEther.abiEncodeModifyAccountParms(messageFeeBN, spamFeeBN);
+        const sendData = "0x" + abiModifyAccountFcn + abiParms;
+	console.log('modifyAccount: sendData = ' + sendData);
+	ether.send(mtEther.EMT_CONTRACT_ADDR, 0, 'wei', sendData, 0, cb);
+    },
+
 
     //cb(err, txid)
     withdraw: function(cb) {
 	const abiWithdrawFcn = mtEther.abiEncodeWithdraw();
         const sendData = "0x" + abiWithdrawFcn;
-	console.log('sendData = ' + sendData);
+	console.log('withdraw: sendData = ' + sendData);
 	ether.send(mtEther.EMT_CONTRACT_ADDR, 0, 'wei', sendData, 0, cb);
     },
 
@@ -214,6 +226,22 @@ const mtEther = module.exports = {
 	const encryptedPrivateKeyBytes = common.hexToBytes(encryptedPrivateKey);
 	const encoded = ethabi.rawEncode([ 'uint256', 'uint256', 'bytes', 'bytes' ],
 					 [ messageFeeBN, spamFeeBN, publicKeyBytes, encryptedPrivateKeyBytes ] ).toString('hex');
+	return(encoded);
+    },
+
+
+    abiEncodeModifyAccount: function() {
+	//uint256 messageFee, uint256 spamFee
+	if (!mtEther.modifyAccountABI)
+	    mtEther.modifyAccountABI = ethabi.methodID('modifyAccount', [ 'uint256', 'uint256' ]).toString('hex');
+	return(mtEther.modifyAccountABI);
+    },
+
+    abiEncodeModifyAccountParms: function(messageFeeBN, spamFeeBN) {
+	console.log('abiEncodeModifyAccountParms: messageFee = ' + messageFeeBN.toString(10));
+	console.log('abiEncodeModifyAccountParms: spamFee = ' + spamFeeBN.toString(10));
+	const encoded = ethabi.rawEncode([ 'uint256', 'uint256' ],
+					 [ messageFeeBN, spamFeeBN ] ).toString('hex');
 	return(encoded);
     },
 

@@ -857,6 +857,7 @@ function handleUnlockedMetaMask(mode) {
 	}
 	mtEther.accountQuery(common.web3.eth.accounts[0], function(err, _acctInfo) {
 	    mtUtil.acctInfo = _acctInfo;
+	    console.log('handleUnlockedMetaMask: mtUtil.acctInfo.msgFee = ' + mtUtil.acctInfo.msgFee);
 	    mtUtil.publicKey = (!!mtUtil.acctInfo) ? mtUtil.acctInfo.publicKey : null;
 	    //console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(mtUtil.acctInfo));
 	    //console.log('handleUnlockedMetaMask: publicKey: ' + mtUtil.publicKey);
@@ -1249,26 +1250,36 @@ function handleRegisterSubmit() {
     console.log('message fee = ' + messageFee + ' X ' + messageFeeUnits.value + ', spam fee = ' + spamFee + ' X ' + spamFeeUnits.value);
     const messageFeeBN = common.decimalAndUnitsToBN(messageFee, messageFeeUnits.value);
     const spamFeeBN = common.decimalAndUnitsToBN(spamFee, spamFeeUnits.value);
-    const publicKey = dhcrypt.publicKey();
-    const encryptedPrivateKey = dhcrypt.encryptedPrivateKey();
     disableAllButtons();
     common.showWaitingForMetaMask(true);
-    mtEther.register(messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey, function(err, txid) {
-	console.log('handleRegisterSubmit: err = ' + err);
-	console.log('handleRegisterSubmit: txid = ' + txid);
-	common.showWaitingForMetaMask(false);
-	const continueFcn = () => {
-	    common.waitingForTxid = false;
-	    common.clearStatusDiv();
-	    handleUnlockedMetaMask('recv');
-	};
-	common.waitForTXID(err, txid, 'Register', continueFcn, ether.etherscanioTxStatusHost, function() {
-	    //once he has registered we stop showing the intro automatically each time the page is loaded
-	    //note: we get the cb from waitForTXID as soon as the tx completes.
-	    localStorage['FirstIntroCompleteFlag'] = true;
+    const continueFcn = () => {
+	common.waitingForTxid = false;
+	common.clearStatusDiv();
+	handleUnlockedMetaMask('recv');
+    };
+    if (!!mtUtil.acctInfo.isValid) {
+	mtEther.modifyAccount(messageFeeBN, spamFeeBN, function(err, txid) {
+	    console.log('handleRegisterSubmit: err = ' + err);
+	    console.log('handleRegisterSubmit: txid = ' + txid);
+	    common.showWaitingForMetaMask(false);
+	    common.waitForTXID(err, txid, 'Modify-Account', continueFcn, ether.etherscanioTxStatusHost, null);
 	});
-    });
+    } else {
+	const publicKey = dhcrypt.publicKey();
+	const encryptedPrivateKey = dhcrypt.encryptedPrivateKey();
+	mtEther.register(messageFeeBN, spamFeeBN, publicKey, encryptedPrivateKey, function(err, txid) {
+	    console.log('handleRegisterSubmit: err = ' + err);
+	    console.log('handleRegisterSubmit: txid = ' + txid);
+	    common.showWaitingForMetaMask(false);
+	    common.waitForTXID(err, txid, 'Register', continueFcn, ether.etherscanioTxStatusHost, function() {
+		//once he has registered we stop showing the intro automatically each time the page is loaded
+		//note: we get the cb from waitForTXID as soon as the tx completes.
+		localStorage['FirstIntroCompleteFlag'] = true;
+	    });
+	});
+    }
 }
+
 
 function handleWithdraw() {
     common.setMenuButtonState('importantInfoButton', 'Enabled');
