@@ -1,10 +1,3 @@
-Mainnet: 0xE212f48e459E6eD3f7F07861781B77c7d3a93032
-_tokenAddr = 0xC1843F090Ad43E0981789ba39d4d97520A2d9128
-constructor parms:
-000000000000000000000000c1843f090ad43e0981789ba39d4d97520a2d9128
-
----
-
 ropsten: 0x95c1a0ba886286f013deb7918ca1918341b88df4
 _tokenAddr = 0x4d08eb215670920303e910f8a311224abe2f8a7c
 constructor parms:
@@ -13,10 +6,6 @@ constructor parms:
 
 Note: don't forget to a) compile with optimization, b) set trust
 
------------------------------ old deployments that need to be destructed ----------------------------
-Ropsten: 0x28901fc03008677147A5DEc60dd3993b823b58d4
-Ropsten: 0x0805AB36767E33aBbD69d5aAdE4e2E5B1772e3cA
------------------------------ old deployments that need to be destructed ----------------------------
 
 
 ======= MessageTransport.sol:MessageTransport =======

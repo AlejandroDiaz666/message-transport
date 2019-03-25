@@ -1,15 +1,3 @@
-mainnet: 0xC1843F090Ad43E0981789ba39d4d97520A2d9128
-  _daiToken = 0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359
-  _tokenSupplysupply = 80000000000000000000000000 (80M X 10^18)
-  _decimals = 18
-  _name = turms-alpha
-  _symbol = trm
-
-00000000000000000000000089d24a6b4ccb1b6faa2625fe562bdd9a23260359000000000000000000000000000000000000000000422ca8b0a00a4250000000000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000b7475726d732d616c706861000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000374726d0000000000000000000000000000000000000000000000000000000000
-
-
-------------------------
-
 ropsten deployment to test audit issue rectification
 this is deplolyed twice. the first is our mock dia token.
 mock dai:
@@ -35,19 +23,6 @@ constructor parms:
 
 
 Note: don't forget to a) compile with optimization
-
------------------------------ old deployments that need to be destructed ----------------------------
-Ropsten: 0x675B8727D9BAa9f2d1F57c713019180327DABa7B
-Ropsten: 0xCb7d23B537a96eC672522ae0Bf6fab757d322a5D
-this is deplolyed twice. the first is our mock dia token.
-mock dai:
-Ropsten: 0x3559030a806305158E752a1D07f6e40BF45f72F2
-
-this is the real turms token deployment.
-Ropsten: 0x4186c8Dd0145f143BF56Fe3C731b643042c01f08
-this is the real turms token deployment:
-Ropsten: 0xC710050B95e5Ed550Bc8D3b6105cbC2F8E3D9c57
------------------------------ old deployments that need to be destructed ----------------------------
 
 
 ======= SafeMath.sol:SafeMath =======
