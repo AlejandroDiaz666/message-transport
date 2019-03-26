@@ -52,11 +52,12 @@ const index = module.exports = {
 
 };
 
-function Message(isRx, msgId, msgNo, addr, date, ref, text, attachment) {
+function Message(isRx, msgId, msgNo, addr, viaAddr, date, ref, text, attachment) {
     this.isRx = isRx;
     this.msgId = msgId;
     this.msgNo = msgNo;
     this.addr = addr;
+    this.viaAddr = viaAddr;
     this.date = date;
     this.ref = ref;
     this.text = text;
@@ -64,9 +65,10 @@ function Message(isRx, msgId, msgNo, addr, date, ref, text, attachment) {
     this.ensName = null;
 }
 
-function MsgElem(div, msgNoArea, addrArea, dateArea, msgIdArea, subjectArea, msgNo) {
+function MsgElem(div, msgNoArea, viaDiv, addrArea, dateArea, msgIdArea, subjectArea, msgNo) {
     this.div = div;
     this.msgNoArea = msgNoArea;
+    this.viaDiv = viaDiv;
     this.addrArea = addrArea;
     this.dateArea = dateArea;
     this.msgIdArea = msgIdArea;
@@ -1686,7 +1688,7 @@ function getMessages(msgIds, idIdx, msgNo, tempMessages, cb) {
 	const maxMsgNo = (isRx) ? parseInt(mtUtil.acctInfo.recvMsgCount) : parseInt(mtUtil.acctInfo.sentMsgCount);
 	for (; idIdx < msgIds.length && msgNo <= maxMsgNo; ++idIdx, ++msgNo) {
 	    const addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
-	    const message = new Message(isRx, '', msgNo, addr, '', '', '', '', null);
+	    const message = new Message(isRx, '', msgNo, addr, '', '', '', '', '', null);
 	    tempMessages[msgNo] = message;
 	}
 	cb(tempMessages);
@@ -1713,12 +1715,12 @@ function getMessages(msgIds, idIdx, msgNo, tempMessages, cb) {
 	    (idIdx < msgIds.length) ? getMessages(msgIds, idIdx, msgNo, tempMessages, cb) : cb(tempMessages);
 	}
     };
-    mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
+    mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
 	console.log('getMessages: getAndParseIdMsgs returns, err = ' + err);
 	if (!!err || !fromAddr) {
 	    err = 'Message data not found';
 	    if (!!msgCookie) {
-		const message = new Message(isRx, msgIds[msgCookie.idIdx], '', '', '', '', err, null);
+		const message = new Message(isRx, msgIds[msgCookie.idIdx], '', '', '', '', '', err, null);
 		tempMessages[msgCookie.msgNo] = message;
 	    }
 	    msgCompleteFcn('getAndParseIdMsgs', err);
@@ -1728,13 +1730,13 @@ function getMessages(msgIds, idIdx, msgNo, tempMessages, cb) {
 	const otherAddr = (isRx) ? fromAddr : toAddr;
 	mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, attachmentIdxBN, (err, messageText, attachment) => {
 	    if (!!err) {
-		const message = new Message(isRx, msgId, '', '', '', '', 'message decryption error' + err, null);
+		const message = new Message(isRx, msgId, '', '', '', '', '', 'message decryption error' + err, null);
 		tempMessages[msgCookie.msgNo] = message;
 		msgCompleteFcn('decryptMsg', err);
 		return;
 	    }
 	    console.log('getMessages: msgId = ' + msgId + ', text = ' + messageText + ', attachment = ' + attachment);
-	    const message = new Message(isRx, msgId, msgCookie.msgNo, otherAddr, date, ref, messageText, attachment);
+	    const message = new Message(isRx, msgId, msgCookie.msgNo, otherAddr, viaAddr, date, ref, messageText, attachment);
 	    messages[msgCookie.msgNo] = message;
 	    tempMessages[msgCookie.msgNo] = message;
 	    ether.ensReverseLookup(otherAddr, function(err, name) {
@@ -1928,6 +1930,8 @@ function makeMsgListElem(msgNo) {
     addrArea.readonly = 'readonly';
     addrArea.disabled = 'disabled';
     addrArea.value = '';
+    viaDiv = document.createElement("div");
+    viaDiv.className = 'msgListViaDiv tooltip';
     dateArea = document.createElement("textarea");
     dateArea.className = 'msgListDateArea';
     dateArea.rows = 1;
@@ -1947,11 +1951,12 @@ function makeMsgListElem(msgNo) {
     subjectArea.disabled = 'disabled';
     subjectArea.value = 'loading...';
     div.appendChild(msgNoArea);
+    div.appendChild(viaDiv);
     div.appendChild(addrArea);
     div.appendChild(dateArea);
     div.appendChild(msgIdArea);
     div.appendChild(subjectArea);
-    const msgElem = new MsgElem(div, msgNoArea, addrArea, dateArea, msgIdArea, subjectArea, msgNo);
+    const msgElem = new MsgElem(div, msgNoArea, viaDiv, addrArea, dateArea, msgIdArea, subjectArea, msgNo);
     div.addEventListener('click', function() {
 	const message = msgElem.message;
 	if (!!message && message.msgNo > 0) {
@@ -1981,6 +1986,24 @@ function fillMsgListElem(msgElem, message) {
     const newSuffix = (!message.isRx || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', message.msgNo)) ? '' : 'New';
     msgElem.div.className = newPrefix + newSuffix;
     msgElem.msgNoArea.value = message.msgNo.toString(10);
+
+    const viaTooltip = document.createElement("span");
+    viaTooltip.className = 'tooltipText';
+    if (message.viaAddr.length > 0) {
+	const viaAddrBN = common.numberToBN(message.viaAddr);
+	if (!viaAddrBN.isZero()) {
+	    msgElem.viaDiv.style.backgroundImage = "url('images/cart_icon.png')";
+	    viaTooltip.textContent = 'Message via MadStores';
+	} else if (!!message.attachment) {
+	    msgElem.viaDiv.style.backgroundImage = "url('images/download_icon.png')";
+	    viaTooltip.textContent = 'Message w/ attachment';
+	} else {
+	    msgElem.viaDiv.style.backgroundImage = "url('images/env_closed_icon.png')";
+	    viaTooltip.textContent = 'Direct message';
+	}
+    }
+    msgElem.viaDiv.appendChild(viaTooltip);
+
     if (!!message.ensName)
 	msgElem.addrArea.value = abbreviateAddrForEns(message.addr, message.ensName);
     else

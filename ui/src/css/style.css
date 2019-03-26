@@ -474,7 +474,7 @@ p {
     margin: 0px;
     background-color: var(--clr_areabg1);
     border-collapse: collapse;
-    color: var(--clr_areatext); /*yellow; */
+    color: var(--clr_areatext);
     width: 100%;
     overflow-y: hidden;
     overflow-x: hidden;
@@ -513,7 +513,7 @@ p {
 #msgListHeaderSubject {
     margin-right: 1em;
 }
-.msgListMsgNoArea, .msgListAddrArea, .msgListDateArea, .msgListMsgIdArea, .msgListSubjectArea {
+.msgListMsgNoArea, .msgListViaDiv, .msgListAddrArea, .msgListDateArea, .msgListMsgIdArea, .msgListSubjectArea {
     display: table-cell;
     vertical-align: middle;
     padding-top: 1px;
@@ -530,6 +530,16 @@ p {
     min-width: 5em;
     overflow: hidden;
 }
+.msgListViaDiv {
+    width: 42px;
+    background-color: var(--clr_bodybg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+#msgListHeaderVia {
+    background-color: var(--clr_areabg1);
+}
 .msgListAddrArea {
     width: 36em;
     min-width: 36em;
@@ -538,12 +548,12 @@ p {
     overflow-y: hidden;
 }
 .msgListDateArea {
-    width: 24em;
-    min-width: 24em;
-}
-.msgListMsgIdArea {
     width: 20em;
     min-width: 20em;
+}
+.msgListMsgIdArea {
+    width: 17em;
+    min-width: 17em;
 }
 .msgListSubjectArea {
     min-width: 20em;
@@ -557,7 +567,7 @@ p {
 
 
 /*
-  individual message area attributes
+  individual (detail) message area attributes
 */
 #msgAreaDiv  {
     display: block;

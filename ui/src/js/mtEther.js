@@ -253,7 +253,7 @@ const mtEther = module.exports = {
 
 
 
-    //cb(null, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date)
+    //cb(null, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date)
     //pass in in a single result object
     //note: numbers may be in hex or dec. hex if preceeded by 0x. topics and data are always hex.
     //note: this is a synchronous fcn
@@ -292,7 +292,7 @@ const mtEther = module.exports = {
 	//first 2 chars are '0x'; we want rightmost 20 out of 32 bytes
 	const fromAddr = '0x' + result.data.slice(0+2, 64+2).substring(12*2);
 	const toAddr = '0x' + result.data.slice(64+2, 128+2).substring(12*2);
-	const via = '0x' + result.data.slice(128+2, 192+2).substring(12*2);
+	const viaAddr = '0x' + result.data.slice(128+2, 192+2).substring(12*2);
 	//console.log('parseMessageEvent: fromAddr = ' + fromAddr);
 	//console.log('parseMessageEvent: toAddr = ' + toAddr);
 	const txCount = '0x' + result.data.slice(192+2, 256+2);
@@ -314,13 +314,13 @@ const mtEther = module.exports = {
 	if (!!result.timeStamp) {
 	    const timeStamp = parseInt(result.timeStamp);
 	    const date = (new Date(timeStamp * 1000)).toUTCString();
-	    cb(null, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
+	    cb(null, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
 	} else {
 	    common.web3.eth.getBlock(blockNumber, function(err, block) {
 		console.log('parseMessageEvent: ts = ' + block.timestamp);
 		const timeStamp = block.timestamp;
 		const date = (new Date(timeStamp * 1000)).toUTCString();
-		cb(null, msgId, fromAddr, toAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
+		cb(null, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
 	    });
 	}
     },
