@@ -82,8 +82,12 @@ function MsgElem(div, msgNoArea, viaDiv, addrArea, dateArea, msgIdArea, subjectA
 function setOptionsButtonHandlers() {
     const versionArea = document.getElementById('versionArea');
     versionArea.textContent = 'Build: ' + autoVersion.version();
+    const viewContractHref = document.getElementById('viewContractHref');
     const optionsButton = document.getElementById('optionsButton');
-    optionsButton.addEventListener('click', () => { common.replaceElemClassFromTo('optionsPanel', 'hidden', 'visibleB', null); });
+    optionsButton.addEventListener('click', () => {
+	viewContractHref.href = 'https://' + ether.etherscanioTxStatusHost + '/address/' + mtEther.EMT_CONTRACT_ADDR + '#code';
+	common.replaceElemClassFromTo('optionsPanel', 'hidden', 'visibleB', null);
+    });
     const closeOptionsButton = document.getElementById('closeOptionsButton');
     closeOptionsButton.addEventListener('click', () => {
 	common.replaceElemClassFromTo('optionsPanel', 'visibleB', 'hidden', null);
