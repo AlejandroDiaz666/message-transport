@@ -757,6 +757,15 @@ p {
 #registerDiv p {
     font-family: 'Lato', sans-serif;
 }
+@media (max-width: 1270px) and (min-width: 384px) {
+    #registerTextDiv {
+	position: absolute;
+	top: 90px;
+	left: 97px;
+	width: 700px;
+    }
+}
+
 DIV.finalresultstable {
     background-color: #60ff60;
     padding: 2px;

@@ -746,7 +746,7 @@
     }
     .close-btn {
         left: 303px;
-        top: 1px;
+        top: 3px;
     }
     .header-para1-intro2-modified {
         left: 78px;
@@ -1117,7 +1117,7 @@
         left: 813px;
     }
     .close-btn {
-        top: 10px;
+        top: 12px;
         left: 819px;
     }
     .image-para1-intro2 {
@@ -1279,7 +1279,7 @@
         width: 10px;
         height: 25px;
         transform-origin: 5.04062px 12.4742px 0px;
-        top: 13px;
+        top: 12px;
         left: 1138px;
     }
     [data-gwd-group="text-animation"] .heading-para2-group.heading-para2 {
