@@ -915,9 +915,9 @@ function handleUnregisteredAcct() {
     common.setMenuButtonState('composeButton',       'Disabled');
     common.setMenuButtonState('viewSentButton',      'Disabled');
     common.setMenuButtonState('withdrawButton',      'Disabled');
-    common.showWaitingForMetaMask(true);
+    common.showWaitingForMetaMask(true, false);
     dhcrypt.initDH(null, function(err) {
-	common.showWaitingForMetaMask(false);
+	common.showWaitingForMetaMask(false, false);
 	if (!err) {
 	    common.setMenuButtonState('registerButton',   'Enabled');
 	}
@@ -981,11 +981,11 @@ function handleRegisteredAcct(mode) {
 	disableAllButtons();
 	//prevent reloading while we're waiting for signature
 	common.waitingForTxid = true;
-	common.showWaitingForMetaMask(true);
+	common.showWaitingForMetaMask(true, true);
 	const encryptedPrivateKey = mtUtil.acctInfo.encryptedPrivateKey;
 	dhcrypt.initDH(encryptedPrivateKey, function(err) {
 	    common.waitingForTxid = false;
-	    common.showWaitingForMetaMask(false);
+	    common.showWaitingForMetaMask(false, false);
 	    if (!err) {
 		displayFeesAndMsgCnt();
 		handleViewRecv(true);
