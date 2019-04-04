@@ -367,6 +367,8 @@ const ether = module.exports = {
 	}
 	ether.ens.resolver(name).addr().then((addr) => {
 	    ether.ensAddrCache[name] = addr;
+	    //forward resolution is canonical, so we can set reverse ens for address
+	    ether.ensNameCache[addr] = name;
 	    cb(null, addr);
 	}, (err) => {
 	    ether.ensAddrCache[name] = 'X';
@@ -395,12 +397,22 @@ const ether = module.exports = {
 	    cb('ensReveseLookup: invalid address', null);
 	    return;
 	}
+	const checkFwd = (name, addrIn, cb) => {
+	    ether.ensLookup(name, function(err, addr) {
+		if (!!addr && addr.toLowerCase() == addrIn.toLowerCase()) {
+		    cb(null, name);
+		} else {
+		    console.log('ensReveseLookup: failed forward verification:' + addrIn + ' => ' + name);
+		    console.log('ensReveseLookup: but ' + name + ' => ' + addr);
+		    cb('ENS failed forward verification', null);
+		}
+	    });
+	};
 	ether.ens.reverse(addrIn).name().then((name) => {
 	    console.log('ensReveseLookup: ' + addrIn + ' got name: ' + name);
-	    ether.ensNameCache[addrIn] = name;
-	    cb(null, name);
-	}).catch(() => {
-	    console.log('ensReveseLookup: ' + addrIn + ', catch no name found');
+	    checkFwd(name, addrIn, cb);
+	}, (err) => {
+	    console.log('ensReveseLookup: ' + addrIn + ', err no name found');
 	    ether.ensNameCache[addrIn] = 'X';
 	    cb('ensReveseLookup: no name found', null);
 	});
