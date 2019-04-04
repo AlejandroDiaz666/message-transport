@@ -12,20 +12,29 @@ var ENS = require('ethereum-ens');
 
 const ether = module.exports = {
 
-    etherscanioHost: '',
-    infuraioHost: '',
     //tx status host for user to check status of transactions
     etherscanioTxStatusHost: '',
+    etherscanioHost: '',
     etherscanioHost_kovan: 'api-kovan.etherscan.io',
     etherscanioTxStatusHost_kovan: 'kovan.etherscan.io',
     etherscanioHost_ropsten: 'api-ropsten.etherscan.io',
     etherscanioTxStatusHost_ropsten: 'ropsten.etherscan.io',
     etherscanioHost_main: 'api.etherscan.io',
     etherscanioTxStatusHost_main: 'etherscan.io',
+    //url = 'https://' + infuraioHost + infuraioUrlPrefix + infuraioProjectID
+    infuraioHost: '',
     infuraioHost_main: 'mainnet.infura.io',
     infuraioHost_kovan: 'kovan.infura.io',
     infuraioHost_ropsten: 'ropsten.infura.io',
+    infuraioUrlPrefix: '/v3/',
     infuraioProjectID: 'd31bddc6dc8e47d29906cee739e4fe7f',
+    //url = 'https://' + nodeSmithHost + nodeSmithUrlPrefix + '?apiKey=' + nodeSmithApiKey
+    nodeSmithHost: 'ethereum.api.nodesmith.io',
+    nodeSmithUrlPrefix: '',
+    nodeSmithUrlPrefix_mainnet: '/v1/mainnet/jsonrpc',
+    nodeSmithUrlPrefix_ropsten: '/v1/ropsten/jsonrpc',
+    nodeSmithUrlPrefix_kovan: '/v1/kivan/jsonrpc',
+    nodeSmithApiKey: '30a4346e567f47ae8a52278b4b7f6327',
     kweiHex: '3E8',
     mweiHex: 'F4240',
     gweiHex: '3B9ACA00',
@@ -35,7 +44,7 @@ const ether = module.exports = {
     getLogsTimestamp: 0,
     getLogsTimer: null,
     chainId: 0,
-    //nodeType = 'etherscan.io' | 'infura.io' | 'metamask' | 'custom'
+    //nodeType = 'etherscan.io' | 'infura.io' | 'nodesmith.io' | 'metamask' | 'custom'
     nodeType: 'metamask',
     node: 'http://192.168.0.2:8545',
     ensAddrCache: {},
@@ -55,6 +64,7 @@ const ether = module.exports = {
 		ether.etherscanioHost = ether.etherscanioHost_main;
 		ether.etherscanioTxStatusHost = ether.etherscanioTxStatusHost_main;
 		ether.infuraioHost = ether.infuraioHost_main;
+		ether.nodeSmithUrlPrefix = ether.nodeSmithUrlPrefix_mainnet;
 		break
 	    case "2":
 		network = 'Morden test network';
@@ -66,6 +76,7 @@ const ether = module.exports = {
 		ether.etherscanioHost = ether.etherscanioHost_ropsten;
 		ether.etherscanioTxStatusHost = ether.etherscanioTxStatusHost_ropsten;
 		ether.infuraioHost = ether.infuraioHost_ropsten;
+		ether.nodeSmithUrlPrefix = ether.nodeSmithUrlPrefix_ropsten;
 		break
 	    case "4":
 		network = 'Rinkeby test network';
@@ -77,6 +88,7 @@ const ether = module.exports = {
 		ether.etherscanioHost = ether.etherscanioHost_kovan;
 		ether.etherscanioTxStatusHost = ether.etherscanioTxStatusHost_kovan;
 		ether.infuraioHost = ether.infuraioHost_kovan;
+		ether.nodeSmithUrlPrefix = ether.nodeSmithUrlPrefix_kovan;
 		break
 	    default:
 		console.log('This is an unknown network.')
@@ -466,10 +478,11 @@ function getLogsNext() {
     if (getLogsList.length > 0) {
 	const now_ms = Date.now();
 	const elapsed_ms = now_ms - ether.getLogsTimestamp;
-	if (elapsed_ms < 2000) {
+	const delay = (ether.nodeType == 'nodesmith.io') ? 0 : 2000;
+	if (elapsed_ms < delay) {
 	    if (!!ether.getLogsTimer)
 		clearTimeout(ether.getLogsTimer);
-	    ether.getLogsTimer = setTimeout(getLogsNext, 200 + 2000 - elapsed_ms);
+	    ether.getLogsTimer = setTimeout(getLogsNext, 200 + delay - elapsed_ms);
 	} else {
 	    const getLogsInfo = getLogsList[0];
 	    if (getLogsInfo.flavor == 3) {
@@ -703,7 +716,11 @@ function infuraGetLogs3(options, cb) {
     if (!!topic3)
 	options.topics[1].push(topic3);
     console.log('infuraGetLogs3: ether.nodeType = ' + ether.nodeType);
-    let url = 'https://' + ether.infuraioHost + '/v3/' + ether.infuraioProjectID;
+    //url = 'https://' + infuraioHost + infuraioUrlPrefix + infuraioProjectID
+    //url = 'https://' + nodeSmithHost + nodeSmithUrlPrefix + '?apiKey=' + nodeSmithApiKey
+    let url = (ether.nodeType == 'infura.io')
+	? 'https://' + ether.infuraioHost + ether.infuraioUrlPrefix + ether.infuraioProjectID
+	: 'https://' + ether.nodeSmithHost + ether.nodeSmithUrlPrefix + '?apiKey=' + ether.nodeSmithApiKey;
     if (!!options.fromBlock) {
 	const fromBlock = parseInt(options.fromBlock);
 	if (!isNaN(fromBlock))
