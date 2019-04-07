@@ -1581,8 +1581,8 @@ function populateMsgList(minElemIdx, cb) {
 	++callCount;
 	++callDepth;
 	const firstElemIdx = index.msgListElems.length;
-	const fastStartLimit = (index.msgListElems.length > 12) ? 9 : 6;
-	const noElems = Math.min(fastStartLimit, maxMsgNo - index.msgListElems.length);
+	const retreivalLimit = 9;
+	const noElems = Math.min(retreivalLimit, maxMsgNo - index.msgListElems.length);
 	const lastElemIdx = firstElemIdx + noElems - 1;
 	const startMsgNo = elemIdxToMsgNo(isRx, lastElemIdx);
         console.log('populateMsgList: msgListElems.length = ' + index.msgListElems.length + ', noElems = ' + noElems);
@@ -1604,8 +1604,8 @@ function populateMsgList(minElemIdx, cb) {
 		return;
 	    }
 	    const t = [];
-	    console.log('populateMsgList: calling getMessages(0, ' + startMsgNo + ', ' + t + ')');
-	    getMessages(msgIds, 0, startMsgNo, t, function(tempMessages) {
+	    console.log('populateMsgList: calling getMessages(' + startMsgNo + ', ' + t + ')');
+	    getMessages(msgIds, startMsgNo, t, function(tempMessages) {
 		console.log('populateMsgList: got ' + Object.keys(tempMessages).length + ' messages');
 		for (let elemIdx = firstElemIdx; elemIdx <= lastElemIdx; ++elemIdx) {
 		    const msgElem = index.msgListElems[elemIdx];
@@ -1660,7 +1660,7 @@ function getNewMessages(isRx, oldMaxMsgNo, newMaxMsgNo, cb) {
 		cb();
 		return;
 	    }
-	    getMessages(msgIds, 0, startMsgNo, [], function(tempMessages) {
+	    getMessages(msgIds, startMsgNo, [], function(tempMessages) {
 		if (--callDepth <= 0) {
 		    retrievingMsgsModal.style.display = 'none';
 		    common.setLoadingIcon(null);
@@ -1676,49 +1676,37 @@ function getNewMessages(isRx, oldMaxMsgNo, newMaxMsgNo, cb) {
 
 //
 // get messages corresponding to the passed msgIds[], which are numbered sequentially from msgNo
-// each recursive call retrieves up to three messages
 //
 // msgIds: array of message ID's
-// idIdx: current index into msgIds[]
 // msgNo: message number of msgIds[idIdx]
 // messages are placed to tempMessages[msgNo]
-// messages that are sucessfully decrypted are also placed to {tx,rx}Messages
+// messages that are sucessfully decrypted are also placed to {tx,rx}Messages[msgNo]
 // cb(tempMessages): callback when all done
 //
-function getMessages(msgIds, idIdx, msgNo, tempMessages, cb) {
-    console.log('getMessages: msgIds = ' + msgIds.toString() + ', msgIds.length = ' + msgIds.length + ', idIdx = ' + idIdx + ', msgNo = ' + msgNo);
+function getMessages(msgIds, msgNo, tempMessages, cb) {
+    console.log('getMessages: msgIds = ' + msgIds.toString() + ', msgIds.length = ' + msgIds.length + ', msgNo = ' + msgNo);
     const isRx = (index.listMode == 'recv') ? true : false;
-    if (idIdx >= msgIds.length || common.numberToBN(msgIds[idIdx]).isZero()) {
-	const maxMsgNo = (isRx) ? parseInt(mtUtil.acctInfo.recvMsgCount) : parseInt(mtUtil.acctInfo.sentMsgCount);
-	for (; idIdx < msgIds.length && msgNo <= maxMsgNo; ++idIdx, ++msgNo) {
-	    const addr = (msgNo <= maxMsgNo) ? 'Message data unavailable...' : '';
-	    const message = new Message(isRx, '', msgNo, addr, '', '', '', '', '', null);
-	    tempMessages[msgNo] = message;
-	}
-	cb(tempMessages);
-	return;
-    }
     const threeMsgIds = [];
     const msgCookies = {};
-    for (let i = 0; i < 3 && idIdx < msgIds.length; ++i, ++idIdx, ++msgNo) {
-	if (common.numberToBN(msgIds[idIdx]).isZero())
+    for (let i = 0; i < 9 && i < msgIds.length; ++i, ++msgNo) {
+	if (common.numberToBN(msgIds[i]).isZero())
 	    break;
-	console.log('getMessages: msgId = ' + msgIds[idIdx]);
-	const msgCookie = { idIdx: idIdx, msgNo: msgNo };
-	const msgId = msgIds[idIdx];
+	console.log('getMessages: msgId = ' + msgIds[i]);
+	const msgCookie = { idIdx: i, msgNo: msgNo };
+	const msgId = msgIds[i];
 	threeMsgIds.push(msgId);
 	msgCookies[msgId] = msgCookie;
     }
-    //gets up to 3 log entries; second cb when all done
-    let msgsToDisplay = 4;
     let noMsgsDisplayed = 0;
+    let msgsToDisplay = msgIds.length + 1000;
     const messages = isRx ? index.rxMessages : index.txMessages;
     const msgCompleteFcn = (source, err) => {
 	if (++noMsgsDisplayed >= msgsToDisplay) {
 	    console.log('getMessages: got msgCb, ' + source + ', err = ' + err + ', msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
-	    (idIdx < msgIds.length) ? getMessages(msgIds, idIdx, msgNo, tempMessages, cb) : cb(tempMessages);
+	    cb(tempMessages);
 	}
     };
+    //gets up to 9 log entries; second cb when all done
     mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
 	console.log('getMessages: getAndParseIdMsgs returns, err = ' + err);
 	if (!!err || !fromAddr) {
@@ -1750,10 +1738,10 @@ function getMessages(msgIds, idIdx, msgNo, tempMessages, cb) {
 	    });
 	});
     }, function(noMsgsProcessed) {
-	console.log('getMessages: got doneCb. idIdx = ' + idIdx + ', noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsDisplayed = ' + noMsgsDisplayed);
+	console.log('getMessages: got doneCb. noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsDisplayed = ' + noMsgsDisplayed);
 	msgsToDisplay = noMsgsProcessed;
 	if (noMsgsDisplayed >= msgsToDisplay)
-	    (idIdx < msgIds.length) ? getMessages(msgIds, idIdx, msgNo, tempMessages, cb) : cb(tempMessages);
+	    cb(tempMessages);
     });
 }
 

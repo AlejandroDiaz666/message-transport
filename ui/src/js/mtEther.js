@@ -38,8 +38,8 @@ const mtEther = module.exports = {
 	    mtEther.firstBlock = 7498310;
 	    mtEther.EMT_CONTRACT_ADDR = mtEther.mainnet_contract_addr;
 	} else if (network.indexOf('Ropsten') >= 0) {
-	    //mtEther.firstBlock = 5250732;
-	    //mtEther.EMT_CONTRACT_ADDR = mtEther.ropsten_contract_addr;
+	    mtEther.firstBlock = 5250732;
+	    mtEther.EMT_CONTRACT_ADDR = mtEther.ropsten_contract_addr;
 	}
 	if (!mtEther.EMT_CONTRACT_ADDR)
 	    err = network + ' is not a supported network';
