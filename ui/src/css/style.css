@@ -226,11 +226,11 @@ p {
     top: 30%;
     width: 300px;
     height: 135px;
-    padding: 10px;
+    padding: 10px 20px 20px 20px;
     overflow: none;
     transform: translate(-50%, -50%);
     border: 1px solid #888;
-    background-color: #9cd9db;
+    background-color: var(--clr_bodybg);
 }
 #searchDialogInstr {
     position: relative;
@@ -272,6 +272,49 @@ p {
     margin-top: 0px;
 }
 
+#statusDiv {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    width: 450px;
+    height: 250px;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    border: black 3px solid;
+    border-radius: 15px;
+    background-color: var(--clr_optpanelbg);
+    z-index: 1;
+}
+#statusCtrDiv {
+    position: relative;
+    width: 70%;
+    left: 50%;
+    margin-top: 20px;
+    min-height: 40px;
+    transform: translateX(-50%);
+}
+#statusViewLinkDiv {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min-content;
+    white-space: nowrap;
+    margin-top: 10px;
+}
+#statusNoteDiv {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, -150%);
+    width: 70%;
+}
+#statusContinueDiv {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min-content;
+    margin-top: 20px;
+}
 
 #importantInfoButton {
     float: left;
@@ -849,13 +892,6 @@ p {
 	width: 700px;
     }
 }
-
-DIV.finalresultstable {
-    background-color: #60ff60;
-    padding: 2px;
-    margin: 2px;
-}
-
 
 @media (max-width: 1300px) and (min-width: 384px) {
     #navButtonsSpan {
