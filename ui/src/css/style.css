@@ -851,7 +851,7 @@ DIV.finalresultstable {
 }
 
 
-@media (max-width: 1149px) and (min-width: 384px) {
+@media (max-width: 1300px) and (min-width: 384px) {
     #navButtonsSpan {
 	/* move nav buttons to below view-sent, view-received */
 	position: relative;
