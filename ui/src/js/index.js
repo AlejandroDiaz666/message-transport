@@ -1655,8 +1655,8 @@ function populateMsgList(minElemIdx, cb) {
 	++callCount;
 	++callDepth;
 	const firstElemIdx = index.msgListElems.length;
-	const retreivalLimit = 9;
-	const noElems = Math.min(retreivalLimit, maxMsgNo - index.msgListElems.length);
+	const fastStartLimit = (index.msgListElems.length > 12) ? 9 : 3;
+	const noElems = Math.min(fastStartLimit, maxMsgNo - index.msgListElems.length);
 	const lastElemIdx = firstElemIdx + noElems - 1;
 	const startMsgNo = elemIdxToMsgNo(isRx, lastElemIdx);
         console.log('populateMsgList: msgListElems.length = ' + index.msgListElems.length + ', noElems = ' + noElems);
