@@ -532,6 +532,7 @@ const common = module.exports = {
 	    button.className = (button.className).replace('menuBarButtonSelected', newClassName);
 	else
 	    button.className = (button.className).replace('menuBarButton', newClassName);
+	return(button);
     },
 
 

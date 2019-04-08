@@ -46,6 +46,7 @@ const index = module.exports = {
 	setMsgRefButtonHandler();
 	setMarkReadButtonHandler();
 	setPrevNextButtonHandlers();
+	setSearchButtonHandlers();
 	beginTheBeguine('startup');
 	periodicCheckForAccountChanges();
     },
@@ -563,6 +564,79 @@ function setPrevNextButtonHandlers() {
 	//console.log('got scroll: maxMsgNo = ' + maxMsgNo + ', index.msgListElems.length = ' + index.msgListElems.length);
         if (index.msgListElems.length < maxMsgNo)
 	    populateMsgList(null, function() { });
+    });
+}
+
+
+function setSearchButtonHandlers() {
+    const searchDialogDoButton = document.getElementById('searchDialogDoButton');
+    const searchDialogArea = document.getElementById('searchDialogArea');
+    const setSearchLimits = (prefix, startAtMsgNo) => {
+	index.searchFrom = startAtMsgNo;
+	index.searchTo = index.msgListElems[index.msgListElems.length - 1].msgNo;
+	if (index.searchTo != 1)
+	    index.searchTo = Math.max(1, ((Math.floor(index.searchTo / 50) - 1) * 50) + 1);
+	searchDialogDoButton.textContent = prefix + ' (messages ' + index.searchFrom + ' to ' + index.searchTo + ')';
+    };
+    const reinitSearch = () => {
+	setSearchLimits('Search', index.msgListElems[0].msgNo);
+	console.log('searchDialogDoButton.textContent = ' + searchDialogDoButton.textContent);
+	common.setMenuButtonState('searchDialogDoButton', (!!searchDialogArea.value.length && index.msgListElems.length > 0) ? 'Enabled' : 'Disabled');
+    };
+    document.getElementById('searchCaseSens').addEventListener('change', reinitSearch);
+    searchDialogArea.addEventListener('keyup', reinitSearch);
+    document.getElementById('searchCloseButton').addEventListener('click', () => common.replaceElemClassFromTo('searchDialogDiv', 'visibleB', 'hidden', false));
+    document.getElementById('searchButton').addEventListener('click', () => {
+	common.setMenuButtonState('searchDialogDoButton', 'Disabled');
+	searchDialogArea.value = '';
+	setSearchLimits('Search', index.msgListElems[0].msgNo);
+	common.replaceElemClassFromTo('searchDialogDiv', 'hidden', 'visibleB', false);
+    });
+    searchDialogDoButton.addEventListener('click', () => {
+	let searchText = searchDialogArea.value;
+	if (!searchText)
+	    return;
+	if (!document.getElementById('searchCaseSens').checked)
+	    searchText = searchText.toLowerCase();
+	const minElemIdx = msgNoToElemIdx((index.listMode == 'recv'), index.searchTo);
+	populateMsgList(minElemIdx, function() {
+	    common.setLoadingIcon('start');
+	    const begElemIdx = msgNoToElemIdx((index.listMode == 'recv'), index.searchFrom);
+	    const endElemIdx = Math.max(minElemIdx, index.msgListElems.length - 1);
+	    console.log('searching elems from ' + begElemIdx + ' to ' + endElemIdx);
+	    let searchFoundIdx = -1;
+	    for (let i = begElemIdx; i <= endElemIdx; ++i) {
+		const msgElem = index.msgListElems[i];
+		let msgText = (!!msgElem && !!msgElem.message && !!msgElem.message.text) ? msgElem.message.text : '';
+		if (!document.getElementById('searchCaseSens').checked)
+		    msgText = msgText.toLowerCase();
+		console.log('searching: elem ' + i + ': ' + msgText);
+		if (msgText.indexOf(searchText) >= 0) {
+		    searchFoundIdx = i;
+		    break;
+		}
+	    }
+	    common.setLoadingIcon(null);
+	    if (searchFoundIdx < 0) {
+		console.log('did not find "' + searchText + '" in any messages');
+		if (index.msgListElems[endElemIdx].msgNo > 1) {
+		    setSearchLimits('Continue search', index.msgListElems[endElemIdx].msgNo);
+		} else {
+		    common.setMenuButtonState('searchDialogDoButton', 'Disabled').textContent = 'Searched all messages';
+		}
+	    } else {
+		console.log('found "' + searchText + '" in msg at idx ' + searchFoundIdx);
+		selectMsgListEntry(searchFoundIdx, function() {
+		    const msgElem = index.msgListElems[index.elemIdx];
+		    msgElem.div.scrollIntoView({ block: "center" });
+		});
+		if (searchFoundIdx < index.msgListElems.length - 2 || index.msgListElems[searchFoundIdx].msgNo > 1) {
+		    setSearchLimits('Continue search', index.msgListElems[searchFoundIdx + 1].msgNo);
+		} else {
+		    common.setMenuButtonState('searchDialogDoButton', 'Disabled').textContent = 'Searched all messages';
+		}
+	    }
+	});
     });
 }
 
@@ -2010,6 +2084,13 @@ function elemIdxToMsgNo(isRx, elemIdx) {
     const maxMsgNo = (isRx) ? parseInt(mtUtil.acctInfo.recvMsgCount) : parseInt(mtUtil.acctInfo.sentMsgCount);
     const msgNo = maxMsgNo - elemIdx;
     return(msgNo);
+}
+
+function msgNoToElemIdx(isRx, msgNo) {
+    const maxMsgNo = (isRx) ? parseInt(mtUtil.acctInfo.recvMsgCount) : parseInt(mtUtil.acctInfo.sentMsgCount);
+    const elemIdx = maxMsgNo - msgNo;
+    console.log('msgNoToElemIdx: isRx = ' + isRx + ', maxMsgNo = ' + maxMsgNo + ', msgNo = ' + msgNo + ', elemIdx = ' + elemIdx);
+    return(elemIdx);
 }
 
 

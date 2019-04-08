@@ -192,11 +192,11 @@ p {
 }
 
 #retrievingMsgsModal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
-    left: 50%;
-    top: 30%;
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 60%;
+    top: 40%;
     width: 270px;
     height: 50px;
     padding: 10px;
@@ -211,6 +211,59 @@ p {
     left: 50%;
     width: fit-content;
     transform: translate(-50%, -50%);
+}
+
+#searchDialogDiv {
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    top: 30%;
+    width: 300px;
+    height: 135px;
+    padding: 10px;
+    overflow: none;
+    transform: translate(-50%, -50%);
+    border: 1px solid #888;
+    background-color: #9cd9db;
+}
+#searchDialogInstr {
+    position: relative;
+    vertical-align: middle;
+    padding: 1px;
+    margin-top: 32px;
+    resize: none;
+    color: var(--clr_areatext);
+    width: 80%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+#searchCaseSens {
+    margin-top: 20px;
+}
+#searchDialogArea {
+    position: relative;
+    vertical-align: middle;
+    padding: 1px;
+    margin: 0px;
+    resize: none;
+    color: var(--clr_areatext);
+    width: 95%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+#searchDialogDoButton {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, -150%);
+    width: 18em;
+}
+#searchCloseButton {
+    float: right;
+    width: auto;
+    height: auto;
+    padding: 5px;
+    margin-top: 0px;
 }
 
 

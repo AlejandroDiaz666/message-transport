@@ -218,6 +218,17 @@ message, the message ID of the original message is stored with the reply as a 'R
     </div>
     <div id="waitIcon">
     </div>
+    <div id="searchDialogDiv" class="hidden">
+      <button id="searchCloseButton" class="menuBarButton" type="button">Close</button>
+      <div id="searchDialogInstr">
+	<p>Enter word or phrase to search:</p>
+      </div>
+      <span id="searchCaseSpan">
+	<input type="checkbox" id="searchCaseSens" value="true">Case sensitive</input>
+      </span>
+      <textarea id="searchDialogArea" rows="1" cols="15" placeholder=""></textarea>
+      <button id="searchDialogDoButton" class="menubarButton" type="button">Search</button>
+    </div>
 
 
     <!--
@@ -305,6 +316,7 @@ message, the message ID of the original message is stored with the reply as a 'R
       <button id="viewRecvButton" class="menuBarButton" type="button">View Received</button>
       <button id="markReadButton" class="menuBarButton hidden" type="button">Mark as Read</button>
       <span id="navButtonsSpan" class="hidden">
+	<button id="searchButton" type="button" class="navButton">search</button>
 	<button id="prevUnreadButton" type="button" class="navButton hidden">prev unread</button>
 	<button id="nextUnreadButton" type="button" class="navButton hidden">next unread</button>
 	<button id="firstMsgButton" type="button" class="navButton">first</button>
