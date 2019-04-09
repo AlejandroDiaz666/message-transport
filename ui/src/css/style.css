@@ -569,18 +569,24 @@ p {
     border: 1px solid var(--clr_buttonbg);
     cursor: default;
 }
-.msgInfoAreaButton {
+.msgInfoAreaButton, .msgRightButton {
     margin: 1px;
     border: var(--bor_butnormal);
 }
-.msgInfoAreaButton:hover {
+.msgInfoAreaButton:hover, .msgRightButton:hover {
     cursor: pointer;
     border: var(--bor_butselect);
 }
-.msgInfoAreaButton[disabled], .msgInfoAreaButton[disabled]:hover, .msgInfoAreaButton[disabled]:focus, .msgInfoAreaButton[disabled]:active {
+.msgInfoAreaButton[disabled], .msgInfoAreaButton[disabled]:hover, .msgInfoAreaButton[disabled]:focus, .msgInfoAreaButton[disabled]:active,
+.msgRightButton[disabled], .msgRightButton[disabled]:hover, .msgRightButton[disabled]:focus, .msgRightButton[disabled]:active {
     cursor: default;
     border: var(--bor_butnormal);
 }
+.msgRightButton {
+    height: 26px;
+}
+
+
 
 #prevUnreadButton {
 }
@@ -708,6 +714,7 @@ p {
 }
 
 #msgInfoAreaDiv {
+    float: left;
     padding-top: 10px;
     padding-right: 10px;
     padding-bottom: 0px;
@@ -786,7 +793,7 @@ p {
     resize: none;
 }
 #replyButton {
-    float: right;
+    float: left;
     vertical-align: middle;
     padding-top: 0px;
     padding-right: 6px;
@@ -794,6 +801,9 @@ p {
     padding-left: 6px;
     border-radius: 8px;
     color: var(--clr_buttontext);
+}
+#msgRightButtonsSpan {
+    padding: 0px;
 }
 #attachmentButton, #attachmentInput {
     float:right;
@@ -849,6 +859,7 @@ p {
 }
 
 #msgTextAreaDiv {
+    clear: both;
     padding-top: 0px;
     padding-right: 10px;
     padding-bottom: 10px;
