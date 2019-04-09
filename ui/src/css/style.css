@@ -572,15 +572,18 @@ p {
 .msgInfoAreaButton, .msgRightButton {
     margin: 1px;
     border: var(--bor_butnormal);
+    background-color: var(--clr_buttonbg);
 }
 .msgInfoAreaButton:hover, .msgRightButton:hover {
     cursor: pointer;
     border: var(--bor_butselect);
+    background-color: var(--clr_buttonbgsel);
 }
 .msgInfoAreaButton[disabled], .msgInfoAreaButton[disabled]:hover, .msgInfoAreaButton[disabled]:focus, .msgInfoAreaButton[disabled]:active,
 .msgRightButton[disabled], .msgRightButton[disabled]:hover, .msgRightButton[disabled]:focus, .msgRightButton[disabled]:active {
     cursor: default;
     border: var(--bor_butnormal);
+    background-color: var(--clr_buttonbg);
 }
 .msgRightButton {
     height: 26px;
