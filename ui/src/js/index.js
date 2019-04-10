@@ -1243,14 +1243,28 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 
 
 function handleRegister() {
-    const halfFinneyBN = (new BN(ether.finneyHex, 16)).divn(2);
-    const hundredSzaboBN = (new BN(ether.szaboHex, 16)).muln(100);
-    const hundreds = (index.etherPrice > 50) ? Math.floor(parseInt(index.etherPrice) / 100) : 1;
-    let suggestedMsgFeeBN = halfFinneyBN.divn(hundreds);
-    suggestedMsgFeeBN = suggestedMsgFeeBN.div(hundredSzaboBN);
-    suggestedMsgFeeBN.imul(hundredSzaboBN);
+    let suggestedMsgFeeBN;
+    const finneyBN = new BN(ether.finneyHex, 16);
+    const fifties = (index.etherPrice > 50) ? Math.floor((parseInt(index.etherPrice) + 25) / 50) : 1;
+    const szaboBN = new BN(ether.szaboHex, 16);
+    suggestedMsgFeeBN = finneyBN.divn(fifties);
+    if (suggestedMsgFeeBN.gt(szaboBN.muln(100))) {
+	//fee gt 100 szabo, price < 500, fifty szabo is lt 2+1/2 cent, so 50 szabo increments
+	const fiftySzaboBN = szaboBN.muln(50);
+	suggestedMsgFeeBN = suggestedMsgFeeBN.div(fiftySzaboBN);
+	suggestedMsgFeeBN.imul(fiftySzaboBN);
+    } else if (suggestedMsgFeeBN.gt(szaboBN.muln(10))) {
+	//fee gt 10 szabo, 500 < price < 5000, 0.05 cent < 1 szabo < 0.5 cent, so 1 szabo increments
+	suggestedMsgFeeBN = suggestedMsgFeeBN.div(szaboBN);
+	suggestedMsgFeeBN.imul(szaboBN);
+    } else if (suggestedMsgFeeBN.gt(szaboBN)) {
+	//fee gt 1 szabo, 5000 < price < 50000, 0.05 cent < 100 gwei < 0.5 cent, so 100 gwei increments
+	const hundredGweiBN = new BN(ether.gweiHex, 16).muln(100);
+	suggestedMsgFeeBN = suggestedMsgFeeBN.div(hundredGweiBN);
+	suggestedMsgFeeBN.imul(hundredGweiBN);
+    }
     let suggestedSpamFeeBN = suggestedMsgFeeBN.muln(10);
-    console.log('suggestedMsgFeeBN = ' + ether.convertWeiBNToComfort(suggestedMsgFeeBN) + ', suggestedSpamFeeBN = ' + ether.convertWeiBNToComfort(suggestedSpamFeeBN));
+    console.log('suggestedMsgFeeBN = ' + ether.convertWeiBNToComfort(suggestedMsgFeeBN, 3) + ', suggestedSpamFeeBN = ' + ether.convertWeiBNToComfort(suggestedSpamFeeBN, 3));
     let msgFeeBN = suggestedMsgFeeBN;
     let spamFeeBN = suggestedSpamFeeBN;
     //
@@ -1278,8 +1292,8 @@ function handleRegister() {
     }
     index.elemIdx = -1;
     //
-    document.getElementById('suggestedMsgFee').textContent = ether.convertWeiBNToComfort(suggestedMsgFeeBN);
-    document.getElementById('suggestedSpamFee').textContent = ether.convertWeiBNToComfort(suggestedSpamFeeBN);
+    document.getElementById('suggestedMsgFee').textContent = ether.convertWeiBNToComfort(suggestedMsgFeeBN, 3);
+    document.getElementById('suggestedSpamFee').textContent = ether.convertWeiBNToComfort(suggestedSpamFeeBN, 3);
     const msgFeeNumberAndUnits = ether.convertWeiBNToNumberAndUnits(msgFeeBN);
     const spamFeeNumberAndUnits = ether.convertWeiBNToNumberAndUnits(spamFeeBN);
     document.getElementById('messageFeeInput').value = msgFeeNumberAndUnits.number;
