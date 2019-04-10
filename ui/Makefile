@@ -3,7 +3,7 @@ HTMSRCDIR := $(SRCDIR)/html
 JSSRCDIR  := $(SRCDIR)/js
 CSSSRCDIR := $(SRCDIR)/css
 IMGSRCDIR := $(SRCDIR)/images
-HTMBLDDIR := build/
+HTMBLDDIR := build
 CSSBLDDIR := build/css
 IMGBLDDIR := build/images
 JSBLDDIR  := build/bundle
@@ -30,8 +30,7 @@ deploy: all
 	mkdir release/css
 	mkdir release/images
 	mkdir release/bundle
-	cp $(HTMBLDDIR)/*.html release/
-	cp $(HTMBLDDIR)/*.html $(HTMBLDDIR)/$(INDEXALIAS) release/
+	cp $(HTMBLDDIR)/*.html $(HTMBLDDIR)/*.ico $(HTMBLDDIR)/$(INDEXALIAS) release/
 	cp $(IMGBLDDIR)/* release/images/
 	cp $(CSSBLDDIR)/*_TIMESTAMP*.css release/css/
 	cp $(JSBLDDIR)/SVGAnimation.js release/bundle/
