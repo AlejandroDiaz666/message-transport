@@ -421,7 +421,8 @@ const common = module.exports = {
 	const noteDiv = document.createElement("div");
 	noteDiv.className = 'visibleB';
 	noteDiv.id = 'statusNoteDiv';
-	const noteText = document.createTextNode('Note: You cannot continue until this transaction completes...');
+	const noteText = document.createTextNode('Note: You cannot continue until this transaction completes... ' +
+						 'If you speed up the transaction via MetaMask, then you will need to reload the page (after the transaction completes).');
 	noteDiv.appendChild(document.createElement("p")).appendChild(noteText);
 	statusDiv.appendChild(noteDiv);
 	//
