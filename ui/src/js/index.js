@@ -749,7 +749,7 @@ const timerIsPaused = () => {
 function periodicCheckForAccountChanges() {
     //console.log('periodicCheckForAccountChanges: enter');
     if (timerIsPaused()) {
-	console.log('periodicCheckForAccountChanges: timerIsPaused!');
+	//console.log('periodicCheckForAccountChanges: timerIsPaused!');
 	setTimeout(periodicCheckForAccountChanges, 20000);
 	return;
     }
