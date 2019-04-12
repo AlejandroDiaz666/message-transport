@@ -416,7 +416,7 @@ function setMsgRefButtonHandler() {
     msgRefButton.addEventListener('click', function() {
 	const ref = msgRefButton.ref;
 	if (!!ref) {
-	    mtUtil.getAndParseIdMsg(ref, function(err, msgId, fromAddr, toAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
+	    mtUtil.getAndParseIdMsg(ref, function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
 		const msgTextArea = document.getElementById('msgTextArea');
 		const viewRecvButton = document.getElementById('viewRecvButton');
 		if (!!err) {
