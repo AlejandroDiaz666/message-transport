@@ -761,7 +761,7 @@ function periodicCheckForAccountChanges() {
 	    handleLockedMetaMask(!!err ? ('Cannot access MetaMask/account: ' + err) : 'Cannot access MetaMask/account: reload page');
 	    return;
 	}
-	console.log('periodicCheckForAccountChanges: MetaMask account unchanged...');
+	//console.log('periodicCheckForAccountChanges: MetaMask account unchanged...');
 	mtEther.accountQuery(common.web3.eth.accounts[0], function(err, _acctInfo) {
 	    //acctInfo will always be an object. could be empty {}
 	    if (JSON.stringify(_acctInfo).length != 2 && JSON.stringify(mtUtil.acctInfo).length != 2) {

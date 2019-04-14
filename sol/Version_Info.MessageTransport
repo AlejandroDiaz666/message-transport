@@ -6,18 +6,7 @@ _tokenAddr = 0x88088019a2a235f9e7495124d0b0e90f41a777b0
 constructor parms:
 00000000000000000000000088088019a2a235f9e7495124d0b0e90f41a777b0
 
----------------------------
-ropsten
----------------------------
-ropsten: 0x95c1a0ba886286f013deb7918ca1918341b88df4
-_tokenAddr = 0x4d08eb215670920303e910f8a311224abe2f8a7c
-constructor parms:
-0000000000000000000000004d08eb215670920303e910f8a311224abe2f8a7c
-
-
 Note: don't forget to a) compile with optimization, b) set trust
-
-
 
 ======= MessageTransport.sol:MessageTransport =======
 Gas estimation:
