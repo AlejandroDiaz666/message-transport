@@ -29,6 +29,7 @@ const index = module.exports = {
     acctCheckTimer: null,
     etherPrice: 100,
     elemIdx: -1,
+    searchIsActive: false,
     listMode: null,
     msgListElems: [],
     rxMessages: [],
@@ -416,7 +417,7 @@ function setMsgRefButtonHandler() {
     msgRefButton.addEventListener('click', function() {
 	const ref = msgRefButton.ref;
 	if (!!ref) {
-	    mtUtil.getAndParseIdMsg(ref, function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, mimeType, ref, msgHex, blockNumber, date) {
+	    mtUtil.getAndParseIdMsg(ref, function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
 		const msgTextArea = document.getElementById('msgTextArea');
 		const viewRecvButton = document.getElementById('viewRecvButton');
 		if (!!err) {
@@ -572,10 +573,11 @@ function setSearchButtonHandlers() {
     const searchDialogDoButton = document.getElementById('searchDialogDoButton');
     const searchDialogArea = document.getElementById('searchDialogArea');
     const setSearchLimits = (prefix, startAtMsgNo) => {
-	index.searchFrom = startAtMsgNo;
-	index.searchTo = index.msgListElems[index.msgListElems.length - 1].msgNo;
-	if (index.searchTo != 1)
-	    index.searchTo = Math.max(1, ((Math.floor(index.searchTo / 50) - 1) * 50) + 1);
+	index.searchTo = 1;
+	index.searchFrom = parseInt(startAtMsgNo);
+	console.log('tentative searchFrom = ' + index.searchFrom + ', index.searchTo = ' + index.searchTo);
+	if (index.searchFrom > 50)
+	    index.searchTo = Math.max(1, Math.floor((index.searchFrom - 15) / 50) * 50);
 	searchDialogDoButton.textContent = prefix + ' (messages ' + index.searchFrom + ' to ' + index.searchTo + ')';
     };
     const reinitSearch = () => {
@@ -585,12 +587,16 @@ function setSearchButtonHandlers() {
     };
     document.getElementById('searchCaseSens').addEventListener('change', reinitSearch);
     searchDialogArea.addEventListener('keyup', reinitSearch);
-    document.getElementById('searchCloseButton').addEventListener('click', () => common.replaceElemClassFromTo('searchDialogDiv', 'visibleB', 'hidden', false));
+    document.getElementById('searchCloseButton').addEventListener('click', () => {
+	common.replaceElemClassFromTo('searchDialogDiv', 'visibleB', 'hidden', false);
+	index.searchIsActive = false;
+    });
     document.getElementById('searchButton').addEventListener('click', () => {
 	common.setMenuButtonState('searchDialogDoButton', 'Disabled');
 	searchDialogArea.value = '';
 	setSearchLimits('Search', index.msgListElems[0].msgNo);
 	common.replaceElemClassFromTo('searchDialogDiv', 'hidden', 'visibleB', false);
+	index.searchIsActive = true;
     });
     searchDialogDoButton.addEventListener('click', () => {
 	let searchText = searchDialogArea.value;
@@ -599,10 +605,11 @@ function setSearchButtonHandlers() {
 	if (!document.getElementById('searchCaseSens').checked)
 	    searchText = searchText.toLowerCase();
 	const minElemIdx = msgNoToElemIdx((index.listMode == 'recv'), index.searchTo);
+	console.log('msgNo index.searchTo = ' + index.searchTo + ', minElemIdx = ' + minElemIdx);
 	populateMsgList(minElemIdx, function() {
 	    common.setLoadingIcon('start');
 	    const begElemIdx = msgNoToElemIdx((index.listMode == 'recv'), index.searchFrom);
-	    const endElemIdx = Math.max(minElemIdx, index.msgListElems.length - 1);
+	    const endElemIdx = Math.min(minElemIdx, index.msgListElems.length - 1);
 	    console.log('searching elems from ' + begElemIdx + ' to ' + endElemIdx);
 	    let searchFoundIdx = -1;
 	    for (let i = begElemIdx; i <= endElemIdx; ++i) {
@@ -739,7 +746,7 @@ async function doFirstIntro(ignoreFirstIntroCompleteFlag) {
 // this fcn reschedules itself
 //
 const timerIsPaused = () => {
-    if (common.waitingForTxid)
+    if (common.waitingForTxid || index.searchIsActive)
 	return(true);
     const viewRecvButton = document.getElementById('viewRecvButton');
     const viewSentButton = document.getElementById('viewSentButton');
