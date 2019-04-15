@@ -573,11 +573,11 @@ function setSearchButtonHandlers() {
     const searchDialogDoButton = document.getElementById('searchDialogDoButton');
     const searchDialogArea = document.getElementById('searchDialogArea');
     const setSearchLimits = (prefix, startAtMsgNo) => {
-	index.searchTo = 1;
 	index.searchFrom = parseInt(startAtMsgNo);
+	index.searchTo = parseInt(index.msgListElems[index.msgListElems.length - 1].msgNo);
 	console.log('tentative searchFrom = ' + index.searchFrom + ', index.searchTo = ' + index.searchTo);
-	if (index.searchFrom > 50)
-	    index.searchTo = Math.max(1, Math.floor((index.searchFrom - 15) / 50) * 50);
+	const lowerMsgNo = Math.max(1, index.searchTo - 15);
+	index.searchTo = Math.max(1, Math.floor(lowerMsgNo / 50) * 50);
 	searchDialogDoButton.textContent = prefix + ' (messages ' + index.searchFrom + ' to ' + index.searchTo + ')';
     };
     const reinitSearch = () => {
