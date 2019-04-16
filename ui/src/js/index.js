@@ -515,7 +515,7 @@ function setPrevNextButtonHandlers() {
 	const newIdx = Math.max(0, (pageIdx - 1) * 10);
 	selectMsgListEntry(newIdx, function() {
 	    const msgElem = index.msgListElems[index.elemIdx];
-	    msgElem.div.scrollIntoView({ block: "start" });
+	    msgElem.div.scrollIntoView({ block: "nearest" });
 	});
 
     });
@@ -526,7 +526,7 @@ function setPrevNextButtonHandlers() {
 	const newIdx = Math.min(maxMsgNo - 1, (pageIdx + 1) * 10);
 	selectMsgListEntry(newIdx, function() {
 	    const msgElem = index.msgListElems[index.elemIdx];
-	    msgElem.div.scrollIntoView({ block: "start" });
+	    msgElem.div.scrollIntoView({ block: "nearest" });
 	});
     });
     nextUnreadButton.addEventListener('click', function() {
