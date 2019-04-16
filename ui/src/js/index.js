@@ -535,6 +535,7 @@ function setPrevNextButtonHandlers() {
 	const msgNo = !!msgElem && msgElem.msgNo;
 	//next really means lower msg no; ie. older
 	const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo - 1, 1, false);
+	console.log('nextUnreadButton.click: msgNo = ' + msgNo + ', unreadMsgNo = ' + unreadMsgNo);
 	if (unreadMsgNo > 0) {
 	    const newIdx = maxMsgNo - unreadMsgNo;
 	    selectMsgListEntry(newIdx, function() {
@@ -549,7 +550,7 @@ function setPrevNextButtonHandlers() {
 	const msgNo = !!msgElem && msgElem.msgNo;
 	//prev really means higher msg no; ie. more recent
 	const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo + 1, maxMsgNo, false);
-	console.log('nextUnreadButton.click: msgNo = ' + msgNo + ', unreadMsgNo = ' + unreadMsgNo);
+	console.log('prevUnreadButton.click: msgNo = ' + msgNo + ', unreadMsgNo = ' + unreadMsgNo);
 	if (unreadMsgNo > 0) {
 	    const newIdx = maxMsgNo - unreadMsgNo;
 	    console.log('nextUnreadButton.click: msgListElems.length = ' + index.msgListElems.length + ', newIdx = ' + newIdx);
