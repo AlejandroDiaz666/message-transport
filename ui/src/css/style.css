@@ -380,7 +380,7 @@ p {
 }
 #optionsPanel {
     width: 300px;
-    height: 400px;
+    height: 482px;
     position: absolute;
     top: 70px;
     left: 100%;
@@ -421,17 +421,21 @@ p {
     left: 0%;
     padding: 20px;
 }
-#customViewButton {
+#customViewButton, #swarmGatewayViewButton {
     position: absolute;
-    top: 170px;
-    left: 238px;
+    left: 127px;
     height: 20px;
 }
-#customNodeDiv {
+#customViewButton {
+    top: 191px;
+}
+#swarmGatewayViewButton {
+    top: 325px;
+}
+#customNodeDiv, #swarmGatewayDiv {
     position: absolute;
     z-index: 2;
     left: 50%;
-    top: 196px;
     width: 270px;
     height: 50px;
     padding: 10px;
@@ -439,7 +443,13 @@ p {
     background-color: snow;
     transform: translateX(-50%);
 }
-#customNodeArea {
+#customNodeDiv {
+    top: 198px;
+}
+#swarmGatewayDiv {
+    top: 332px;
+}
+#customNodeArea, #swarmGatewayArea {
     position: absolute;
     top: 7px;
     left: 50%;
@@ -449,7 +459,7 @@ p {
     overflow-y: hidden;
     whitespace: nowrap;
 }
-#customNodeDoButton {
+#customNodeDoButton, #swarmGatewayDoButton {
     position: absolute;
     top: 46px;
     left: 50%;
@@ -457,19 +467,25 @@ p {
 }
 #onStartGotoSpan {
     position: absolute;
-    top: 188px;
+    top: 200px;
+    left: 0%;
+    padding: 20px;
+}
+#storeMsgsSpan {
+    position: absolute;
+    top: 268px;
     left: 0%;
     padding: 20px;
 }
 #viewContractSpan {
     position: absolute;
-    top: 258px;
+    top: 340px;
     left: 0%;
     padding: 20px;
 }
 #viewSrcSpan {
     position: absolute;
-    top: 310px;
+    top: 392px;
     left: 0%;
     padding: 20px;
 }

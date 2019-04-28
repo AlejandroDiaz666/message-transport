@@ -299,6 +299,21 @@ message, the message ID of the original message is stored with the reply as a 'R
 	    <input id="startLastViewedButton" type="radio" name="startGotoInput">last viewed received message</input><br/>
 	    </p>
 	  </span>
+	  <span id="storeMsgsSpan">
+	    <p>Select message storage:<br/>
+	      <select id="storeMsgsSelect">
+		<option value="ethereum">Ethereum event logs (persistent)</option>
+		<option value="swarm">Swarm (persistence not guaranteed)</option>
+		<option value="cheap">Swarm only for large messages</option>
+	      </select>
+	    </p>
+	  </span>
+	  <button id="swarmGatewayViewButton" type="button" class="hidden">View</button>
+	  <div id="swarmGatewayDiv" class="hidden">
+	    <textarea id="swarmGatewayArea" rows="1" cols="30" wrap="off"
+		      placeholder="enter node address"></textarea>
+	    <button id="swarmGatewayDoButton" type="button">Set Swarm gateway</button>
+	  </div>
 	  <span id="viewContractSpan">
 	    <p>You can see the Turms AMT contract on<br/>
 	      <a id="viewContractHref" href="https://etherscan.io" target="_blank">etherscan.io</a>

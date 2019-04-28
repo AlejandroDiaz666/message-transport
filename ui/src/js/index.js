@@ -49,7 +49,7 @@ const index = module.exports = {
 	setPrevNextButtonHandlers();
 	setSearchButtonHandlers();
 	beginTheBeguine('startup');
-	periodicCheckForAccountChanges();
+	//periodicCheckForAccountChanges();
     },
 
 };
@@ -150,6 +150,37 @@ function setOptionsButtonHandlers() {
     logServerSelect.addEventListener('change', logServerSelectFcn);
     document.getElementById('customNodeDoButton').addEventListener('click', customNodeDoFcn);
     document.getElementById('customViewButton').addEventListener('click', logServerSelectFcn);
+    //
+    // display/update store messages: blockchain/swarm
+    //
+    const storeMsgsSelect = document.getElementById('storeMsgsSelect');
+    const storeMsgsSelectFcn = () => {
+	localStorage['storeMessages'] = storeMsgsSelect.value;
+	mtUtil.setMessageStorage(localStorage['storeMessages'], localStorage['swarmGateway']);
+	common.replaceElemClassFromTo('swarmGatewayViewButton', 'visibleB', 'hidden', true);
+	if (storeMsgsSelect.value == 'swarm' || storeMsgsSelect.value == 'cheap')
+	    common.replaceElemClassFromTo('swarmGatewayDiv', 'hidden', 'visibleB', false);
+	else
+	    common.replaceElemClassFromTo('swarmGatewayDiv', 'visibleB', 'hidden', true);
+    };
+    if (!localStorage['storeMessages'])
+	localStorage['storeMessages'] = 'ethereum';
+    storeMsgsSelect.value = localStorage['storeMessages'];
+    if (storeMsgsSelect.value == 'swarm' || storeMsgsSelect.value == 'cheap')
+	common.replaceElemClassFromTo('swarmGatewayViewButton', 'hidden', 'visibleB', false);
+    const swarmGatewayDoFcn = () => {
+	common.replaceElemClassFromTo('swarmGatewayDiv', 'visibleB', 'hidden', true);
+	common.replaceElemClassFromTo('swarmGatewayViewButton', 'hidden', 'visibleB', false);
+	localStorage['swarmGateway'] = document.getElementById('swarmGatewayArea').value;
+	mtUtil.setMessageStorage(localStorage['storeMessages'], localStorage['swarmGateway']);
+    };
+    if (!localStorage['swarmGateway'])
+	localStorage['swarmGateway'] = 'https://swarm-gateways.net';
+    mtUtil.setMessageStorage(localStorage['storeMessages'], localStorage['swarmGateway']);
+    document.getElementById('swarmGatewayArea').value = localStorage['swarmGateway'];
+    storeMsgsSelect.addEventListener('change', storeMsgsSelectFcn);
+    document.getElementById('swarmGatewayDoButton').addEventListener('click', swarmGatewayDoFcn);
+    document.getElementById('swarmGatewayViewButton').addEventListener('click', storeMsgsSelectFcn);
     //
     const startFirstUnreadButton = document.getElementById('startFirstUnreadButton');
     const startLastViewedButton = document.getElementById('startLastViewedButton');
@@ -264,7 +295,7 @@ function setReplyButtonHandlers() {
 		common.showWaitingForMetaMask(true);
 		const msgRefButton = document.getElementById('msgRefButton');
 		const ref = msgRefButton.ref;
-		mtEther.sendMessage(toAddr, attachmentIdxBN, ref, encrypted, msgFee, function(err, txid) {
+		mtUtil.sendMessage(toAddr, attachmentIdxBN, ref, encrypted, msgFee, function(err, txid) {
 		    console.log('txid = ' + txid);
 		    common.showWaitingForMetaMask(false);
 		    const continueFcn = (err, receipt) => {
@@ -1483,8 +1514,8 @@ function handleViewRecv(refreshMsgList) {
 	common.replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
     common.replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
     common.replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
-    const attachmentSaveA = document.getElementById('attachmentSaveA');
-    attachmentSaveA.style.display = 'none';
+    document.getElementById('attachmentSaveA').style.display = 'none';
+    document.getElementById('deleteImg').style.display = 'none';
     //
     const msgIdArea = document.getElementById('msgIdArea');
     msgIdArea.readonly = "readonly"
@@ -1567,8 +1598,8 @@ function handleViewSent(refreshMsgList) {
 	common.replaceElemClassFromTo('navButtonsSpan', 'hidden',    'visibleIB', true);
     common.replaceElemClassFromTo('attachmentButton',   'visibleIB', 'hidden',    true);
     common.replaceElemClassFromTo('attachmentInput',    'visibleIB', 'hidden',    true);
-    const attachmentSaveA = document.getElementById('attachmentSaveA');
-    attachmentSaveA.style.display = 'none';
+    document.getElementById('attachmentSaveA').style.display = 'none';
+    document.getElementById('deleteImg').style.display = 'none';
     //
     const msgIdArea = document.getElementById('msgIdArea');
     msgIdArea.readonly = "readonly"
