@@ -49,7 +49,7 @@ const index = module.exports = {
 	setPrevNextButtonHandlers();
 	setSearchButtonHandlers();
 	beginTheBeguine('startup');
-	//periodicCheckForAccountChanges();
+	periodicCheckForAccountChanges();
     },
 
 };
