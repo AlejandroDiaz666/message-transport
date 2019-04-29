@@ -1,0 +1,49 @@
+diff -ur node_modules/swarm-js/lib/swarm.js node_modules/swarm-js/lib/swarm.js
+--- node_modules/swarm-js/lib/swarm.js	2018-08-31 12:32:05.000000000 -0700
++++ node_modules/swarm-js/lib/swarm.js	2019-04-28 17:28:48.480087422 -0700
+@@ -76,7 +76,7 @@
+
+   var rawUrl = function rawUrl(swarmUrl) {
+     return function (hash) {
+-      return "".concat(swarmUrl, "/bzzr:/").concat(hash);
++      return "".concat(swarmUrl, "/bzz-raw:/").concat(hash);
+     };
+   }; // String -> String -> Promise Uint8Array
+   //   Gets the raw contents of a Swarm hash address.
+@@ -226,7 +226,7 @@
+
+   var uploadData = function uploadData(swarmUrl) {
+     return function (data) {
+-      return request("".concat(swarmUrl, "/bzzr:/"), {
++      return request("".concat(swarmUrl, "/bzz-raw:/"), {
+         body: typeof data === "string" ? fromString(data) : data,
+         method: "POST"
+       });
+@@ -648,4 +648,4 @@
+     fromString: fromString,
+     toString: toString
+   };
+-};
+\ No newline at end of file
++};
+
+diff -ur node_modules/swarm-js/src/swarm.js node_modules/swarm-js/src/swarm.js
+--- node_modules/swarm-js/src/swarm.js	2018-08-31 12:32:05.000000000 -0700
++++ node_modules/swarm-js/src/swarm.js	2019-04-28 17:29:09.908069303 -0700
+@@ -56,7 +56,7 @@
+
+   // String -> String -> String
+   const rawUrl = swarmUrl => hash =>
+-    `${swarmUrl}/bzzr:/${hash}`
++    `${swarmUrl}/bzz-raw:/${hash}`
+
+   // String -> String -> Promise Uint8Array
+   //   Gets the raw contents of a Swarm hash address.
+@@ -154,6 +154,6 @@
+   //   Uploads raw data to Swarm.
+   //   Returns a promise with the uploaded hash.
+   const uploadData = swarmUrl => data =>
+-    request(`${swarmUrl}/bzzr:/`, {
++    request(`${swarmUrl}/bzz-raw:/`, {
+       body: typeof data === "string" ? fromString(data) : data,
+       method: "POST"});
