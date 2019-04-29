@@ -19,7 +19,7 @@ Each Ethereum address that registers with Turms AMT sets a "Message Fee" and a "
 
 ## Swarm
 
-By default messages are stored in the Ethereum blockchain as event logs. However from the options panel the user can select to store all messages on Swarm (with only the message hashes stored on the Ethereum blockchain as event logs). When storing messages on Swarm it's possible to send much larger messages/attachments. The limit for Ethereum event logs is in the range of 20KB, and the current limit for Swarm is more than 10 times that. Storing messages on Swarm is cheaper, especially when sending large messages/attachments -- however, messages stored on Swarm are not garaunteed to persist. The default swarm gateway is https://swarm-gateways.net, but this can also be changed in the options panel. There is also an option to only use Swarm for messages that are larger than 256 bytes (encrypted).
+By default messages are stored in the Ethereum blockchain as event logs. However from the options panel the user can select to store all messages on Swarm (with only the message hashes stored on the Ethereum blockchain as event logs). When storing messages on Swarm it's possible to send much larger messages/attachments. The limit for Ethereum event logs is in the range of 20KB, and the current limit for Swarm is more than 10 times that. Storing messages on Swarm is cheaper, especially when sending large messages/attachments -- however, messages stored on Swarm are not guaranteed to persist. The default swarm gateway is https://swarm-gateways.net, but this can also be changed in the options panel. There is also an option to only use Swarm for messages that are larger than 256 bytes (encrypted).
 
 
 ## Encryption
