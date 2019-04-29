@@ -158,7 +158,7 @@ function setOptionsButtonHandlers() {
 	localStorage['storeMessages'] = storeMsgsSelect.value;
 	mtUtil.setMessageStorage(localStorage['storeMessages'], localStorage['swarmGateway']);
 	common.replaceElemClassFromTo('swarmGatewayViewButton', 'visibleB', 'hidden', true);
-	if (storeMsgsSelect.value == 'swarm' || storeMsgsSelect.value == 'cheap')
+	if (storeMsgsSelect.value == 'swarm' || storeMsgsSelect.value == 'auto')
 	    common.replaceElemClassFromTo('swarmGatewayDiv', 'hidden', 'visibleB', false);
 	else
 	    common.replaceElemClassFromTo('swarmGatewayDiv', 'visibleB', 'hidden', true);
@@ -166,7 +166,7 @@ function setOptionsButtonHandlers() {
     if (!localStorage['storeMessages'])
 	localStorage['storeMessages'] = 'ethereum';
     storeMsgsSelect.value = localStorage['storeMessages'];
-    if (storeMsgsSelect.value == 'swarm' || storeMsgsSelect.value == 'cheap')
+    if (storeMsgsSelect.value == 'swarm' || storeMsgsSelect.value == 'auto')
 	common.replaceElemClassFromTo('swarmGatewayViewButton', 'hidden', 'visibleB', false);
     const swarmGatewayDoFcn = () => {
 	common.replaceElemClassFromTo('swarmGatewayDiv', 'visibleB', 'hidden', true);
