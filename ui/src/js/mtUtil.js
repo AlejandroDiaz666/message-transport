@@ -1,6 +1,6 @@
 
 //
-// high level fcns related to interaction w/ EMT contract
+// High level fcns related to interaction w/ EMT contract
 //
 const common = require('./common');
 const ether = require('./ether');
@@ -16,7 +16,7 @@ const mtUtil = module.exports = {
     storageMode: 'ethereum',
     swarm: null,
 
-    // mode: 'ethereum' | 'swarm' | 'cheap'
+    // mode: 'ethereum' | 'swarm' | 'auto'
     setMessageStorage: function(mode, swarmGateway) {
 	mtUtil.storageMode = mode;
 	mtUtil.swarm = swarmjs.at(swarmGateway);
@@ -106,9 +106,9 @@ const mtUtil = module.exports = {
     // cb(err, txid)
     //
     sendMessage: function(toAddr, attachmentIdxBN, ref, encrypted, msgFee, cb) {
-	if ((!!mtUtil.swarm                                                                              ) &&
-	    (encrypted.length > 0                                                                        ) &&
-	    (mtUtil.storageMode == 'swarm' || (mtUtil.storageMode == 'cheap' && encrypted.length > 256)) ) {
+	if ((!!mtUtil.swarm                                                                                ) &&
+	    (encrypted.length > 0                                                                          ) &&
+	    (mtUtil.storageMode == 'swarm' || (mtUtil.storageMode == 'auto' && !attachmentIdxBN.isZero())) ) {
 	    const swarmAttachmentIdxBN = attachmentIdxBN.setn(247, 1);
 	    console.log('sendMessage: swarmAttachmentIdxBN = 0x' + swarmAttachmentIdxBN.toString(16));
 	    mtUtil.swarm.upload(encrypted).then(hash => {
