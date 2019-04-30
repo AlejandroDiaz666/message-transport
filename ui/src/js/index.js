@@ -433,6 +433,18 @@ function setAttachButtonHandler() {
 		attachmentSaveA.style.display = 'inline-block';
 		deleteImg.style.display = 'inline-block';
 		common.replaceElemClassFromTo('attachmentInput', 'visibleIB', 'hidden', true);
+		//check attachment size
+		const safeLimit = (mtUtil.storageMode == 'ethereum') ? 20000 : 150000;
+		if (attachmentSaveA.href.length > safeLimit) {
+		    const msg = (mtUtil.storageMode == 'ethereum')
+			  ? 'Please note: sending a large file as an Ethereum event log could ' +
+			  'cause the required gas to exceed the block gas-limit. Please consider ' +
+			  'enabling Swarm storage of message data (in the options panel).'
+			  : 'Please note: Swarm gateways impose filesize limitations which might ' +
+			  'prevent successful uploading of large files. If the Swarm upload fails, ' +
+			  'then consider selecting a different Swarm gateway.';
+		    alert(msg);
+		}
             };
             reader.readAsDataURL(attachmentInput.files[0]);
         } else {
