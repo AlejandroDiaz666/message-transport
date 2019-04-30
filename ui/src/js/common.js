@@ -518,7 +518,9 @@ const common = module.exports = {
     // an elem with id waitIcon must exist
     setLoadingIcon: function(start) {
 	const waitIcon = document.getElementById('waitIcon');
+	const was = (waitIcon.style.display == 'none') ? null : 'start';
 	waitIcon.style.display = (!!start) ? 'block' : 'none';
+	return(was);
     },
 
     makeTextarea: function(id, className, disabled) {

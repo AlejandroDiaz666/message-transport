@@ -111,15 +111,21 @@ const mtUtil = module.exports = {
 	    (mtUtil.storageMode == 'swarm' || (mtUtil.storageMode == 'auto' && !attachmentIdxBN.isZero())) ) {
 	    const swarmAttachmentIdxBN = attachmentIdxBN.setn(247, 1);
 	    console.log('sendMessage: swarmAttachmentIdxBN = 0x' + swarmAttachmentIdxBN.toString(16));
+	    const was = common.setLoadingIcon('start');
 	    mtUtil.swarm.upload(encrypted).then(hash => {
 		console.log("Uploaded file. Address:", hash);
+		common.setLoadingIcon(was);
 		if (!!hash) {
 		    mtEther.sendMessage(toAddr, swarmAttachmentIdxBN, ref, hash, msgFee, cb)
 		} else {
 		    alert('swarm upload -- no hash!');
 		    cb('error uploading to swarm', null);
 		}
-	    }).catch(err => cb(err, null));
+	    }).catch((err, status) => {
+		common.setLoadingIcon(was);
+		console.log('sendMessage: swarm upload error: ' + err.toString());
+		err = err.message + '\nmessage too large?';
+		cb(err, null); });
 	} else {
 	    mtEther.sendMessage(toAddr, attachmentIdxBN, ref, encrypted, msgFee, cb);
 	}

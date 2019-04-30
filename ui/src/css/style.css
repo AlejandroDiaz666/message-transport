@@ -292,6 +292,7 @@ p {
     margin-top: 20px;
     min-height: 40px;
     transform: translateX(-50%);
+    white-space: pre-line;
 }
 #statusViewLinkDiv {
     position: relative;
