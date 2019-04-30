@@ -986,10 +986,8 @@ function handleUnlockedMetaMask(mode) {
 	    alert(err)
 	    return;
 	}
-	mtEther.accountQuery(common.web3.eth.accounts[0], function(err, _acctInfo) {
-	    mtUtil.acctInfo = _acctInfo;
+	mtUtil.refreshAcctInfo(true, function(err, _acctInfo) {
 	    console.log('handleUnlockedMetaMask: mtUtil.acctInfo.msgFee = ' + mtUtil.acctInfo.msgFee);
-	    mtUtil.publicKey = (!!mtUtil.acctInfo) ? mtUtil.acctInfo.publicKey : null;
 	    //console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(mtUtil.acctInfo));
 	    //console.log('handleUnlockedMetaMask: publicKey: ' + mtUtil.publicKey);
 	    if (!mtUtil.publicKey || mtUtil.publicKey == '0x') {
