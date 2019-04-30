@@ -98,7 +98,7 @@ const common = module.exports = {
     },
 
 
-    //number can be a number or a string, with or without '0x'
+    //number can be a BN, number or a string, with or without '0x'
     //Hex256 string will be '0x' followed by 64 hex digits
     numberToHex256: function(number) {
 	if (typeof(number) === 'number')
@@ -297,6 +297,26 @@ const common = module.exports = {
 	} while ((increment > 0 &&  wordIdx      * 31 < endIndex) ||
 		 (increment < 0 && (wordIdx + 1) * 31 > endIndex));
 	return(-1);
+    },
+
+
+    // index,value can be numbers or BNs
+    setIndexedBN: function(prefix, index, value) {
+	const idxBN = common.numberToBN(index);
+	const valBN = common.numberToBN(value);
+	const valStr = '0x' + valBN.toString(16);
+	const idxStr = prefix + '-' + '0x' + idxBN.toString(16);
+	localStorage[idxStr] = valStr;
+	console.log('setIndexedHex256: localStorage[' + idxStr + '] = ' + valStr);
+    },
+
+    // index,value can be numbers or BNs
+    getIndexedBN: function(prefix, index) {
+	const idxBN = common.numberToBN(index);
+	const idxStr = prefix + '-' + '0x' + idxBN.toString(16);
+	const valStr = localStorage[idxStr];
+	const value = !!valStr ? valStr : '0';
+	return(common.numberToBN(value));
     },
 
 
@@ -531,19 +551,24 @@ const common = module.exports = {
 
 
     //state = 'Disabled' | 'Enabled' | 'Selected'
-    setMenuButtonState: function(buttonID, state) {
-	var button = document.getElementById(buttonID);
+    setButtonState: function(baseName, buttonID, state) {
+	const button = document.getElementById(buttonID);
 	button.disabled = (state == 'Enabled') ? false : true;
-	var newClassName = 'menuBarButton' + state;
-	if (button.className.indexOf('menuBarButtonDisabled') >= 0)
-	    button.className = (button.className).replace('menuBarButtonDisabled', newClassName);
-	else if (button.className.indexOf('menuBarButtonEnabled') >= 0)
-	    button.className = (button.className).replace('menuBarButtonEnabled', newClassName);
-	else if (button.className.indexOf('menuBarButtonSelected') >= 0)
-	    button.className = (button.className).replace('menuBarButtonSelected', newClassName);
+	const newClassName = baseName + state;
+	if (button.className.indexOf(baseName + 'Disabled') >= 0)
+	    button.className = (button.className).replace(baseName + 'Disabled', newClassName);
+	else if (button.className.indexOf(baseName + 'Enabled') >= 0)
+	    button.className = (button.className).replace(baseName + 'Enabled', newClassName);
+	else if (button.className.indexOf(baseName + 'Selected') >= 0)
+	    button.className = (button.className).replace(baseName + 'Selected', newClassName);
 	else
-	    button.className = (button.className).replace('menuBarButton', newClassName);
-	return(button);
+	    button.className = (button.className).replace(baseName, newClassName);
+    },
+
+
+    //state = 'Disabled' | 'Enabled' | 'Selected'
+    setMenuButtonState: function(buttonID, state) {
+	common.setButtonState('menuBarButton', buttonID, state);
     },
 
 
