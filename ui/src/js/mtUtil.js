@@ -109,12 +109,36 @@ const mtUtil = module.exports = {
 		attachmentIdxBN.ixor(bit247BN);
 		const hash = msgHex.substring(2);
 		console.log('parseMessageEvent: swarm hash = ' + hash);
+		//
+		let timeout = false;
+		let complete = false;
+		const swarmTimer = setTimeout(function() {
+		    timeout = true;
+		    if (complete == true) {
+			return;
+		    } else {
+			console.log("parseMessageEvent: timeout retrieving " + hash);
+			cb('timeout retrieving message from Swarm', msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
+		    }
+		}, 10000);
+		//
 		mtUtil.swarm.download(hash).then(array => {
+		    clearTimeout(swarmTimer);
+		    complete = true;
+		    if (timeout == true) {
+			console.log("parseMessageEvent: download returned after timeout! hash = " + hash);
+			return;
+		    }
 		    const swarmMsgHex = mtUtil.swarm.toString(array);
 		    //console.log("parseMessageEvent: swarm downloaded:", swarmMsgHex);
 		    cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, swarmMsgHex, blockNumber, date);
 		}).catch(err => {
-		    console.log('parseMessageEvent: swarm error downloading: err = ' + err + ', msg = ', hash);
+		    complete = true;
+		    console.log('parseMessageEvent: swarm error downloading: err = ' + err + ', hash = ', hash);
+		    if (timeout == true) {
+			console.log("parseMessageEvent: error occurred after timeout! hash = " + hash);
+			return;
+		    }
 		    cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
 		});
 	    }
@@ -238,21 +262,24 @@ const mtUtil = module.exports = {
 	    const otherPublicKey = (!!otherAcctInfo) ? otherAcctInfo.publicKey : null;
 	    if (!!otherPublicKey && otherPublicKey != '0x') {
 		const ptk = dhcrypt.ptk(otherPublicKey, toAddr, fromAddr, nonce);
-		const decrypted = dhcrypt.decrypt(ptk, msgHex);
-		console.log('decryptMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted.substring(0, 30));
-		let messageText = decrypted;
-		let attachment = null;
-		if (!!attachmentIdxBN && !attachmentIdxBN.isZero()) {
-		    console.log('decryptMsg: attachmentIdxBN = 0x' + attachmentIdxBN.toString(16));
-		    const idx = attachmentIdxBN.maskn(53).toNumber();
-		    console.log('decryptMsg: attachment at idx ' + idx);
-		    if (idx > 0) {
-			messageText = decrypted.substring(0, idx);
-			const nameLen = attachmentIdxBN.iushrn(248).toNumber();
-			attachment = { name: decrypted.substring(idx, idx + nameLen), blob: decrypted.substring(idx + nameLen) };
+		dhcrypt.decrypt(ptk, msgHex, false, function(err, decrypted) {
+		    console.log('decryptMsg: decrypted (length = ' + decrypted.length + ') = ' + decrypted.substring(0, 30));
+		    let messageText = decrypted;
+		    let attachment = null;
+		    if (!err && !!attachmentIdxBN && !attachmentIdxBN.isZero()) {
+			console.log('decryptMsg: attachmentIdxBN = 0x' + attachmentIdxBN.toString(16));
+			const idx = attachmentIdxBN.maskn(53).toNumber();
+			console.log('decryptMsg: attachment at idx ' + idx);
+			if (idx > 0) {
+			    messageText = decrypted.substring(0, idx);
+			    const nameLen = attachmentIdxBN.iushrn(248).toNumber();
+			    attachment = { name: decrypted.substring(idx, idx + nameLen), blob: decrypted.substring(idx + nameLen) };
+			}
 		    }
-		}
-		cb(null, messageText, attachment);
+		    //we always get something of value back from decrypt... so display whatever we get. at this point
+		    //ignore errors
+		    cb(null, messageText, attachment);
+		});
 	    } else {
 		console.log('decryptMsg: error looking up account for ' + otherAddr + ', otherPublicKey = ' + otherPublicKey);
 		cb('Error looking up account for ' + otherAddr, '', null);

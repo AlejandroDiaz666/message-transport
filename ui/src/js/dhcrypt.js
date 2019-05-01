@@ -47,13 +47,14 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 		//console.log('dhcrypt.initDH: keyEncryptionKey: ' + keyEncryptionKey);
 		if (!!encryptedPrivateKey) {
 		    //we already have an encrypted private key... need to decrypt it
-		    let privateKey = dhcrypt.decrypt(keyEncryptionKey, encryptedPrivateKey, true);
-		    //console.log('dhcrypt.initDH: privateKey: ' + privateKey);
-		    if (privateKey.startsWith('0x'))
-			privateKey = privateKey.substring(2);
-		    //console.log('dhcrypt.initDH: private (' + privateKey.length + '): ' + privateKey.toString('hex'));
-		    dh.setPrivateKey(privateKey, 'hex');
-		    dh.generateKeys('hex');
+		    dhcrypt.decrypt(keyEncryptionKey, encryptedPrivateKey, true, function(err, privateKey) {
+			//console.log('dhcrypt.initDH: privateKey: ' + privateKey);
+			if (privateKey.startsWith('0x'))
+			    privateKey = privateKey.substring(2);
+			//console.log('dhcrypt.initDH: private (' + privateKey.length + '): ' + privateKey.toString('hex'));
+			dh.setPrivateKey(privateKey, 'hex');
+			dh.generateKeys('hex');
+		    });
 		} else {
 		    //generate a new private key, and encrypt it
 		    dh.generateKeys('hex');
@@ -121,7 +122,8 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
     },
 
 
-    decrypt: function(ptk, encrypted, toHex) {
+    //cb(err, message)
+    decrypt: function(ptk, encrypted, toHex, cb) {
 	if (encrypted.startsWith('0x'))
 	    encrypted = encrypted.substring(2);
 	let message = 'Unable to decrypt message';
@@ -136,12 +138,13 @@ you need to sign this message each time you load Turms Anonymous Message Transpo
 		message += decipher.final('utf8');
 	    }
 	    //console.log('decyrpt: message = ' + message);
+	    cb(null, message);
 	} catch (err) {
 	    message = err + '\n' + encrypted;
 	    console.log('decyrpt: encrypted = ' + encrypted);
 	    console.log('decyrpt: err = ' + err);
+	    cb(err, message);
 	}
-	return(message);
     },
 
 };
