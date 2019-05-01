@@ -276,9 +276,7 @@ const mtUtil = module.exports = {
 			    attachment = { name: decrypted.substring(idx, idx + nameLen), blob: decrypted.substring(idx + nameLen) };
 			}
 		    }
-		    //we always get something of value back from decrypt... so display whatever we get. at this point
-		    //ignore errors
-		    cb(null, messageText, attachment);
+		    cb(err, messageText, attachment);
 		});
 	    } else {
 		console.log('decryptMsg: error looking up account for ' + otherAddr + ', otherPublicKey = ' + otherPublicKey);

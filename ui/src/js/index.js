@@ -1859,7 +1859,8 @@ function getMessages(msgIds, msgNo, tempMessages, cb) {
 	const otherAddr = (isRx) ? fromAddr : toAddr;
 	mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, attachmentIdxBN, (err, messageText, attachment) => {
 	    if (!!err) {
-		const message = new Message(isRx, msgId, '', '', '', '', '', 'message decryption error' + err, null);
+		const errMsg = !!messageText ? messageText : 'message decryption error';
+		const message = new Message(isRx, msgId, msgCookie.msgNo, otherAddr, viaAddr, date, ref, errMsg, attachment);
 		tempMessages[msgCookie.msgNo] = message;
 		msgCompleteFcn('decryptMsg', err);
 		return;
