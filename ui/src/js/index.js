@@ -1951,7 +1951,7 @@ function selectMsgListEntry(newIdx, cb) {
 		console.log('selectMsgListEntry: calling showMsgDetail(msgNo = ' + msgNo + ')');
 		showMsgDetail(message);
 	    } else {
-		console.log('selectMsgListEntry: msg detail is not available yet for msgNo = ' + message.msgNo);
+		console.log('selectMsgListEntry: msg detail is not available yet for msgNo = ' + msgNo);
 	    }
 	}
     }
