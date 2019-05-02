@@ -88,7 +88,6 @@ const mtUtil = module.exports = {
     extractSubject: function(msgText, maxLen) {
 	if (!msgText)
 	    return('');
-	console.log('extractSubject: text = ' + msgText + ', type = ' + (typeof msgText));
 	if (msgText.startsWith('Subject: '))
 	    msgText = msgText.substring(9);
 	let newlineIdx = (msgText.indexOf('\n') > 0) ? msgText.indexOf('\n') :  msgText.length;
@@ -123,61 +122,7 @@ const mtUtil = module.exports = {
 		for (let i = 0; i < results.length; ++i)
 		    mtUtil.recvMsgIdsCache[startIdx + i] = common.numberToHex256(results[i])
 	    }
-	    console.log('getRecvMsgIds: recvMsgIdsCache = ' + mtUtil.recvMsgIdsCache);
 	    cb(err, msgIds);
-	});
-    },
-
-
-    //
-    // cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date)
-    // wrapper around mtEther.parseMessageEvent which masks the use of swarm
-    //
-    parseMessageEvent: function(msgResult, cb) {
-	mtEther.parseMessageEvent(msgResult, function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
-	    if (!attachmentIdxBN.testn(247)) {
-		cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
-	    } else if (msgHex.length != 66) {
-		console.log('parseMessageEvent: ignoring crazy swarm hash = ' + hash);
-		cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
-	    } else {
-		const bit247BN = (new BN('0', 16)).setn(247, 1);
-		attachmentIdxBN.ixor(bit247BN);
-		const hash = msgHex.substring(2);
-		console.log('parseMessageEvent: swarm hash = ' + hash);
-		//
-		let timeout = false;
-		let complete = false;
-		const swarmTimer = setTimeout(function() {
-		    timeout = true;
-		    if (complete == true) {
-			return;
-		    } else {
-			console.log("parseMessageEvent: timeout retrieving " + hash);
-			cb('timeout retrieving message from Swarm', msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
-		    }
-		}, 10000);
-		//
-		mtUtil.swarm.download(hash).then(array => {
-		    clearTimeout(swarmTimer);
-		    complete = true;
-		    if (timeout == true) {
-			console.log("parseMessageEvent: download returned after timeout! hash = " + hash);
-			return;
-		    }
-		    const swarmMsgHex = mtUtil.swarm.toString(array);
-		    //console.log("parseMessageEvent: swarm downloaded:", swarmMsgHex);
-		    cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, swarmMsgHex, blockNumber, date);
-		}).catch(err => {
-		    complete = true;
-		    console.log('parseMessageEvent: swarm error downloading: err = ' + err + ', hash = ', hash);
-		    if (timeout == true) {
-			console.log("parseMessageEvent: error occurred after timeout! hash = " + hash);
-			return;
-		    }
-		    cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
-		});
-	    }
 	});
     },
 
@@ -214,87 +159,58 @@ const mtUtil = module.exports = {
 
 
     //
-    // get and parse a single msg
-    // cb(err, message, attachmentIdxBN, msgHex)
+    // get, parse and then decrypt a single msg
+    // cb(err, message)
     //
-    getAndParseIdMsg: function(msgId, cb) {
-	console.log('getAndParseIdMsg: enter msgId = ' + msgId);
-	const options = {
-	    fromBlock: mtEther.firstBlock,
-	    toBlock: 'latest',
-	    address: mtEther.EMT_CONTRACT_ADDR,
-	    topics: [mtEther.getMessageEventTopic0(), msgId ]
-	};
-	ether.getLogs(options, function(err, msgResult) {
-	    if (!!err || !msgResult || msgResult.length == 0) {
-		if (!!err)
-		    console.log('getAndParseIdMsg: err = ' + err);
-		//either an error, or maybe just no events
-		//                                 msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, text)
-		const message = new mtUtil.Message(msgId, '',       '',     '',      0,       0,       '',   '',  err);
-		cb(err, message);
-		return;
-	    }
-	    mtUtil.parseMessageEvent(msgResult[0], function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
-		//                                 msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, text)
-		const message = new mtUtil.Message(msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, '');
-		cb(err, message, attachmentIdxBN, msgHex);
+    getParseDecryptMsg: function(msgId, cb) {
+	console.log('getParseDecryptMsg: enter msgId = ' + msgId);
+	const cachedMessage = mtUtil.messageCache[msgId];
+	if (!!cachedMessage) {
+	    cb(null, cachedMessage);
+	} else {
+	    getAndParseMsg(msgId, function(err, message, attachmentIdxBN, msgHex) {
+		if (!!err) {
+		    if (!message.text)
+			message.text = err.toString();
+		    cb(err, message);
+		} else {
+		    mtUtil.decryptMsg(message, attachmentIdxBN, msgHex, (err, message) => {
+			if (!!err && !message.text)
+			    message.text = err.toString();
+			console.log('getParseDecryptMsgs: msgId = ' + message.msgId + ', text = ' + message.text + ', attachment = ' + message.attachment);
+			cb(err, message);
+		    });
+		}
 	    });
-	});
+	}
     },
 
 
     //
+    // msgCb(err, cookie, message)
+    // doneCb(noMessagesProcessed)
     // gets up to 9 messages specified in msgIds[]
     // msgCb is called once for each message passing msgCookies[msgId]
-    // msgCb(err, cookie, message, attachmentIdxBN, msgHex)
-    // doneCb(noMessagesProcessed)
+    // messages that are sucessfully decrypted are cached
     //
-    getAndParseIdMsgs: function(msgIds, msgCookies, msgCb, doneCb) {
-	console.log('getAndParseIdMsgs: enter msgIds = ' + msgIds.toString());
-	const options = {
-	    fromBlock: mtEther.firstBlock,
-	    toBlock: 'latest',
-	    address: mtEther.EMT_CONTRACT_ADDR,
-	    topics: [ mtEther.getMessageEventTopic0(), [] ]
-	};
-	const topicGroup = options.topics[1];
-	for (let i = 0; i < msgIds.length; ++i)
-	    topicGroup.push(msgIds[i]);
-	console.log('getAndParseIdMsgs: options = ' + JSON.stringify(options));
-	ether.getLogs3(options, function(err, msgResults) {
-	    console.log('getAndParseIdMsgs: err = ' + err + ', msgResults.length = ' + msgResults.length);
-	    if (!!err || !msgResults || msgResults.length == 0) {
-		console.log('getAndParseIdMsgs: err = ' + err);
-		err = (!!err) ? err : 'Message data not found';
-		//either an error, or maybe just no events
-		for (let i = 0; i < msgIds.length; ++i) {
-		    //                                 msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, text)
-		    const message = new mtUtil.Message(msgId, '',       '',     '',      0,       0,       '',   '',  err);
-		    msgCb(err, msgCookies[msgId], message, null, '');
-		}
-		doneCb(msgIds.length);
-		return;
-	    }
-	    let msgCbCount = 0;
-	    let bogusCount = 0;
-	    for (let i = 0; i < msgResults.length; ++i) {
-		mtUtil.parseMessageEvent(msgResults[i], function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
-		    if (!!msgCookies[msgId]) {
-			console.log('getAndParseIdMsgs: msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr);
-			//                                 msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, text)
-			const message = new mtUtil.Message(msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, '');
-			msgCb(err, msgCookies[msgId], message, attachmentIdxBN, msgHex);
-			++msgCbCount;
-		    } else {
-			console.log('getAndParseIdMsgs: got an unexpected msg, msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr);
-			++bogusCount;
-		    }
-		    if (msgCbCount + bogusCount >= msgResults.length)
-			doneCb(msgCbCount);
+    getParseDecryptMsgs: function(msgIds, msgCookies, msgCb, doneCb) {
+	console.log('getParseDecryptMsgs: enter msgIds = ' + msgIds.toString());
+	const msgFcn = (err, cookie, message, attachmentIdxBN, msgHex) => {
+	    if (!!err) {
+		if (!message.text)
+		    message.text = err.toString();
+		console.log('getParseDecryptMsgs: msgId = ' + message.msgId + ', err = ' + err + ', text = ' + message.text);
+		msgCb(err, cookie, message);
+	    } else {
+		mtUtil.decryptMsg(message, attachmentIdxBN, msgHex, (err, message) => {
+		    if (!!err && !message.text)
+			message.text = err.toString();
+		    console.log('getParseDecryptMsgs: msgId = ' + message.msgId + ', text = ' + message.text + ', attachment = ' + message.attachment);
+		    msgCb(err, cookie, message);
 		});
 	    }
-	});
+	};
+	getAndParseMsgs(msgIds, msgCookies, msgFcn, doneCb);
     },
 
 
@@ -401,4 +317,145 @@ const mtUtil = module.exports = {
 	});
     },
 
+};
+
+
+//
+// cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date)
+// wrapper around mtEther.parseMessageEvent which masks the use of swarm
+//
+function parseMessageEvent(msgResult, cb) {
+    mtEther.parseMessageEvent(msgResult, function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
+	if (!attachmentIdxBN.testn(247)) {
+	    cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
+	} else if (msgHex.length != 66) {
+	    console.log('parseMessageEvent: ignoring crazy swarm hash = ' + hash);
+	    cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
+	} else {
+	    const bit247BN = (new BN('0', 16)).setn(247, 1);
+	    attachmentIdxBN.ixor(bit247BN);
+	    const hash = msgHex.substring(2);
+	    console.log('parseMessageEvent: swarm hash = ' + hash);
+	    //
+	    let timeout = false;
+	    let complete = false;
+	    const swarmTimer = setTimeout(function() {
+		timeout = true;
+		if (complete == true) {
+		    return;
+		} else {
+		    console.log("parseMessageEvent: timeout retrieving " + hash);
+		    const err = 'timeout retrieving message from Swarm';
+		    cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
+		}
+	    }, 10000);
+	    //
+	    mtUtil.swarm.download(hash).then(array => {
+		clearTimeout(swarmTimer);
+		complete = true;
+		if (timeout == true) {
+		    console.log("parseMessageEvent: download returned after timeout! hash = " + hash);
+		    return;
+		}
+		const swarmMsgHex = mtUtil.swarm.toString(array);
+		//msg should be encrypted, never 'Code:'
+		const err = swarmMsgHex.startsWith('Code:') ? 'error retrieving message from Swarm\n' + swarmMsgHex : null;
+		//console.log("parseMessageEvent: swarm downloaded:", swarmMsgHex);
+		cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, swarmMsgHex, blockNumber, date);
+	    }).catch(err => {
+		complete = true;
+		console.log('parseMessageEvent: swarm error downloading: err = ' + err + ', hash = ', hash);
+		if (timeout == true) {
+		    console.log("parseMessageEvent: error occurred after timeout! hash = " + hash);
+		    return;
+		}
+		cb(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
+	    });
+	}
+    });
+}
+
+
+//
+// get and parse a single msg
+// cb(err, message, attachmentIdxBN, msgHex)
+//
+function getAndParseMsg(msgId, cb) {
+    console.log('getAndParseIdMsg: enter msgId = ' + msgId);
+    const options = {
+	fromBlock: mtEther.firstBlock,
+	toBlock: 'latest',
+	address: mtEther.EMT_CONTRACT_ADDR,
+	topics: [mtEther.getMessageEventTopic0(), msgId ]
+    };
+    ether.getLogs(options, function(err, msgResult) {
+	if (!!err || !msgResult || msgResult.length == 0) {
+	    if (!!err)
+		console.log('getAndParseIdMsg: err = ' + err);
+	    //either an error, or maybe just no events
+	    //                                 msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, text)
+	    const message = new mtUtil.Message(msgId, '',       '',     '',      0,       0,       '',   '',  err);
+	    cb(err, message);
+	    return;
+	}
+	parseMessageEvent(msgResult[0], function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
+	    //                                 msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, text)
+	    const message = new mtUtil.Message(msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, '');
+	    cb(err, message, attachmentIdxBN, msgHex);
+	});
+    });
+}
+
+
+//
+// msgCb(err, cookie, message, attachmentIdxBN, msgHex)
+// doneCb(noMessagesProcessed)
+// gets up to 9 messages specified in msgIds[]
+// msgCb is called once for each message passing msgCookies[msgId]
+//
+function getAndParseMsgs(msgIds, msgCookies, msgCb, doneCb) {
+    console.log('getAndParseIdMsgs: enter msgIds = ' + msgIds.toString());
+    const options = {
+	fromBlock: mtEther.firstBlock,
+	toBlock: 'latest',
+	address: mtEther.EMT_CONTRACT_ADDR,
+	topics: [ mtEther.getMessageEventTopic0(), [] ]
+    };
+    const topicGroup = options.topics[1];
+    for (let i = 0; i < msgIds.length; ++i)
+	topicGroup.push(msgIds[i]);
+    console.log('getAndParseIdMsgs: options = ' + JSON.stringify(options));
+    ether.getLogs3(options, function(err, msgResults) {
+	console.log('getAndParseIdMsgs: err = ' + err + ', msgResults.length = ' + msgResults.length);
+	if (!!err || !msgResults || msgResults.length == 0) {
+	    console.log('getAndParseIdMsgs: err = ' + err);
+	    err = (!!err) ? err : 'Message data not found';
+	    //either an error, or maybe just no events
+	    for (let i = 0; i < msgIds.length; ++i) {
+		//                                 msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, text)
+		const message = new mtUtil.Message(msgId, '',       '',     '',      0,       0,       '',   '',  err);
+		msgCb(err, msgCookies[msgId], message, null, '');
+	    }
+	    doneCb(msgIds.length);
+	    return;
+	}
+	let msgCbCount = 0;
+	let bogusCount = 0;
+	for (let i = 0; i < msgResults.length; ++i) {
+	    parseMessageEvent(msgResults[i], function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
+		if (!!msgCookies[msgId]) {
+		    console.log('getAndParseIdMsgs: msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr);
+		    //                                 msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, text)
+		    const message = new mtUtil.Message(msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, date, ref, '');
+		    msgCb(err, msgCookies[msgId], message, attachmentIdxBN, msgHex);
+		    ++msgCbCount;
+		} else {
+		    console.log('getAndParseIdMsgs: got an unexpected msg, msgId = ' + msgId + ', fromAddr = ' + fromAddr + ', toAddr = ' + toAddr);
+		    ++bogusCount;
+		}
+		if (msgCbCount + bogusCount >= msgResults.length)
+		    doneCb(msgCbCount);
+	    });
+	}
+    });
 }
