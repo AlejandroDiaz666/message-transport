@@ -54,20 +54,9 @@ const index = module.exports = {
 
 };
 
-function Message(isRx, msgId, msgNo, addr, viaAddr, date, ref, text, attachment) {
-    this.isRx = isRx;
-    this.msgId = msgId;
-    this.msgNo = msgNo;
-    this.addr = addr;
-    this.viaAddr = viaAddr;
-    this.date = date;
-    this.ref = ref;
-    this.text = text;
-    this.attachment = attachment;
-    this.ensName = null;
-}
 
-function MsgElem(div, msgNoArea, viaDiv, addrArea, dateArea, msgIdArea, subjectArea, msgNo) {
+function MsgElem(isRx, div, msgNoArea, viaDiv, addrArea, dateArea, msgIdArea, subjectArea, msgNo, elemIdx) {
+    this.isRx = isRx;
     this.div = div;
     this.msgNoArea = msgNoArea;
     this.viaDiv = viaDiv;
@@ -76,7 +65,7 @@ function MsgElem(div, msgNoArea, viaDiv, addrArea, dateArea, msgIdArea, subjectA
     this.msgIdArea = msgIdArea;
     this.subjectArea = subjectArea;
     this.msgNo = msgNo;
-    this.elemIdx = -1;
+    this.elemIdx = elemIdx;
     this.message = null;
 }
 
@@ -489,7 +478,7 @@ function setMarkReadButtonHandler() {
 	const message = !!msgElem && msgElem.message;
 	if (!!message) {
 	    const div = msgElem.div;
-	    const msgNo = message.msgNo;
+	    const msgNo = msgElem.msgNo;
 	    let flag = common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo);
 	    flag = (flag) ? false : true;
 	    common.setIndexedFlag(index.localStoragePrefix + 'beenRead', msgNo, flag);
@@ -932,7 +921,7 @@ function handleLockedMetaMask(err) {
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
     const msgListDiv = document.getElementById('msgListDiv');
-    initMsgElemList(msgListDiv, null, null);
+    clearMsgElemList(msgListDiv);
     const statusDiv = document.getElementById('statusDiv');
     common.clearStatusDiv(statusDiv);
     alert(err);
@@ -1076,7 +1065,7 @@ function handleUnregisteredAcct() {
     msgTextArea.readonly = 'readonly';
     msgTextArea.placeholder='';
     const msgListDiv = document.getElementById('msgListDiv');
-    initMsgElemList(msgListDiv, null, null);
+    clearMsgElemList(msgListDiv);
     const statusDiv = document.getElementById('statusDiv');
     common.clearStatusDiv(statusDiv);
 }
@@ -1100,7 +1089,7 @@ function handleRegisteredAcct(mode) {
 	    handleViewSent(true);
     } else {
 	const msgListDiv = document.getElementById('msgListDiv');
-	initMsgElemList(msgListDiv, null, null);
+	clearMsgElemList(msgListDiv);
 	disableAllButtons();
 	//prevent reloading while we're waiting for signature
 	common.waitingForTxid = true;
@@ -1157,7 +1146,7 @@ function handleCompose(acctInfo, toAddr) {
 	const msgElem = index.msgListElems[index.elemIdx];
 	const message = !!msgElem && msgElem.message;
 	if (!!message) {
-	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', message.msgNo)) ? '' : 'New';
+	    const newSuffix = (index.listMode == 'sent' || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgElem.msgNo)) ? '' : 'New';
 	    msgElem.div.className = 'msgListItemDiv' + newSuffix;
 	}
     }
@@ -1233,7 +1222,7 @@ function handleReplyCompose(acctInfo, toAddr, subject, ref) {
 	if (!!message) {
 	    console.log('handleReplyCompose: listmode = ' + index.listMode + ', msgId = ' + message.msgId + ', ref = ' + ref);
 	    if (index.listMode.indexOf('recv') >= 0 && message.msgId == ref) {
-		common.setIndexedFlag(index.localStoragePrefix + 'beenRead', message.msgNo, true);
+		common.setIndexedFlag(index.localStoragePrefix + 'beenRead', msgElem.msgNo, true);
 	    }
 	    msgElem.div.className = 'msgListItemDiv';
 	}
@@ -1544,11 +1533,10 @@ function handleViewRecv(refreshMsgList) {
     msgListHeaderAddr.value = 'From';
     if (!!refreshMsgList) {
 	index.listMode = 'recv';
-	refreshMessages(true, function(clearMsgElems) {
-	    const maxMsgNo = parseInt(mtUtil.acctInfo.recvMsgCount);
-	    const newIdx = maxMsgNo - index.recvMessageNo;
+	updateMsgCount(true, function() {
+	    const newIdx = msgNoToElemIdx(true, index.recvMessageNo);
 	    const msgListDiv = document.getElementById('msgListDiv');
-	    initMsgElemList(msgListDiv, index.rxMessages, true);
+	    clearMsgElemList(msgListDiv);
 	    populateMsgList(newIdx, function() {
 		selectMsgListEntry(newIdx, function() {
 		    const msgElem = index.msgListElems[newIdx];
@@ -1630,11 +1618,10 @@ function handleViewSent(refreshMsgList) {
     msgListHeaderAddr.value = 'To: ';
     if (!!refreshMsgList) {
 	index.listMode = 'sent';
-	refreshMessages(false, function(clearMsgElems) {
-	    const maxMsgNo = parseInt(mtUtil.acctInfo.sentMsgCount);
-	    const newIdx = Math.max(maxMsgNo - index.sentMessageNo, 0);
+	updateMsgCount(false, function() {
+	    const newIdx = msgNoToElemIdx(false, index.sentMessageNo);
 	    const msgListDiv = document.getElementById('msgListDiv');
-	    initMsgElemList(msgListDiv, index.txMessages, false);
+	    clearMsgElemList(msgListDiv);
 	    populateMsgList(newIdx, function() {
 		selectMsgListEntry(newIdx, function() {
 		    const msgElem = index.msgListElems[newIdx];
@@ -1650,9 +1637,10 @@ function handleViewSent(refreshMsgList) {
 
 
 //
-// cb(clearElemsFlag)
+// cb()
+// update message count
 //
-function refreshMessages(isRx, cb) {
+function updateMsgCount(isRx, cb) {
     mtEther.accountQuery(common.web3.eth.accounts[0], function(err, _acctInfo) {
 	//TODO: verify that acct has not changed!
 	if (!!err || !_acctInfo) {
@@ -1663,13 +1651,13 @@ function refreshMessages(isRx, cb) {
 	if (isRx) {
 	    const recvCntNew = parseInt(_acctInfo.recvMsgCount);
 	    const recvCntOld = parseInt(mtUtil.acctInfo.recvMsgCount);
-	    console.log('refreshMessages: recvCntNew = ' + recvCntNew + ', recvCntOld = ' + recvCntOld);
+	    console.log('updateMsgCount: recvCntNew = ' + recvCntNew + ', recvCntOld = ' + recvCntOld);
 	    if (recvCntNew == recvCntOld) {
 		cb(false);
 	    } else {
 		mtUtil.acctInfo.recvMsgCount = recvCntNew;
 		displayFeesAndMsgCnt();
-		getNewMessages(isRx, recvCntOld, recvCntNew, () => cb(true));
+		cb(true);
 	    }
 	} else {
 	    const sentCntNew = parseInt(_acctInfo.sentMsgCount);
@@ -1679,7 +1667,7 @@ function refreshMessages(isRx, cb) {
 	    } else {
 		mtUtil.acctInfo.sentMsgCount = sentCntNew;
 		displayFeesAndMsgCnt();
-		getNewMessages(isRx, sentCntOld, sentCntNew, () => cb(true));
+		cb(true);
 	    }
 	}
     });
@@ -1697,42 +1685,69 @@ function populateMsgList(minElemIdx, cb) {
     const isRx = (index.listMode == 'recv') ? true : false;
     const msgListDiv = document.getElementById('msgListDiv');
     const getMsgIdsFcn = (isRx) ? mtUtil.getRecvMsgIds : mtUtil.getSentMsgIds;
+    const msgIdCache = (isRx) ? mtUtil.recvMsgIdsCache : mtUtil.sentMsgIdsCache;
     const maxMsgNo = (isRx) ? parseInt(mtUtil.acctInfo.recvMsgCount) : parseInt(mtUtil.acctInfo.sentMsgCount);
+    const retrievingMsgsModal = document.getElementById('retrievingMsgsModal');
     let callDepth = 0;
     let callCount = 0;
-    const retrievingMsgsModal = document.getElementById('retrievingMsgsModal');
-    for (let j = 0; j < 100; ++j) {
-	//scrollHeight is the entire height, including the part of the elem that is now viewable because it is scrolled
-	//scrollTop is a measurement of the distance from the element's top to its topmost visible content
-        console.log('scroll: scrollHeight = ' + msgListDiv.scrollHeight + ', scrollTop = ' + msgListDiv.scrollTop + ', clientHeight = ' + msgListDiv.clientHeight);
+    //
+    // criteria to break out of the populat loop
+    //
+    const breakCriteria = () => {
+	let doBreak = false;
 	if (index.msgListElems.length >= maxMsgNo)
-            break;
+	    doBreak = true;
 	else if (!!minElemIdx && index.msgListElems.length < minElemIdx + 1)
 	    ;
         else if (msgListDiv.scrollHeight > msgListDiv.scrollTop + msgListDiv.clientHeight + 50)
-            break;
+	    doBreak = true;
+	return(doBreak);
+    };
+    while (true) {
+	//scrollHeight is the entire height, including the part of the elem that is now viewable because it is scrolled
+	//scrollTop is a measurement of the distance from the element's top to its topmost visible content
+        console.log('scroll: scrollHeight = ' + msgListDiv.scrollHeight + ', scrollTop = ' + msgListDiv.scrollTop + ', clientHeight = ' + msgListDiv.clientHeight);
+	if (breakCriteria())
+	    break;
+	//
+	// create as many complete elems as possible
+	//
+	const msgElem0 = makeMsgListElem(isRx);
+	msgListDiv.appendChild(msgElem0.div);
+	if (!!msgElem0.message)
+	    continue;
+	//
+	// at this point we know we're going to need to fill some elem's asynchronously
+	//
 	if (callDepth == 0) {
 	    retrievingMsgsModal.style.display = 'block';
 	    common.setLoadingIcon('start');
 	}
 	++callCount;
 	++callDepth;
-	const firstElemIdx = index.msgListElems.length;
-	const fastStartLimit = (index.msgListElems.length > 12) ? 9 : 3;
-	const noElems = Math.min(fastStartLimit, maxMsgNo - index.msgListElems.length);
-	const lastElemIdx = firstElemIdx + noElems - 1;
-	const startMsgNo = elemIdxToMsgNo(isRx, lastElemIdx);
-        console.log('populateMsgList: msgListElems.length = ' + index.msgListElems.length + ', noElems = ' + noElems);
-	for (let elemIdx = firstElemIdx; elemIdx <= lastElemIdx; ++elemIdx) {
-	    const msgNo = elemIdxToMsgNo(isRx, elemIdx);
-	    const msgElem = makeMsgListElem(msgNo);
-	    msgElem.elemIdx = elemIdx;
-	    index.msgListElems.push(msgElem);
+	//
+	// create up to 9 deferred elems, filling in any intervening complete elems. but the maximum separation between
+	// deferred elems will never exceed 18
+	//
+	const deferredElems = [];
+	deferredElems.push(msgElem0);
+	while (deferredElems.length < 9 && !breakCriteria()) {
+	    const span = index.msgListElems[index.msgListElems.length - 1].elemIdx - msgElem0.elemIdx;
+	    if (span >= 18)
+		break;
+	    const msgElem = makeMsgListElem(isRx);
 	    msgListDiv.appendChild(msgElem.div);
+	    if (!!msgElem.message)
+		continue;
+	    deferredElems.push(msgElem);
 	}
-	getMsgIdsFcn(common.web3.eth.accounts[0], startMsgNo - 1, noElems, function(err, msgIds) {
-	    console.log('populateMsgList: got ids, startMsgNo = ' + startMsgNo + ', firstElemIdx = ' + firstElemIdx + ', lastElemIdx = ' + lastElemIdx);
-	    if (!!err || !msgIds || msgIds.length < noElems) {
+	//
+	// we've now created as many full elements as we could, and we also have a list of deferred elements
+	//
+	const startMsgNo = deferredElems[deferredElems.length - 1].msgNo;
+	const span = deferredElems[deferredElems.length - 1].elemIdx - msgElem0.elemIdx;
+	getMsgIdsFcn(common.web3.eth.accounts[0], startMsgNo - 1, span + 1, function(err) {
+	    if (!!err) {
 		console.log('populateMsgList: err = ' + err);
 		alert('error retrieving message ids: ' + err);
 		retrievingMsgsModal.style.display = 'none';
@@ -1740,16 +1755,7 @@ function populateMsgList(minElemIdx, cb) {
 		cb();
 		return;
 	    }
-	    const t = [];
-	    console.log('populateMsgList: calling getMessages(' + startMsgNo + ', ' + t + ')');
-	    getMessages(msgIds, startMsgNo, t, function(tempMessages) {
-		console.log('populateMsgList: got ' + Object.keys(tempMessages).length + ' messages');
-		for (let elemIdx = firstElemIdx; elemIdx <= lastElemIdx; ++elemIdx) {
-		    const msgElem = index.msgListElems[elemIdx];
-		    const message = tempMessages[msgElem.msgNo];
-		    if (!!message)
-			fillInMsgListEntry(elemIdx, message)
-		}
+	    getMessages(deferredElems, function() {
 		if (--callDepth <= 0) {
 		    retrievingMsgsModal.style.display = 'none';
 		    common.setLoadingIcon(null);
@@ -1764,137 +1770,61 @@ function populateMsgList(minElemIdx, cb) {
 
 
 //
-// add new entries to rxMessages or txMessages. the messages are not displayed
+// cb(err)
+// get messages to fill elems[]
+// this function assumes that the msgId's are already cached in mtUtil
+//callback when all done
 //
-function getNewMessages(isRx, oldMaxMsgNo, newMaxMsgNo, cb) {
-    let callDepth = 0;
-    let callCount = 0;
-    let newMsgCount = 0;
-    const messages = isRx ? index.rxMessages : index.txMessages;
-    const getMsgIdsFcn = isRx ? mtUtil.getRecvMsgIds : mtUtil.getSentMsgIds;
-    const retrievingMsgsModal = document.getElementById('retrievingMsgsModal');
-    console.log('getNewMessages: isRx = ' + isRx + ', oldMaxMsgNo = ' + oldMaxMsgNo + ', newMaxMsgNo = ' + newMaxMsgNo);
-    while (oldMaxMsgNo + newMsgCount < newMaxMsgNo) {
-	if (callDepth == 0) {
-	    retrievingMsgsModal.style.display = 'block';
-	    common.setLoadingIcon('start');
-	}
-	++callCount;
-	++callDepth;
-	console.log('getNewMessages: callCount = ' + callCount + ', callDepth = ' + callDepth);
-	const noElems = Math.min(9, newMaxMsgNo - (oldMaxMsgNo + newMsgCount));
-	console.log('getNewMessages: noElems = ' + noElems);
-	const startMsgNo = oldMaxMsgNo + newMsgCount + 1;
-	console.log('getNewMessages: startMsgNo = ' + startMsgNo);
-	newMsgCount += noElems;
-	getMsgIdsFcn(common.web3.eth.accounts[0], startMsgNo - 1, noElems, function(err, msgIds) {
-	    console.log('getNewMessages: got ids, startMsgNo = ' + startMsgNo);
-	    if (!!err || !msgIds || msgIds.length < noElems) {
-		console.log('populateMsgList: err = ' + err);
-		alert('error retrieving message ids: ' + err);
-		retrievingMsgsModal.style.display = 'none';
-		common.setLoadingIcon(null);
-		cb();
-		return;
-	    }
-	    getMessages(msgIds, startMsgNo, [], function(tempMessages) {
-		if (--callDepth <= 0) {
-		    retrievingMsgsModal.style.display = 'none';
-		    common.setLoadingIcon(null);
-		    cb();
-		}
-	    });
-	});
-    }
-    if (callCount == 0)
-	cb();
-}
-
-
-//
-// get messages corresponding to the passed msgIds[], which are numbered sequentially from msgNo
-//
-// msgIds: array of message ID's
-// msgNo: message number of msgIds[idIdx]
-// messages are placed to tempMessages[msgNo]
-// messages that are sucessfully decrypted are also placed to {tx,rx}Messages[msgNo]
-// cb(tempMessages): callback when all done
-//
-function getMessages(msgIds, msgNo, tempMessages, cb) {
-    console.log('getMessages: msgIds = ' + msgIds.toString() + ', msgIds.length = ' + msgIds.length + ', msgNo = ' + msgNo);
+function getMessages(elems, cb) {
+    console.log('getMessages: retreiving ' + elems.length + ' messages');
     const isRx = (index.listMode == 'recv') ? true : false;
     const threeMsgIds = [];
-    const msgCookies = {};
-    for (let i = 0; i < 9 && i < msgIds.length; ++i, ++msgNo) {
-	if (common.numberToBN(msgIds[i]).isZero())
-	    break;
-	console.log('getMessages: msgId = ' + msgIds[i]);
-	const msgCookie = { idIdx: i, msgNo: msgNo };
-	const msgId = msgIds[i];
-	threeMsgIds.push(msgId);
-	msgCookies[msgId] = msgCookie;
+    const elemsById = {};
+    for (let i = 0; i < 9 && i < elems.length; ++i) {
+	const msgElem = elems[i];
+	const msgIdCache = (msgElem.isRx) ? mtUtil.recvMsgIdsCache : mtUtil.sentMsgIdsCache;
+	const msgId = msgIdCache[msgElem.msgNo - 1];
+	if (!msgId) {
+	    console.log('getMessages: can\'t get message because msgId for msgNo ' +  msgElem.msgNo + ' is missing in cache');
+	} else {
+	    elemsById[msgId] = msgElem;
+	    threeMsgIds.push(msgId);
+	}
     }
-    let noMsgsDisplayed = 0;
-    let msgsToDisplay = msgIds.length + 1000;
-    const messages = isRx ? index.rxMessages : index.txMessages;
+    let noMsgsReturned = 0;
+    let expectedNoMsgs = elems.length + 1000;
     const msgCompleteFcn = (source, err) => {
-	if (++noMsgsDisplayed >= msgsToDisplay) {
-	    console.log('getMessages: got msgCb, ' + source + ', err = ' + err + ', msgsToDisplay = ' + msgsToDisplay + ', noMsgsDisplayed = ' + noMsgsDisplayed);
-	    cb(tempMessages);
+	if (++noMsgsReturned >= expectedNoMsgs) {
+	    console.log('getMessages: got msgCb, ' + source + ', err = ' + err + ', expectedNoMsgs = ' + expectedNoMsgs + ', noMsgsReturned = ' + noMsgsReturned);
+	    cb(null);
 	}
     };
     //gets up to 9 log entries; second cb when all done
-    mtUtil.getAndParseIdMsgs(threeMsgIds, msgCookies, function(err, msgCookie, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
+    mtUtil.getAndParseIdMsgs(threeMsgIds, elemsById, function(err, cookie, message, attachmentIdxBN, msgHex) {
+	const msgElem = cookie;
 	console.log('getMessages: getAndParseIdMsgs returns, err = ' + err);
-	if (!!err || !fromAddr) {
-	    err = 'Message data not found';
-	    if (!!msgCookie) {
-		const message = new Message(isRx, msgIds[msgCookie.idIdx], '', '', '', '', '', err, null);
-		tempMessages[msgCookie.msgNo] = message;
-	    }
+	if (!!err || !message.fromAddr || msgHex === null) {
+	    err = (!!err) ? err : 'Message data not found';
+	    if (!!msgElem && !!message)
+		fillMsgElemMessage(msgElem, message);
 	    msgCompleteFcn('getAndParseIdMsgs', err);
 	    return;
 	}
-	console.log('getMessages: got msgId = ' + msgId + ', msgNo = ' + msgCookie.msgNo + ', attachmentIdxBN = ' + attachmentIdxBN.toString(16));
-	const otherAddr = (isRx) ? fromAddr : toAddr;
-	mtUtil.decryptMsg(otherAddr, fromAddr, toAddr, txCount, msgHex, attachmentIdxBN, (err, messageText, attachment) => {
-	    if (!!err) {
-		const errMsg = !!messageText ? messageText : 'message decryption error';
-		const message = new Message(isRx, msgId, msgCookie.msgNo, otherAddr, viaAddr, date, ref, errMsg, attachment);
-		tempMessages[msgCookie.msgNo] = message;
-		msgCompleteFcn('decryptMsg', err);
-		return;
-	    }
-	    console.log('getMessages: msgId = ' + msgId + ', text = ' + messageText + ', attachment = ' + attachment);
-	    const message = new Message(isRx, msgId, msgCookie.msgNo, otherAddr, viaAddr, date, ref, messageText, attachment);
-	    messages[msgCookie.msgNo] = message;
-	    tempMessages[msgCookie.msgNo] = message;
-	    ether.ensReverseLookup(otherAddr, function(err, name) {
-		if (!err && !!name)
-		    message.ensName = name;
-		msgCompleteFcn('ensReverseLookup', null);
-	    });
+	console.log('getMessages: got msgId = ' + message.msgId + ', msgNo = ' + msgElem.msgNo + ', attachmentIdxBN = ' + attachmentIdxBN.toString(16));
+	mtUtil.decryptMsg(message, attachmentIdxBN, msgHex, (err, message) => {
+	    if (!!err && !message.text)
+		message.text = err.toString();
+	    console.log('getMessages: msgId = ' + message.msgId + ', text = ' + message.text + ', attachment = ' + message.attachment);
+	    fillMsgElemMessage(msgElem, message);
+	    msgCompleteFcn('decryptMsg', err);
+	    return;
 	});
     }, function(noMsgsProcessed) {
-	console.log('getMessages: got doneCb. noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsDisplayed = ' + noMsgsDisplayed);
-	msgsToDisplay = noMsgsProcessed;
-	if (noMsgsDisplayed >= msgsToDisplay)
-	    cb(tempMessages);
+	console.log('getMessages: got doneCb. noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsReturned = ' + noMsgsReturned);
+	expectedNoMsgs = noMsgsProcessed;
+	if (noMsgsReturned >= expectedNoMsgs)
+	    cb(null);
     });
-}
-
-
-function fillInMsgListEntry(elemIdx, message) {
-    console.log('fillInMsgListEntry: elemIdx = ' + elemIdx + ', msgNo = ' + message.msgNo);
-    const msgElem = index.msgListElems[elemIdx];
-    fillMsgListElem(msgElem, message);
-    const viewRecvButton = document.getElementById('viewRecvButton');
-    const viewSentButton = document.getElementById('viewSentButton');
-    if ((message.msgNo != 0 && elemIdx == index.elemIdx                                                                                          ) &&
-	(viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) ) {
-	console.log('fillInMsgListEntry: calling showMsgDetail(msgNo = ' + message.msgNo + ')');
-	showMsgDetail(message);
-    }
 }
 
 
@@ -1946,10 +1876,10 @@ function selectMsgListEntry(newIdx, cb) {
 	    const msgElem = index.msgListElems[index.elemIdx];
 	    const message = !!msgElem && msgElem.message;
 	    const msgNo = !!msgElem && msgElem.msgNo;
-	    //if the message hasn't been retreived yet then it will be displayed in fillInMsgListEntry
+	    //if the message hasn't been retreived yet then it will be displayed in fillMsgElemMessage
 	    if (!!message) {
 		console.log('selectMsgListEntry: calling showMsgDetail(msgNo = ' + msgNo + ')');
-		showMsgDetail(message);
+		showMsgDetail(msgElem, message);
 	    } else {
 		console.log('selectMsgListEntry: msg detail is not available yet for msgNo = ' + msgNo);
 	    }
@@ -1980,17 +1910,17 @@ function enablePrevNextButtons() {
 // display the message in the msgTextArea. also displays the msgId, ref, date & msgNo
 // msgNo is either txCount or rxCount depending on whether the message was sent or received
 //
-function showMsgDetail(message) {
+function showMsgDetail(msgElem, message) {
     console.log('showMsg: enter');
     const msgAddrArea = document.getElementById('msgAddrArea');
     const msgTextArea = document.getElementById('msgTextArea');
     const msgNoNotButton = document.getElementById('msgNoNotButton');
     msgAddrArea.disabled = true;
     msgTextArea.disabled = true;
-    msgAddrArea.value = (!!message.ensName) ? message.ensName + ' (' +  message.addr + ')' : message.addr;
+    msgAddrArea.value = (!!message.ensName) ? message.ensName + ' (' +  message.otherAddr + ')' : message.otherAddr;
     showIdAndRef(message.msgId, message.ref, true);
     msgDateArea.value = message.date;
-    msgNoNotButton.textContent = parseInt(message.msgNo).toString(10);
+    msgNoNotButton.textContent = parseInt(msgElem.msgNo).toString(10);
     msgTextArea.value = message.text;
     const attachmentSaveA = document.getElementById('attachmentSaveA');
     if (!!message.attachment) {
@@ -2008,12 +1938,10 @@ function showMsgDetail(message) {
 
 
 //
-// (re)initialize the message elements list
 // clears all msgElems from the passed listDiv.
-// if messages[] is non-null, then create a new set of elems from the passed messages
 //
-function initMsgElemList(listDiv, messages, isRx) {
-    console.log('initMsgElemList');
+function clearMsgElemList(listDiv) {
+    console.log('clearMsgElemList: elem list length = ' + index.msgListElems.length);
     while (listDiv.hasChildNodes()) {
 	const child = listDiv.lastChild;
 	if (!!child.id && child.id.startsWith("msgListHeader"))
@@ -2022,28 +1950,14 @@ function initMsgElemList(listDiv, messages, isRx) {
     }
     index.msgListElems = [];
     index.elemIdx = -1;
-    if (!!messages && messages.length > 0) {
-	const maxMsgNo = (!!isRx) ? parseInt(mtUtil.acctInfo.recvMsgCount) : parseInt(mtUtil.acctInfo.sentMsgCount);
-	for (let i = 0; i < messages.length; ++i) {
-	    const elemIdx = index.msgListElems.length;
-	    const msgNo = maxMsgNo - elemIdx;
-	    if (!!messages[msgNo]) {
-		const msgElem = makeMsgListElem(msgNo);
-		msgElem.elemIdx = elemIdx;
-		index.msgListElems.push(msgElem);
-		fillMsgListElem(msgElem, messages[msgNo]);
-		listDiv.appendChild(msgElem.div);
-	    }
-	}
-    }
 }
 
 
 //
-// create an empty message list element
-// the element is empty. it needs to be filled in... it is not added to any list
+// create a message list element at the next position in index.msgListElems[]
+// if a message is cached for the element, then the element is filled, otherwise it is returned empty.
 //
-function makeMsgListElem(msgNo) {
+function makeMsgListElem(isRx) {
     console.log('makeMsgListElem');
     let div, msgNoArea, addrArea, subjectArea, dateArea, msgIdArea;
     div = document.createElement("div");
@@ -2086,16 +2000,20 @@ function makeMsgListElem(msgNo) {
     div.appendChild(dateArea);
     div.appendChild(msgIdArea);
     div.appendChild(subjectArea);
-    const msgElem = new MsgElem(div, msgNoArea, viaDiv, addrArea, dateArea, msgIdArea, subjectArea, msgNo);
+    const elemIdx = index.msgListElems.length;
+    const msgNo = elemIdxToMsgNo(isRx, elemIdx);
+    const msgElem = new MsgElem(isRx, div, msgNoArea, viaDiv, addrArea, dateArea, msgIdArea, subjectArea, msgNo, elemIdx);
+    index.msgListElems.push(msgElem);
+    // fill it in if the message is cached. ok if not.
+    fillMsgElemMessageFromCache(msgElem);
     div.addEventListener('click', function() {
-	const message = msgElem.message;
-	if (!!message && message.msgNo > 0) {
+	if (!!msgElem.message) {
 	    //re-establish View-Sent or View-Recv mode as appropriate, but no need to refresh the msg list since
 	    //by definition we are selecting a message from the current list
 	    const msgNoCounter = (index.listMode == 'recv') ? 'recvMessageNo' : 'sentMessageNo';
 	    const viewSentButton = document.getElementById('viewSentButton');
 	    const viewRecvButton = document.getElementById('viewRecvButton');
-	    index[msgNoCounter] = message.msgNo;
+	    index[msgNoCounter] = msgElem.msgNo;
 	    if (index.listMode == 'recv' && viewRecvButton.className != 'menuBarButtonSelected')
 		handleViewRecv(false);
 	    else if (index.listMode == 'sent' && viewSentButton.className != 'menuBarButtonSelected')
@@ -2108,15 +2026,39 @@ function makeMsgListElem(msgNo) {
 
 
 //
+// fill-in a msgElem from the message cache, only if the message is already cached
+//
+function fillMsgElemMessageFromCache(msgElem) {
+    const msgIdCache = (msgElem.isRx) ? mtUtil.recvMsgIdsCache : mtUtil.sentMsgIdsCache;
+    const msgId = msgIdCache[msgElem.msgNo - 1];
+    const message = (!!msgId) ? mtUtil.messageCache[msgId] : null;
+    if (!!message)
+	fillMsgElemMessage(msgElem, message)
+}
+
+
+function fillMsgElemMessage(msgElem, message) {
+    console.log('fillMsgElemMessage: elemIdx = ' + msgElem.elemIdx + ', msgNo = ' + msgElem.msgNo);
+    showMsgElemInList(msgElem, message);
+    const viewRecvButton = document.getElementById('viewRecvButton');
+    const viewSentButton = document.getElementById('viewSentButton');
+    if ((msgElem.elemIdx == index.elemIdx                                                                                                  ) &&
+	(viewRecvButton.className.indexOf('menuBarButtonSelected') >= 0 || viewSentButton.className.indexOf('menuBarButtonSelected') >= 0) ) {
+	console.log('fillMsgElemMessage: calling showMsgDetail(msgNo = ' + msgElem.msgNo + ')');
+	showMsgDetail(msgElem, message);
+    }
+}
+
+
+//
 // fill-in a msgElem with the particulars of a message
 //
-function fillMsgListElem(msgElem, message) {
-    console.log('fillMsgListElem: elemIdx = ' + msgElem.elemIdx + ', msgNo = ' + message.msgNo);
+function showMsgElemInList(msgElem, message) {
+    console.log('showMsgElemInList: elemIdx = ' + msgElem.elemIdx + ', msgNo = ' + msgElem.msgNo + ', text = ' + message.text);
     const newPrefix = 'msgListItemDiv';
-    const newSuffix = (!message.isRx || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', message.msgNo)) ? '' : 'New';
+    const newSuffix = (!msgElem.isRx || common.chkIndexedFlag(index.localStoragePrefix + 'beenRead', msgElem.msgNo)) ? '' : 'New';
     msgElem.div.className = newPrefix + newSuffix;
-    msgElem.msgNoArea.value = message.msgNo.toString(10);
-
+    msgElem.msgNoArea.value = msgElem.msgNo.toString(10);
     const viaTooltip = document.createElement("span");
     viaTooltip.className = 'tooltipText';
     if (message.viaAddr.length > 0) {
@@ -2133,11 +2075,10 @@ function fillMsgListElem(msgElem, message) {
 	}
     }
     msgElem.viaDiv.appendChild(viaTooltip);
-
     if (!!message.ensName)
 	msgElem.addrArea.value = abbreviateAddrForEns(message.addr, message.ensName);
     else
-	msgElem.addrArea.value = message.addr;
+	msgElem.addrArea.value = message.otherAddr;
     msgElem.dateArea.value = message.date;
     msgElem.msgIdArea.value = (!!message.msgId) ? mtUtil.abbreviateMsgId(message.msgId) : '';
     msgElem.subjectArea.value = mtUtil.extractSubject(message.text, 80);
