@@ -446,32 +446,22 @@ function setAttachButtonHandler() {
 
 function setMsgRefButtonHandler() {
     const msgRefButton = document.getElementById('msgRefButton');
-    const gotoMsg = (message) => {
-	if (message.fromAddr == common.web3.eth.accounts[0]) {
-	    index.sentMessageNo = message.txCount;
-	    handleViewSent(true);
-	} else if (message.toAddr == common.web3.eth.accounts[0]) {
-	    index.recvMessageNo = message.rxCount;
-	    handleViewRecv(true);
-	}
-    };
     msgRefButton.addEventListener('click', function() {
 	const refId = msgRefButton.ref;
 	if (!!refId) {
-	    const refMessage = mtUtil.messageCache[refId];
-	    if (!!refMessage) {
-		gotoMsg(refMessage);
-	    } else {
-		//just need to find out the msgNo... populate fcn will decrypt
-		mtUtil.getAndParseIdMsg(refId, function(err, message, attachmentIdxBN, msgHex) {
-		    const msgTextArea = document.getElementById('msgTextArea');
-		    const viewRecvButton = document.getElementById('viewRecvButton');
-		    if (!!err)
-			msgTextArea.value = 'Error: ' + err;
-		    else
-			gotoMsg(message);
-		});
-	    }
+	    mtUtil.getParseDecryptMsg(refId, function(err, message) {
+		const msgTextArea = document.getElementById('msgTextArea');
+		const viewRecvButton = document.getElementById('viewRecvButton');
+		if (!!err)
+		    msgTextArea.value = 'Error: ' + err;
+		else if (message.fromAddr == common.web3.eth.accounts[0]) {
+		    index.sentMessageNo = message.txCount;
+		    handleViewSent(true);
+		} else if (message.toAddr == common.web3.eth.accounts[0]) {
+		    index.recvMessageNo = message.rxCount;
+		    handleViewRecv(true);
+		}
+	    });
 	}
     });
 }
@@ -1803,38 +1793,20 @@ function getMessages(elems, cb) {
     }
     let noMsgsReturned = 0;
     let expectedNoMsgs = elems.length + 1000;
-    const msgCompleteFcn = (source, err) => {
-	if (++noMsgsReturned >= expectedNoMsgs) {
-	    console.log('getMessages: got msgCb, ' + source + ', err = ' + err + ', expectedNoMsgs = ' + expectedNoMsgs + ', noMsgsReturned = ' + noMsgsReturned);
-	    cb(null);
-	}
-    };
-    //gets up to 9 log entries; second cb when all done
-    mtUtil.getAndParseIdMsgs(threeMsgIds, elemsById, function(err, cookie, message, attachmentIdxBN, msgHex) {
-	const msgElem = cookie;
-	console.log('getMessages: getAndParseIdMsgs returns, err = ' + err);
-	if (!!err || !message.fromAddr || msgHex === null) {
-	    err = (!!err) ? err : 'Message data not found';
-	    if (!!msgElem && !!message)
-		fillMsgElemMessage(msgElem, message);
-	    msgCompleteFcn('getAndParseIdMsgs', err);
-	    return;
-	}
-	console.log('getMessages: got msgId = ' + message.msgId + ', msgNo = ' + msgElem.msgNo + ', attachmentIdxBN = ' + attachmentIdxBN.toString(16));
-	mtUtil.decryptMsg(message, attachmentIdxBN, msgHex, (err, message) => {
-	    if (!!err && !message.text)
-		message.text = err.toString();
-	    console.log('getMessages: msgId = ' + message.msgId + ', text = ' + message.text + ', attachment = ' + message.attachment);
+    const msgCb = (err, msgElem, message) => {
+	if (!!msgElem && !!message)
 	    fillMsgElemMessage(msgElem, message);
-	    msgCompleteFcn('decryptMsg', err);
-	    return;
-	});
-    }, function(noMsgsProcessed) {
+	if (++noMsgsReturned >= expectedNoMsgs)
+	    cb(null);
+    };
+    const doneCb = (noMsgsProcessed) => {
 	console.log('getMessages: got doneCb. noMsgsProcessed = ' + noMsgsProcessed + ', noMsgsReturned = ' + noMsgsReturned);
 	expectedNoMsgs = noMsgsProcessed;
 	if (noMsgsReturned >= expectedNoMsgs)
 	    cb(null);
-    });
+    };
+    //gets up to 9 log entries; second cb when all done
+    mtUtil.getParseDecryptMsgs(threeMsgIds, elemsById, msgCb, doneCb);
 }
 
 
