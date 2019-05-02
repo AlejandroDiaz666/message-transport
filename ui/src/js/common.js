@@ -565,12 +565,13 @@ const common = module.exports = {
 	    button.className = (button.className).replace(baseName + 'Selected', newClassName);
 	else
 	    button.className = (button.className).replace(baseName, newClassName);
+	return(button);
     },
 
 
     //state = 'Disabled' | 'Enabled' | 'Selected'
     setMenuButtonState: function(buttonID, state) {
-	common.setButtonState('menuBarButton', buttonID, state);
+	return(common.setButtonState('menuBarButton', buttonID, state));
     },
 
 
