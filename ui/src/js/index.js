@@ -2058,7 +2058,7 @@ function showMsgElemInList(msgElem, message) {
     }
     msgElem.viaDiv.appendChild(viaTooltip);
     if (!!message.ensName)
-	msgElem.addrArea.value = abbreviateAddrForEns(message.addr, message.ensName);
+	msgElem.addrArea.value = abbreviateAddrForEns(message.otherAddr, message.ensName);
     else
 	msgElem.addrArea.value = message.otherAddr;
     msgElem.dateArea.value = message.date;
