@@ -446,22 +446,32 @@ function setAttachButtonHandler() {
 
 function setMsgRefButtonHandler() {
     const msgRefButton = document.getElementById('msgRefButton');
+    const gotoMsg = (message) => {
+	if (message.fromAddr == common.web3.eth.accounts[0]) {
+	    index.sentMessageNo = message.txCount;
+	    handleViewSent(true);
+	} else if (message.toAddr == common.web3.eth.accounts[0]) {
+	    index.recvMessageNo = message.rxCount;
+	    handleViewRecv(true);
+	}
+    };
     msgRefButton.addEventListener('click', function() {
-	const ref = msgRefButton.ref;
-	if (!!ref) {
-	    mtUtil.getAndParseIdMsg(ref, function(err, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date) {
-		const msgTextArea = document.getElementById('msgTextArea');
-		const viewRecvButton = document.getElementById('viewRecvButton');
-		if (!!err) {
-		    msgTextArea.value = 'Error: ' + err;
-		} else if (fromAddr == common.web3.eth.accounts[0]) {
-		    index.sentMessageNo = txCount;
-		    handleViewSent(true);
-		} else if (toAddr == common.web3.eth.accounts[0]) {
-		    index.recvMessageNo = rxCount;
-		    handleViewRecv(true);
-		}
-	    });
+	const refId = msgRefButton.ref;
+	if (!!refId) {
+	    const refMessage = mtUtil.messageCache[refId];
+	    if (!!refMessage) {
+		gotoMsg(refMessage);
+	    } else {
+		//just need to find out the msgNo... populate fcn will decrypt
+		mtUtil.getAndParseIdMsg(refId, function(err, message, attachmentIdxBN, msgHex) {
+		    const msgTextArea = document.getElementById('msgTextArea');
+		    const viewRecvButton = document.getElementById('viewRecvButton');
+		    if (!!err)
+			msgTextArea.value = 'Error: ' + err;
+		    else
+			gotoMsg(message);
+		});
+	    }
 	}
     });
 }
