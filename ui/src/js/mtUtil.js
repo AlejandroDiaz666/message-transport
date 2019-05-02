@@ -194,7 +194,7 @@ const mtUtil = module.exports = {
     // messages that are sucessfully decrypted are cached
     //
     getParseDecryptMsgs: function(msgIds, msgCookies, msgCb, doneCb) {
-	console.log('getParseDecryptMsgs: enter msgIds = ' + msgIds.toString());
+	console.log('getParseDecryptMsgs: ' + msgIds.length + ' msgIds');
 	const msgFcn = (err, cookie, message, attachmentIdxBN, msgHex) => {
 	    if (!!err) {
 		if (!message.text)
@@ -414,7 +414,7 @@ function getAndParseMsg(msgId, cb) {
 // msgCb is called once for each message passing msgCookies[msgId]
 //
 function getAndParseMsgs(msgIds, msgCookies, msgCb, doneCb) {
-    console.log('getAndParseIdMsgs: enter msgIds = ' + msgIds.toString());
+    console.log('getAndParseIdMsgs: ' + msgIds.length + ' msgIds');
     const options = {
 	fromBlock: mtEther.firstBlock,
 	toBlock: 'latest',

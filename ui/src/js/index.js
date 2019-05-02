@@ -1940,7 +1940,6 @@ function clearMsgElemList(listDiv) {
 // if a message is cached for the element, then the element is filled, otherwise it is returned empty.
 //
 function makeMsgListElem(isRx) {
-    console.log('makeMsgListElem');
     let div, msgNoArea, addrArea, subjectArea, dateArea, msgIdArea;
     div = document.createElement("div");
     div.className = 'msgListItemDiv';
@@ -1984,6 +1983,7 @@ function makeMsgListElem(isRx) {
     div.appendChild(subjectArea);
     const elemIdx = index.msgListElems.length;
     const msgNo = elemIdxToMsgNo(isRx, elemIdx);
+    console.log('makeMsgListElem: elemIdx = ' + elemIdx + ', msgNo = ' + msgNo);
     const msgElem = new MsgElem(isRx, div, msgNoArea, viaDiv, addrArea, dateArea, msgIdArea, subjectArea, msgNo, elemIdx);
     index.msgListElems.push(msgElem);
     // fill it in if the message is cached. ok if not.

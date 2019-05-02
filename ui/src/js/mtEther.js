@@ -308,17 +308,17 @@ const mtEther = module.exports = {
 	const msgOffset = parseInt(msgOffsetHex, 16);
 	const msgLenHex = result.data.slice((2*msgOffset)+2, (2*msgOffset)+64+2);
 	const msgLen = parseInt(msgLenHex, 16);
-	console.log('parseMessageEvent: msgLen = 0x' + msgLen.toString(16));
+	//console.log('parseMessageEvent: msgLen = 0x' + msgLen.toString(16));
 	const msgHex = '0x' + result.data.slice((2*msgOffset)+64+2, (2*msgOffset)+64+2+(msgLen*2));
 	const blockNumber = parseInt(result.blockNumber);
-	console.log('parseMessageEvent: blockNumber = ' + blockNumber);
+	//console.log('parseMessageEvent: blockNumber = ' + blockNumber);
 	if (!!result.timeStamp) {
 	    const timeStamp = parseInt(result.timeStamp);
 	    const date = (new Date(timeStamp * 1000)).toUTCString();
 	    cb(null, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
 	} else {
 	    common.web3.eth.getBlock(blockNumber, function(err, block) {
-		console.log('parseMessageEvent: ts = ' + block.timestamp);
+		//console.log('parseMessageEvent: ts = ' + block.timestamp);
 		const timeStamp = block.timestamp;
 		const date = (new Date(timeStamp * 1000)).toUTCString();
 		cb(null, msgId, fromAddr, toAddr, viaAddr, txCount, rxCount, attachmentIdxBN, ref, msgHex, blockNumber, date);
