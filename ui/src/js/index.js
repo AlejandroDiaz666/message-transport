@@ -990,15 +990,21 @@ function handleUnlockedMetaMask(mode) {
 		sentMsgNoFromURL = common.getUrlParameterByName(window.location.href, 'sentMsgNo')
 		if (!!sentMsgNoFromURL)
 		    index.sentMessageNo = parseInt(sentMsgNoFromURL);
-		else if (!!localStorage[index.localStoragePrefix + '-sentMessageNo'])
+		else if (!!localStorage[index.localStoragePrefix + '-sentMessageNo']) {
+		    const maxSentMsgNo = parseInt(mtUtil.acctInfo.sentMsgCount);
 		    index.sentMessageNo = localStorage[index.localStoragePrefix + '-sentMessageNo'];
-		else
+		    if (parseInt(index.sentMessageNo) < maxSentMsgNo - 33)
+			index.sentMessageNo = maxSentMsgNo - 33;
+		} else
 		    index.sentMessageNo = parseInt(mtUtil.acctInfo.sentMsgCount);
 		if (!!recvMsgNoFromURL)
 		    index.recvMessageNo = parseInt(recvMsgNoFromURL);
-		else if (!!localStorage[index.localStoragePrefix + '-recvMessageNo'] && localStorage['onStartGoto'] == 'last-viewed')
+		else if (!!localStorage[index.localStoragePrefix + '-recvMessageNo'] && localStorage['onStartGoto'] == 'last-viewed') {
+		    const maxRecvMsgNo = parseInt(mtUtil.acctInfo.recvMsgCount);
 		    index.recvMessageNo = localStorage[index.localStoragePrefix + '-recvMessageNo'];
-		else if (localStorage['onStartGoto'] == 'first-unread' && !recvMsgNoFromURL) {
+		    if (parseInt(index.recvMessageNo) < maxRecvMsgNo - 33)
+			index.recvMessageNo = maxRecvMsgNo - 33;
+		} else if (localStorage['onStartGoto'] == 'first-unread' && !recvMsgNoFromURL) {
 		    const maxMsgNo = parseInt(mtUtil.acctInfo.recvMsgCount);
 		    const unreadMsgNo = common.findIndexedFlag(index.localStoragePrefix + 'beenRead', maxMsgNo, 1, false);
 		    console.log('handleUnlockedMetaMask: unreadMsgNo = ' + unreadMsgNo);
