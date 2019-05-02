@@ -246,8 +246,8 @@ const mtUtil = module.exports = {
 			}
 			message.setText(messageText, attachment);
 			mtUtil.messageCache[message.msgId] = message;
-			ether.ensReverseLookup(message.otherAddr, function(err, name) {
-			    if (!err && !!name)
+			ether.ensReverseLookup(message.otherAddr, function(ensErr, name) {
+			    if (!ensErr && !!name)
 				message.ensName = name;
 			    cb(err, message);
 			});
