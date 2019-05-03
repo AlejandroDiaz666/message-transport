@@ -65,6 +65,7 @@ p {
 }
 /* individual tooltip custmizations */
 #accountAreaFull {
+    position: fixed;
     transform: translate3d(-28px, 58%, 0px);
     width: 43em;
 }
