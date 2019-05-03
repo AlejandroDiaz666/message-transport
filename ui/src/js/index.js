@@ -158,7 +158,7 @@ function setOptionsButtonHandlers() {
 	    document.getElementById('noteDialogNote').textContent =
 		'Also, note that messages stored this way are limited in size to about 25KB ' +
 		'(because of the Ethereum block gas-limit).';
-	common.replaceElemClassFromTo('noteDialogDiv', 'noteDialogLarge', 'noteDialogSmall', true);
+	    common.replaceElemClassFromTo('noteDialogDiv', 'noteDialogLarge', 'noteDialogSmall', true);
 	    common.replaceElemClassFromTo('noteDialogDiv', 'hidden', 'visibleB', true);
 	}
     };
@@ -185,7 +185,7 @@ function setOptionsButtonHandlers() {
 	    'might prevent successful uploading, or cause sporadic "timeouts" when downloading ' +
 	    'large messages.'
 	    : 'Messages stored on the Ethereum blockchain will persist forever. However for ' +
-	    'messages with attachments, please note that Swarm is still experimental. And message ' +
+	    'messages with attachments, please note that Swarm is still experimental. And messages ' +
 	    'stored on Swarm could disappear without warning. Also, Swarm gateways impose filesize ' +
 	    'limitations which might prevent successful uploading, or cause sporadic "timeouts" ' +
 	    'when downloading large messages.';
@@ -458,8 +458,7 @@ function setAttachButtonHandler() {
             const reader = new FileReader();
             reader.onload = (e) => {
 		//eg. e.target.result = data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAMAAAC5zwKfAAACx1BMV...
-		console.log('attachmentInput: e.target.result = ' + e.target.result);
-		//
+		//console.log('attachmentInput: e.target.result = ' + e.target.result);
 		attachmentSaveA.href = e.target.result;
 		attachmentSaveA.download = attachmentInput.files[0].name;
 		const attachmentSaveSpan = document.getElementById('attachmentSaveSpan');
@@ -470,15 +469,26 @@ function setAttachButtonHandler() {
 		//check attachment size
 		const safeLimit = (mtUtil.storageMode == 'ethereum') ? 20000 : 70000;
 		if (attachmentSaveA.href.length > safeLimit) {
-		    const msg = (mtUtil.storageMode == 'ethereum')
-			  ? 'Please note: sending a large file as an Ethereum event log could ' +
-			  'cause the required gas to exceed the block gas-limit. Please consider ' +
-			  'enabling Swarm storage of message data (in the options panel).'
-			  : 'Please note: Swarm gateways impose filesize limitations which might ' +
-			  'prevent successful uploading, or cause sporadic "timeouts" when downloading ' +
-			  'large attachments. If you encounter errors when using Swarm, then consider ' +
-			  'sending a compressed, smaller file or selecting a different Swarm gateway.';
-		    alert(msg);
+		    if (mtUtil.storageMode == 'ethereum') {
+			document.getElementById('noteDialogIntro').textContent =
+			    'Please note: sending a large file, which will be stored on the ' +
+			    'Ethereum blockchain (as an event log), could cause the required ' +
+			    'gas to exceed the block gas-limit.';
+			document.getElementById('noteDialogNote').textContent =
+			    'If you encounter errors sending this file, then try sending a ' +
+			    'compressed, smaller file; or please consider enabling Swarm storage ' +
+			    'of message data (in the options panel).';
+		    } else {
+			document.getElementById('noteDialogIntro').textContent =
+			    'Please note: Swarm gateways impose filesize limitations which might ' +
+			    'prevent successful uploading, or cause sporadic "timeouts" when downloading ' +
+			    'large attachments.';
+			document.getElementById('noteDialogNote').textContent =
+			    'If you encounter errors when using Swarm, then consider sending ' +
+			    'a compressed, smaller file or selecting a different Swarm gateway.';
+		    }
+		    common.replaceElemClassFromTo('noteDialogDiv', 'noteDialogLarge', 'noteDialogSmall', true);
+		    common.replaceElemClassFromTo('noteDialogDiv', 'hidden', 'visibleB', true);
 		}
             };
             reader.readAsDataURL(attachmentInput.files[0]);
