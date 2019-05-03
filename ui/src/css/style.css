@@ -114,7 +114,7 @@ p {
     left: 50%;
     width: 80px;
     height: 80px;
-    z-index: 2;
+    z-index: 99;
     animation-name: waitIconAnimation;
     animation-duration: 2s;
     animation-timing-function: linear;
@@ -135,6 +135,42 @@ p {
     }
 }
 
+
+#noteDialogDiv {
+    position: fixed;
+    top: 35%;
+    left: 50%;
+    width: 350px;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    border: black 3px solid;
+    border-radius: 15px;
+    background-color: var(--clr_optpanelbg);
+    /* just below statusDiv and loading icon */
+    z-index: 97;
+}
+.noteDialogSmall {
+    height: 180px;
+}
+.noteDialogLarge {
+    height: 260px;
+}
+#noteDialogNote p {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+#noteDialogNote {
+    margin-top: 1em;
+}
+#noteDialogOkButton {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, -125%);
+}
 
 /* this modal has a message telling the user that we are waiting
    for metamask
@@ -283,7 +319,8 @@ p {
     border: black 3px solid;
     border-radius: 15px;
     background-color: var(--clr_optpanelbg);
-    z-index: 1;
+    /* only the loading icon has a higher z-index */
+    z-index: 98;
 }
 #statusCtrDiv {
     position: relative;
@@ -381,7 +418,7 @@ p {
 }
 #optionsPanel {
     width: 300px;
-    height: 482px;
+    height: 530px;
     position: absolute;
     top: 70px;
     left: 100%;
@@ -478,15 +515,23 @@ p {
     left: 0%;
     padding: 20px;
 }
-#viewContractSpan {
+#swarmTimeoutSpan {
     position: absolute;
     top: 340px;
     left: 0%;
     padding: 20px;
 }
+#swarmTimeoutSelect {
+}
+#viewContractSpan {
+    position: absolute;
+    top: 390px;
+    left: 0%;
+    padding: 20px;
+}
 #viewSrcSpan {
     position: absolute;
-    top: 392px;
+    top: 440px;
     left: 0%;
     padding: 20px;
 }

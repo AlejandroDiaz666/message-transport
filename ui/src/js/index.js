@@ -147,10 +147,20 @@ function setOptionsButtonHandlers() {
 	localStorage['storeMessages'] = storeMsgsSelect.value;
 	mtUtil.setMessageStorage(localStorage['storeMessages'], localStorage['swarmGateway']);
 	common.replaceElemClassFromTo('swarmGatewayViewButton', 'visibleB', 'hidden', true);
-	if (storeMsgsSelect.value == 'swarm' || storeMsgsSelect.value == 'auto')
+	if (storeMsgsSelect.value == 'swarm' || storeMsgsSelect.value == 'auto') {
 	    common.replaceElemClassFromTo('swarmGatewayDiv', 'hidden', 'visibleB', false);
-	else
+	} else {
 	    common.replaceElemClassFromTo('swarmGatewayDiv', 'visibleB', 'hidden', true);
+	    document.getElementById('noteDialogIntro').textContent =
+		'You have selected to store messages on the Ethereum blockchain (as event logs). ' +
+		'This is the most reliable way to store messages -- however, this is also the ' +
+		'most expensive way to store large messages (about 300K gas for a 1KB message).';
+	    document.getElementById('noteDialogNote').textContent =
+		'Also, note that messages stored this way are limited in size to about 25KB ' +
+		'(because of the Ethereum block gas-limit).';
+	common.replaceElemClassFromTo('noteDialogDiv', 'noteDialogLarge', 'noteDialogSmall', true);
+	    common.replaceElemClassFromTo('noteDialogDiv', 'hidden', 'visibleB', true);
+	}
     };
     if (!localStorage['storeMessages'])
 	localStorage['storeMessages'] = 'ethereum';
@@ -162,6 +172,25 @@ function setOptionsButtonHandlers() {
 	common.replaceElemClassFromTo('swarmGatewayViewButton', 'hidden', 'visibleB', false);
 	localStorage['swarmGateway'] = document.getElementById('swarmGatewayArea').value;
 	mtUtil.setMessageStorage(localStorage['storeMessages'], localStorage['swarmGateway']);
+	document.getElementById('noteDialogIntro').textContent = (mtUtil.storageMode == 'swarm')
+	    ? 'You have selected to store messages on Swarm. Every messages is still encrypted, ' +
+	    'and its hash is stored on the the Ethereum blockchain (as an event log). This means ' +
+	    'that no matter the size of the message (including any attachment), the gas that is ' +
+	    'consumed will always be the same.'
+	    : 'You have selected to store messages on the Ethereum blockchain (as event logs), ' +
+	    'except those messages that have attachments, which will be stored on Swarm.';
+	document.getElementById('noteDialogNote').textContent = (mtUtil.storageMode == 'swarm')
+	    ? 'However, please note Swarm is still experimental. Message stored on Swarm could ' +
+	    'disappear without warning. Also, Swarm gateways impose filesize limitations which ' +
+	    'might prevent successful uploading, or cause sporadic "timeouts" when downloading ' +
+	    'large messages.'
+	    : 'Messages stored on the Ethereum blockchain will persist forever. However for ' +
+	    'messages with attachments, please note that Swarm is still experimental. And message ' +
+	    'stored on Swarm could disappear without warning. Also, Swarm gateways impose filesize ' +
+	    'limitations which might prevent successful uploading, or cause sporadic "timeouts" ' +
+	    'when downloading large messages.';
+	common.replaceElemClassFromTo('noteDialogDiv', 'noteDialogSmall', 'noteDialogLarge', true);
+	common.replaceElemClassFromTo('noteDialogDiv', 'hidden', 'visibleB', true);
     };
     if (!localStorage['swarmGateway'])
 	localStorage['swarmGateway'] = 'https://swarm-gateways.net';
@@ -170,6 +199,18 @@ function setOptionsButtonHandlers() {
     storeMsgsSelect.addEventListener('change', storeMsgsSelectFcn);
     document.getElementById('swarmGatewayDoButton').addEventListener('click', swarmGatewayDoFcn);
     document.getElementById('swarmGatewayViewButton').addEventListener('click', storeMsgsSelectFcn);
+    //
+    // swarm timeout (for downloads)
+    //
+    const swarmTimeoutSelect = document.getElementById('swarmTimeoutSelect');
+    if (!localStorage['swarmTimeout'])
+	localStorage['swarmTimeout'] = '4000';
+    swarmTimeoutSelect.value = localStorage['swarmTimeout'];
+    const swarmTimeoutSelectFcn = () => {
+	localStorage['swarmTimeout'] = swarmTimeoutSelect.value;
+	mtUtil.setSwarmTimeout(localStorage['swarmTimeout']);
+    };
+    swarmTimeoutSelect.addEventListener('change', swarmTimeoutSelectFcn);
     //
     const startFirstUnreadButton = document.getElementById('startFirstUnreadButton');
     const startLastViewedButton = document.getElementById('startLastViewedButton');
@@ -185,6 +226,10 @@ function setOptionsButtonHandlers() {
 }
 
 function setMainButtonHandlers() {
+    const noteDialogOkButton = document.getElementById('noteDialogOkButton');
+    noteDialogOkButton.addEventListener('click', function() {
+	common.replaceElemClassFromTo('noteDialogDiv', 'visibleB', 'hidden', true);
+    });
     const registerButton = document.getElementById('registerButton');
     registerButton.addEventListener('click', function() {
 	if (!!mtUtil.acctInfo)
@@ -423,15 +468,16 @@ function setAttachButtonHandler() {
 		deleteImg.style.display = 'inline-block';
 		common.replaceElemClassFromTo('attachmentInput', 'visibleIB', 'hidden', true);
 		//check attachment size
-		const safeLimit = (mtUtil.storageMode == 'ethereum') ? 20000 : 150000;
+		const safeLimit = (mtUtil.storageMode == 'ethereum') ? 20000 : 70000;
 		if (attachmentSaveA.href.length > safeLimit) {
 		    const msg = (mtUtil.storageMode == 'ethereum')
 			  ? 'Please note: sending a large file as an Ethereum event log could ' +
 			  'cause the required gas to exceed the block gas-limit. Please consider ' +
 			  'enabling Swarm storage of message data (in the options panel).'
 			  : 'Please note: Swarm gateways impose filesize limitations which might ' +
-			  'prevent successful uploading of large files. If the Swarm upload fails, ' +
-			  'then consider selecting a different Swarm gateway.';
+			  'prevent successful uploading, or cause sporadic "timeouts" when downloading ' +
+			  'large attachments. If you encounter errors when using Swarm, then consider ' +
+			  'sending a compressed, smaller file or selecting a different Swarm gateway.';
 		    alert(msg);
 		}
             };

@@ -220,6 +220,13 @@ message, the message ID of the original message is stored with the reply as a 'R
     </div>
     <div id="waitIcon">
     </div>
+    <div id="noteDialogDiv" class="hidden noteDialogSmall">
+      <p id="noteDialogIntro">
+      </p>
+      <p id="noteDialogNote">
+      </p>
+      <button id="noteDialogOkButton" type="button">OK</button>
+    </div>
     <div id="statusDiv" class="finalresultstable statusDivHide"></div>
     <div id="searchDialogDiv" class="hidden">
       <button id="searchCloseButton" class="menuBarButton" type="button">Close</button>
@@ -314,6 +321,21 @@ message, the message ID of the original message is stored with the reply as a 'R
 		      placeholder="enter node address"></textarea>
 	    <button id="swarmGatewayDoButton" type="button">Set Swarm gateway</button>
 	  </div>
+	  <span id="swarmTimeoutSpan">
+	    <p>Timeout for downloading from Swarm:<br/>
+	      <select id="swarmTimeoutSelect">
+		<option value="10000">10 seconds</option>
+		<option value="9000">9 seconds</option>
+		<option value="8000">8 seconds</option>
+		<option value="7000">7 seconds</option>
+		<option value="6000">6 seconds</option>
+		<option value="5000">5 seconds</option>
+		<option value="4000">4 seconds</option>
+		<option value="3000">3 seconds</option>
+		<option value="2500">2.5 seconds</option>
+	      </select>
+	    </p>
+	  </span>
 	  <span id="viewContractSpan">
 	    <p>You can see the Turms AMT contract on<br/>
 	      <a id="viewContractHref" href="https://etherscan.io" target="_blank">etherscan.io</a>
