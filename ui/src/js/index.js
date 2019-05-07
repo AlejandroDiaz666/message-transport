@@ -180,7 +180,7 @@ function setOptionsButtonHandlers() {
 	    : 'You have selected to store messages on the Ethereum blockchain (as event logs), ' +
 	    'except those messages that have attachments, which will be stored on Swarm.';
 	document.getElementById('noteDialogNote').textContent = (mtUtil.storageMode == 'swarm')
-	    ? 'However, please note Swarm is still experimental. Message stored on Swarm could ' +
+	    ? 'However, please note Swarm is still experimental. Messages stored on Swarm could ' +
 	    'disappear without warning. Also, Swarm gateways impose filesize limitations which ' +
 	    'might prevent successful uploading, or cause sporadic "timeouts" when downloading ' +
 	    'large messages.'
