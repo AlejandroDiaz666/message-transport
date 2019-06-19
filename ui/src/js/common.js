@@ -25,7 +25,7 @@ const common = module.exports = {
 		common.web3.version.getNetwork((err, netId) => {
 		    if (!!err)
 			cb(err, null, null)
-		    else if (!!requireAcct && !web3.eth.accounts[0])
+		    else if (!!requireAcct && !common.web3.eth.accounts[0])
 			cb('To use this utility, a MetaMask account must be unlocked', null, null);
 		    else
 			cb(null, common.web3, netId);
