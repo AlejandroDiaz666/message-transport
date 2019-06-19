@@ -896,6 +896,9 @@ async function beginTheBeguine(mode) {
     if (!!localStorage['etherPrice'])
 	index.etherPrice = localStorage['etherPrice'];
     ether.getEtherPrice(function(err, price) {
+	if (!!err)
+	    alert('Error retrieving Ether price.\n' +
+		  'If you are using are running an ad blocker, then please try turning it off.');
 	console.log('err = ' + err + ', price = '  + price);
 	if (!err && !!price)
 	    index.etherPrice = localStorage['etherPrice'] = price;
@@ -1032,6 +1035,11 @@ function handleUnlockedMetaMask(mode) {
 	    return;
 	}
 	mtUtil.refreshAcctInfo(true, function(err, _acctInfo) {
+	    if (!!err) {
+		console.log('handleUnlockedMetaMask: err = ' + err);
+		handleLockedMetaMask(err);
+		return;
+	    }
 	    console.log('handleUnlockedMetaMask: mtUtil.acctInfo.msgFee = ' + mtUtil.acctInfo.msgFee);
 	    //console.log('handleUnlockedMetaMask: acctInfo: ' + JSON.stringify(mtUtil.acctInfo));
 	    //console.log('handleUnlockedMetaMask: publicKey: ' + mtUtil.publicKey);
