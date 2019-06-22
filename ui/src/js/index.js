@@ -898,7 +898,7 @@ async function beginTheBeguine(mode) {
     ether.getEtherPrice(function(err, price) {
 	if (!!err)
 	    alert('Error retrieving Ether price.\n' +
-		  'If you are using are running an ad blocker, then please try turning it off.');
+		  'Please turn off ad blockers.');
 	console.log('err = ' + err + ', price = '  + price);
 	if (!err && !!price)
 	    index.etherPrice = localStorage['etherPrice'] = price;
