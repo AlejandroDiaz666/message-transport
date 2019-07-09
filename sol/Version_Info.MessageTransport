@@ -9,11 +9,10 @@ constructor parms:
 ---------------------------
 ropsten
 ---------------------------
-ropsten: 0x95c1a0ba886286f013deb7918ca1918341b88df4
-_tokenAddr = 0x4d08eb215670920303e910f8a311224abe2f8a7c
+ropsten: 0x1fa26567944b3fa547f9905a873a67cdadd91c29
+_tokenAddr = 0x8b23b091247856377e095edac0b690ab80de5635
 constructor parms:
-0000000000000000000000004d08eb215670920303e910f8a311224abe2f8a7c
-
+0000000000000000000000008b23b091247856377e095edac0b690ab80de5635
 
 Note: don't forget to a) compile with optimization, b) set trust
 
