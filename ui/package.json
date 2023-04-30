@@ -17,7 +17,7 @@
     "md5": "^2.2.1",
     "swarm-js": "^0.1.39",
     "utf-8-validate": "^3.0.3",
-    "web3-utils": "^1.0.0-beta.46"
+    "web3-utils": "^1.9.0"
   },
   "devDependencies": {},
   "scripts": {
