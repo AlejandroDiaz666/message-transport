@@ -15,7 +15,7 @@
     "fingerprintjs2": "^1.5.1",
     "keccakjs": "^0.2.1",
     "md5": "^2.2.1",
-    "swarm-js": "^0.1.39",
+    "swarm-js": "^0.1.42",
     "utf-8-validate": "^3.0.3",
     "web3-utils": "^1.0.0-beta.46"
   },
